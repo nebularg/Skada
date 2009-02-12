@@ -1,0 +1,9 @@
+## Interface: 30000
+## Title: Skada |r[|caaedc99fFailbot|r]
+## Notes: Adds a Failbot mode and data collection to Skada.
+## Author: Zarnivoop
+## Version: 1.0
+## Dependencies: Skada
+
+LibFail-1.0\lib.xml
+Failbot.lua

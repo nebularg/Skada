@@ -1,0 +1,29 @@
+package-as: Skada
+
+externals:
+    lib/AceAddon-3.0:        svn://svn.wowace.com/wow/ace3/mainline/trunk/AceAddon-3.0
+    lib/AceConfig-3.0:       svn://svn.wowace.com/wow/ace3/mainline/trunk/AceConfig-3.0
+    lib/AceConsole-3.0:      svn://svn.wowace.com/wow/ace3/mainline/trunk/AceConsole-3.0
+    lib/AceDB-3.0:           svn://svn.wowace.com/wow/ace3/mainline/trunk/AceDB-3.0
+    lib/AceDBOptions-3.0:    svn://svn.wowace.com/wow/ace3/mainline/trunk/AceDBOptions-3.0
+    lib/AceEvent-3.0:        svn://svn.wowace.com/wow/ace3/mainline/trunk/AceEvent-3.0
+    lib/AceGUI-3.0:          svn://svn.wowace.com/wow/ace3/mainline/trunk/AceGUI-3.0
+    lib/AceLocale-3.0:       svn://svn.wowace.com/wow/ace3/mainline/trunk/AceLocale-3.0
+    lib/AceTimer-3.0:        svn://svn.wowace.com/wow/ace3/mainline/trunk/AceTimer-3.0
+    lib/CallbackHandler-1.0: svn://svn.wowace.com/wow/ace3/mainline/trunk/CallbackHandler-1.0
+    lib/LibStub:             svn://svn.wowace.com/wow/ace3/mainline/trunk/LibStub
+    lib/LibSharedMedia-3.0:  svn://svn.wowace.com/wow/libsharedmedia-3-0/mainline/trunk/LibSharedMedia-3.0
+    lib/LibDBIcon-1.0:       svn://svn.wowace.com/wow/libdbicon-1-0/mainline/trunk/LibDBIcon-1.0
+    lib/LibWindow-1.1:       svn://svn.wowace.com/wow/libwindow-1-1/mainline/trunk/LibWindow-1.1
+    lib/AceGUI-3.0-SharedMediaWidgets:   svn://svn.wowace.com/wow/ace-gui-3-0-shared-media-widgets/mainline/trunk/AceGUI-3.0-SharedMediaWidgets
+
+move-folders:
+    Skada/modules/SkadaThreat: SkadaThreat
+    Skada/modules/SkadaDeaths: SkadaDeaths
+    Skada/modules/SkadaDebuffs: SkadaDebuffs
+    Skada/modules/SkadaDamage: SkadaDamage
+    Skada/modules/SkadaHealing: SkadaHealing
+    Skada/modules/SkadaFailbot: SkadaFailbot
+    Skada/modules/SkadaDamageTaken: SkadaDamageTaken
+    Skada/modules/SkadaDispels: SkadaDispels
+

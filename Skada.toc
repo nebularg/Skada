@@ -1,0 +1,21 @@
+## Interface: 30000
+## Title: Skada
+## Notes: Modular damage meter.
+## Author: Zarnivoop
+## Version: 1.0
+## SavedVariables: SkadaDB
+
+## OptionalDeps: Ace3, LibSharedMedia-3.0, LibBars-1.0
+## X-Embeds: Ace3, LibSharedMedia-3.0, LibBars-1.0
+
+## X-License: MIT/X
+## X-Category: Combat
+
+embeds.xml
+
+LibDataBroker-1.1.lua
+
+locale\enUS.lua
+
+Skada.lua
+Options.lua
