@@ -129,9 +129,7 @@ function playermod:Update(set)
 				bar:SetMaxValue(player.fails)
 				bar:SetValue(fails)
 			else
-				local icon = select(3, GetSpellInfo(spell.id))
-			
-				bar = Skada:GetBarGroup():NewCounterBar(event, event, fails, player.fails, icon, false)
+				bar = Skada:GetBarGroup():NewCounterBar(event, event, fails, player.fails, nil, false)
 				bar:SetColorAt(0, color.r, color.g, color.b, color.a)
 				bar:ShowTimerLabel()
 				bar:EnableMouse(true)
@@ -140,9 +138,6 @@ function playermod:Update(set)
 													Skada:DisplayMode(mod)
 												end
 											end)
-				if icon then
-					bar:ShowIcon()
-				end
 			end
 			bar:SetTimerLabel(fails)
 			
