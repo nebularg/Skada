@@ -27,5 +27,3 @@ move-folders:
     Skada/modules/SkadaDamageTaken: SkadaDamageTaken
     Skada/modules/SkadaDispels: SkadaDispels
 
-ignore:
-    - lib
