@@ -448,7 +448,7 @@ function Skada:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID,
 	-- Pet scheme: save the GUID in a table along with the GUID of the owner.
 	-- Note to self: this needs 1) to be made self-cleaning so it can't grow too much, and 2) saved persistently.
 	-- Now also done on raid roster/party changes.
-	if eventtype == 'SPELL_SUMMON' then
+	if eventtype == 'SPELL_SUMMON' and self:UnitIsInteresting(srcName) then
 		pets[dstGUID] = {id = srcGUID, name = srcName}
 	end
 
