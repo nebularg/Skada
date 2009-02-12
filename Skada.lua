@@ -81,10 +81,18 @@ function Skada:OnInitialize()
 
 	-- Minimap button.
 	icon:Register("Skada", dataobj, self.db.profile.icon)
-	icon:Show("Skada")
+	self:ShowMMButton(self.db.profile.mmbutton)
 	
 	self:RegisterChatCommand("skada", "OpenOptions")
 	self:RegisterChatCommand("skadapets", "PetDebug")
+end
+
+function Skada:ShowMMButton(show)
+	if show then
+		icon:Show("Skada")
+	else
+		icon:Hide("Skada")
+	end
 end
 
 function Skada:AnchorClicked(cbk, group, button)

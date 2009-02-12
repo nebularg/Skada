@@ -16,6 +16,7 @@ Skada.defaults = {
 		modeincombat="",
 		window = {shown = true},
 		returnaftercombat=false,
+		mmbutton=true,
 		set = "current",
 		mode = nil,
 	}
@@ -194,6 +195,19 @@ Skada.options = {
            			    set=function() Skada.db.profile.returnaftercombat = not Skada.db.profile.returnaftercombat end,
            			    disabled=function() return Skada.db.profile.returnaftercombat == nil end,
 					},
+					
+					mmbutton = {
+					        type="toggle",
+					        name="Show minimap button",
+					        desc="Toggles showing the minimap button.",
+					        order=23,
+					        get=function() return Skada.db.profile.mmbutton end,
+					        set=function()
+					    			Skada.db.profile.mmbutton = not Skada.db.profile.mmbutton
+									Skada:ShowMMButton(Skada.db.profile.mmbutton)
+					        	end,
+					},
+
 					
 		        },
 	        
