@@ -1,4 +1,4 @@
--- LibBars-1.0 by Antiarc
+-- LibBars-1.0 by Antiarc, all glory to him.
 -- Specialized ( = uglified) for Skada
 -- Note to self: don't forget to notify original author of changes
 -- in the unlikely event they end up being usable outside of Skada.

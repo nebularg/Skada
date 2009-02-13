@@ -83,8 +83,21 @@ function Skada:OnInitialize()
 	icon:Register("Skada", dataobj, self.db.profile.icon)
 	self:ShowMMButton(self.db.profile.mmbutton)
 	
-	self:RegisterChatCommand("skada", "OpenOptions")
-	self:RegisterChatCommand("skadapets", "PetDebug")
+	self:RegisterChatCommand("skada", "Command")
+end
+
+function Skada:Command(param)
+	if param == "pets" then
+		self:PetDebug()
+	elseif param == "reset" then
+		self:Reset()
+	elseif param == "" then
+		self:OpenOptions()
+	else
+		self:Print("Usage:")
+		self:Print(("%-20s %s"):format("/skada","opens the configuration window"))
+		self:Print(("%-20s %s"):format("/skada reset","resets all data"))
+	end
 end
 
 function Skada:ShowMMButton(show)
@@ -302,10 +315,12 @@ end
 function Skada:PLAYER_REGEN_DISABLED()
 	-- Start a new set if we are not in one already.
 	if not current then
+		-- Remove old bars.
+		self:RemoveAllBars()
+		
+		-- Create a new current set.
 		current = {players = {}, name = "Current", starttime = time(), changed = true}
 
---damage = 0, damagetaken = 0, healing = 0, dispells = 0, overhealing = 0, deaths = 0,
-		
 		-- Tell each mode to apply its needed attributes.
 		for i, mode in ipairs(modes) do
 			if mode.AddSetAttributes ~= nil then
@@ -417,32 +432,6 @@ function Skada:get_player(set, playerid, playername)
 end
 
 
-
-function Skada:UnitIsInteresting(name)
-	return name and (UnitIsUnit("player",name) or UnitIsUnit("pet",name) or UnitPlayerOrPetInRaid(name) or UnitPlayerOrPetInParty(name))
-end
-
-function Skada:UnitIsInterestingNoPets(name)
-	return name and (UnitIsUnit("player",name) or UnitInRaid(name) or UnitInParty(name))
-end
-
--- Modify objects if they are pets.
--- Expects to find "playerid", "playername", and optionally "spellname" in the object.
--- Playerid and playername are exchanged for the pet owner's, and spellname is modified to include pet name.
-function Skada:FixPets(action)
-	if action and not UnitIsPlayer(action.playername) then
-		local pet = pets[action.playerid]
-		if pet then
-			if action.spellname then
-				action.spellname = action.playername..": "..action.spellname
-			end
-			action.playername = pet.name
-			action.playerid = pet.id
-		end
-	end
-
-end
-
 function Skada:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
 	-- Pet summons.
 	-- Pet scheme: save the GUID in a table along with the GUID of the owner.
@@ -464,6 +453,7 @@ end
 --
 -- Data broker
 --
+
 function dataobj:OnEnter()
     GameTooltip:SetOwner(self, "ANCHOR_NONE")
     GameTooltip:SetPoint("TOPLEFT", self, "BOTTOMLEFT")
@@ -498,45 +488,6 @@ function dataobj:OnClick(button)
 	elseif button == "RightButton" then
 		Skada:OpenOptions()
 	end
-end
-
---
--- Window
---
-
--- If selectedset is "current", returns current set if we are in combat, otherwise returns the last set.
-function Skada:get_selected_set()
-	if selectedset == "current" then
-		if current == nil then
-			return sets[1]
-		else
-			return current
-		end
-	elseif selectedset == "total" then
-		return total
-	else
-		return sets[selectedset]
-	end
-end
-
-function Skada:get_selected_player(set, playerid)
-	for i, player in ipairs(set.players) do
-		if player.id == playerid then
-			return player
-		end
-	end
-end
-
-function Skada:IsDataCollectionActive()
-	return current ~= nil
-end
-
-function Skada:GetCurrentSet()
-	return current
-end
-
-function Skada:GetTotalSet()
-	return total
 end
 
 -- Snatched from Recount
@@ -629,58 +580,7 @@ function Skada:GetModes()
 	return modes
 end
 
-function Skada:AddMode(mode)
-	table.insert(modes, mode)
-	
-	-- Set this mode as the active mode if it matches the saved one.
-	-- Bit of a hack.
-	if mode.name == self.db.profile.mode then
-		self:RestoreView(selectedset, mode.name)
-	end
-end
 
-function Skada:RemoveMode(mode)
-	table.remove(modes, mode)
-end
-
-function Skada:GetDefaultBarColor()
-	return self.db.profile.barcolor
-end
-
-function Skada:GetBarGroup()
-	return self.bargroup
-end
-
-function Skada:SortBars()
-	self.bargroup:SortBars()
-end
-
-function Skada:GetBars()
-	return self.bargroup:GetBars()
-end
-
-function Skada:GetBar(name)
-	return self.bargroup:GetBar(name)
-end
-
-function Skada:RemoveBar(bar)
-	self.bargroup:RemoveBar(bar)
-end
-
-function Skada:CreateBar(name, label, value, maxvalue, icon, o)
-	return self.bargroup:NewCounterBar(name, label, value, maxvalue, icon, o)
-end
-
-function Skada:RemoveAllBars()
-	local bars = self.bargroup:GetBars()
-	if bars then
-		for i, bar in pairs(bars) do
-			bar:Hide()
-			self.bargroup:RemoveBar(bar)
-		end
-	end
-	self.bargroup:SortBars()
-end
 
 -- Sets up the mode view.
 function Skada:DisplayMode(mode)
@@ -766,10 +666,131 @@ function Skada:RightClick(group, button)
 	end
 end
 
+--
+-- API
+-- These functions are meant to be used by modes.
+--
+
+-- Formats a number into human readable form.
 function Skada:FormatNumber(number)
 	if number > 1000000 then
 		return 	("%02.1fM"):format(number / 1000000)
 	else
 		return 	("%02.1fK"):format(number / 1000)
 	end
+end
+
+function Skada:AddMode(mode)
+	table.insert(modes, mode)
+	
+	-- Set this mode as the active mode if it matches the saved one.
+	-- Bit of a hack.
+	if mode.name == self.db.profile.mode then
+		self:RestoreView(selectedset, mode.name)
+	end
+end
+
+function Skada:RemoveMode(mode)
+	table.remove(modes, mode)
+end
+
+function Skada:GetDefaultBarColor()
+	return self.db.profile.barcolor
+end
+
+function Skada:GetBarGroup()
+	return self.bargroup
+end
+
+function Skada:SortBars()
+	self.bargroup:SortBars()
+end
+
+function Skada:GetBars()
+	return self.bargroup:GetBars()
+end
+
+function Skada:GetBar(name)
+	return self.bargroup:GetBar(name)
+end
+
+function Skada:RemoveBar(bar)
+	self.bargroup:RemoveBar(bar)
+end
+
+function Skada:CreateBar(name, label, value, maxvalue, icon, o)
+	return self.bargroup:NewCounterBar(name, label, value, maxvalue, icon, o)
+end
+
+function Skada:RemoveAllBars()
+	local bars = self.bargroup:GetBars()
+	if bars then
+		for i, bar in pairs(bars) do
+			bar:Hide()
+			self.bargroup:RemoveBar(bar)
+		end
+	end
+	self.bargroup:SortBars()
+end
+
+-- If selectedset is "current", returns current set if we are in combat, otherwise returns the last set.
+function Skada:get_selected_set()
+	if selectedset == "current" then
+		if current == nil then
+			return sets[1]
+		else
+			return current
+		end
+	elseif selectedset == "total" then
+		return total
+	else
+		return sets[selectedset]
+	end
+end
+
+function Skada:get_selected_player(set, playerid)
+	for i, player in ipairs(set.players) do
+		if player.id == playerid then
+			return player
+		end
+	end
+end
+
+function Skada:IsDataCollectionActive()
+	return current ~= nil
+end
+
+function Skada:GetCurrentSet()
+	return current
+end
+
+function Skada:GetTotalSet()
+	return total
+end
+
+-- Returns true if we are interested in the unit. Does not include pets.
+function Skada:UnitIsInteresting(name)
+	return name and (UnitIsUnit("player",name) or UnitIsUnit("pet",name) or UnitPlayerOrPetInRaid(name) or UnitPlayerOrPetInParty(name))
+end
+
+-- Returns true if we are interested in the unit. Include pets.
+function Skada:UnitIsInterestingNoPets(name)
+	return name and (UnitIsUnit("player",name) or UnitInRaid(name) or UnitInParty(name))
+end
+
+-- Modify objects if they are pets.
+-- Expects to find "playerid", "playername", and optionally "spellname" in the object.
+-- Playerid and playername are exchanged for the pet owner's, and spellname is modified to include pet name.
+function Skada:FixPets(action)
+	if action and not UnitIsPlayer(action.playername) then
+		local pet = pets[action.playerid]
+		if pet then
+			if action.spellname then
+				action.spellname = action.playername..": "..action.spellname
+			end
+			action.playername = pet.name
+			action.playerid = pet.id
+		end
+	end
+
 end
