@@ -1,6 +1,8 @@
+local L = LibStub("AceLocale-3.0"):GetLocale("Skada", false)
+
 local mod = Skada:NewModule("OverhealingMode")
 
-mod.name = "Overhealing"
+mod.name = L["Overhealing"]
 
 function mod:OnEnable()
 	Skada:AddMode(self)
@@ -48,13 +50,8 @@ function mod:Update(set)
 				bar = Skada:CreateBar(tostring(player.id), player.name, player.overhealing, maxoverhealing, nil, false)
 				bar:EnableMouse()
 				bar:SetScript("OnMouseDown", function(bar, button) if button == "RightButton" then Skada:RightClick() end end)
-				local color = Skada.classcolors[player.class]
-				if color then
-					bar:SetColorAt(0, color.r, color.g, color.b, color.a)
-				else
-					color = Skada:GetDefaultBarColor()
-					bar:SetColorAt(0, color.r, color.g, color.b, color.a)
-				end
+				local color = Skada.classcolors[player.class] or Skada:GetDefaultBarColor()
+				bar:SetColorAt(0, color.r, color.g, color.b, color.a)
 				
 	--			Skada:Print("created "..player.name.." at "..tostring(player.overhealing))
 			end

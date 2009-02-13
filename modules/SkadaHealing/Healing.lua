@@ -1,3 +1,5 @@
+local L = LibStub("AceLocale-3.0"):GetLocale("Skada", false)
+
 local mod = Skada:NewModule("HealingMode", "AceEvent-3.0")
 local playermod = Skada:NewModule("HealingModePlayerView")
 
@@ -124,13 +126,8 @@ function mod:Update(set)
 													Skada:RightClick()
 												end
 											end)
-				local color = Skada.classcolors[player.class]
-				if color then
-					bar:SetColorAt(0, color.r, color.g, color.b, color.a)
-				else
-					color = Skada:GetDefaultBarColor()
-					bar:SetColorAt(0, color.r, color.g, color.b, color.a)
-				end
+				local color = Skada.classcolors[player.class] or Skada:GetDefaultBarColor()
+				bar:SetColorAt(0, color.r, color.g, color.b, color.a)
 				
 	--			Skada:Print("created "..player.name.." at "..tostring(player.healing))
 			end
