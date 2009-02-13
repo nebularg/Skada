@@ -1,8 +1,10 @@
+local L = LibStub("AceLocale-3.0"):GetLocale("Skada", false)
+
 local mod = Skada:NewModule("DamageMode", "AceEvent-3.0")
 local playermod = Skada:NewModule("DamageModePlayerView")
 local spellmod = Skada:NewModule("DamageModeSpellView")
 
-mod.name = "Damage"
+mod.name = L["Damage"]
 
 function mod:OnEnable()
 	self:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
@@ -19,7 +21,7 @@ function mod:AddToTooltip(set, tooltip)
 		endtime = time()
 	end
 	local raiddps = set.damage / (endtime - set.starttime + 1)
- 	GameTooltip:AddDoubleLine("DPS", ("%02.1f"):format(raiddps), 1,1,1)
+ 	GameTooltip:AddDoubleLine(L["DPS"], ("%02.1f"):format(raiddps), 1,1,1)
 end
 
 -- Called by Skada when a new player is added to a set.
@@ -174,22 +176,15 @@ function mod:Update(set)
 				bar.playername = player.name
 				bar:SetScript("OnMouseDown",function(bar, button)
 												if button == "LeftButton" then
-													playermod.name = player.name.."'s Damage"
+													playermod.name = player.name..L["'s Damage"]
 													playermod.playerid = player.id
 													Skada:DisplayMode(playermod)
 												elseif button == "RightButton" then
 													Skada:RightClick()
 												end
 											end)
-				bar:UnsetAllColors()
-				local color = Skada.classcolors[player.class]
-				if color then
-					bar:SetColorAt(0, color.r, color.g, color.b, color.a)
-					bar.class = player.class
-				else
-					color = Skada:GetDefaultBarColor()
-					bar:SetColorAt(0, color.r, color.g, color.b, color.a)
-				end
+				local color = Skada.classcolors[player.class] or Skada:GetDefaultBarColor()
+				bar:SetColorAt(0, color.r, color.g, color.b, color.a)
 			end
 			bar:SetLabel(("%2u. %s"):format(i, player.name))
 			local dps = player.damage / (player.last - player.first + 1)
@@ -270,25 +265,25 @@ function spellmod:Update(set)
 		
 		if spell then
 			if spell.hit > 0 then
-				add_detail_bar("Hit", spell.hit, spell.totalhits)
+				add_detail_bar(L["Hit"], spell.hit, spell.totalhits)
 			end
 			if spell.critical > 0 then
-				add_detail_bar("Critical", spell.critical, spell.totalhits)
+				add_detail_bar(L["Critical"], spell.critical, spell.totalhits)
 			end
 			if spell.missed > 0 then
-				add_detail_bar("Missed", spell.missed, spell.totalhits)
+				add_detail_bar(L["Missed"], spell.missed, spell.totalhits)
 			end
 			if spell.resisted > 0 then
-				add_detail_bar("Resisted", spell.resisted, spell.totalhits)
+				add_detail_bar(L["Resisted"], spell.resisted, spell.totalhits)
 			end
 			if spell.blocked > 0 then
-				add_detail_bar("Blocked", spell.blocked, spell.totalhits)
+				add_detail_bar(L["Blocked"], spell.blocked, spell.totalhits)
 			end
 			if spell.glancing > 0 then
-				add_detail_bar("Glancing", spell.glancing, spell.totalhits)
+				add_detail_bar(L["Glancing"], spell.glancing, spell.totalhits)
 			end
 			if spell.absorbed > 0 then
-				add_detail_bar("Absorbed", spell.absorbed, spell.totalhits)
+				add_detail_bar(L["Absorbed"], spell.absorbed, spell.totalhits)
 			end
 		end
 	end
