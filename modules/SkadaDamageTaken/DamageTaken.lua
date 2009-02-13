@@ -1,7 +1,9 @@
+local L = LibStub("AceLocale-3.0"):GetLocale("Skada", false)
+
 local mod = Skada:NewModule("DamageTakenMode", "AceEvent-3.0")
 local playermod = Skada:NewModule("DamageTakenModePlayerView")
 
-mod.name = "Damage taken"
+mod.name = L["Damage taken"]
 
 function mod:OnEnable()
 	self:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
@@ -72,7 +74,7 @@ function mod:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID, s
 		elseif eventtype == 'SWING_DAMAGE' then
 			-- White melee.
 			local samount, soverkill, sschool, sresisted, sblocked, sabsorbed, scritical, sglancing, scrushing = ...
-			local dmg = {playerid = dstGUID, playername = dstName, spellid = 6603, spellname = "Attack", amount = samount}
+			local dmg = {playerid = dstGUID, playername = dstName, spellid = 6603, spellname = L["Attack"], amount = samount}
 
 			self:log_damage_taken(current, dmg)
 			self:log_damage_taken(total, dmg)
@@ -106,28 +108,20 @@ function mod:Update(set)
 				if color then
 					bar:SetColorAt(0, color.r, color.g, color.b, color.a)
 				end
-	--			Skada:Print("updated "..player.name.." to "..tostring(player.healing))
 			else
 				bar = Skada:CreateBar(tostring(player.id), player.name, player.damagetaken, maxdamagetaken, nil, false)
 				bar:EnableMouse()
 				bar:SetScript("OnMouseDown", function(bar, button)
 												if button == "LeftButton" then
 													playermod.playerid = player.id
-													playermod.name = player.name.."'s Damage taken"
+													playermod.name = player.name..L["'s Damage taken"]
 													Skada:DisplayMode(playermod)
 												elseif button == "RightButton" then
 													Skada:RightClick()
 												end
 											end)
-				local color = Skada.classcolors[player.class]
-				if color then
-					bar:SetColorAt(0, color.r, color.g, color.b, color.a)
-				else
-					color = Skada:GetDefaultBarColor()
-					bar:SetColorAt(0, color.r, color.g, color.b, color.a)
-				end
-				
-	--			Skada:Print("created "..player.name.." at "..tostring(player.healing))
+				local color = Skada.classcolors[player.class] or Skada:GetDefaultBarColor()
+				bar:SetColorAt(0, color.r, color.g, color.b, color.a)
 			end
 			bar:SetTimerLabel(Skada:FormatNumber(player.damagetaken)..(" (%02.1f%%)"):format(player.damagetaken / set.damagetaken * 100))
 			
