@@ -1,3 +1,5 @@
+local L = LibStub("AceLocale-3.0"):GetLocale("Skada", false)
+
 local mod = Skada:NewModule("FailbotMode")
 local playermod = Skada:NewModule("FailbotModePlayerView")
 
@@ -95,13 +97,8 @@ function mod:Update(set)
 													playermod.name = player.name.."'s Fails"
 													Skada:DisplayMode(playermod)
 											 elseif button == "RightButton" then Skada:RightClick() end end)
-				local color = Skada.classcolors[player.class]
-				if color then
-					bar:SetColorAt(0, color.r, color.g, color.b, color.a)
-				else
-					color = Skada:GetDefaultBarColor()
-					bar:SetColorAt(0, color.r, color.g, color.b, color.a)
-				end
+				local color = Skada.classcolors[player.class] or Skada:GetDefaultBarColor()
+				bar:SetColorAt(0, color.r, color.g, color.b, color.a)
 				
 			end
 			bar:SetTimerLabel(tostring(player.fails))
