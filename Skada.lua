@@ -95,8 +95,8 @@ function Skada:Command(param)
 		self:OpenOptions()
 	else
 		self:Print("Usage:")
-		self:Print(("%-20s %s"):format("/skada","opens the configuration window"))
-		self:Print(("%-20s %s"):format("/skada reset","resets all data"))
+		self:Print(("%-20s %s"):format("/skada",L["opens the configuration window"]))
+		self:Print(("%-20s %s"):format("/skada reset",L["resets all data"]))
 	end
 end
 
@@ -235,15 +235,15 @@ function Skada:Reset()
 	end
 	
 	if current ~= nil then
-		current = {players = {}, damage = 0, damagetaken = 0, healing = 0, dispells = 0, overhealing = 0, deaths = 0, name = "Current", starttime = time()}
+		current = {players = {}, damage = 0, damagetaken = 0, healing = 0, dispells = 0, overhealing = 0, deaths = 0, name = L["Current"], starttime = time()}
 	end
 	if total ~= nil then
-		total = {players = {}, damage = 0, damagetaken = 0, healing = 0, dispells = 0, overhealing = 0, deaths = 0, name = "Total", starttime = time()}
+		total = {players = {}, damage = 0, damagetaken = 0, healing = 0, dispells = 0, overhealing = 0, deaths = 0, name = L["Total"], starttime = time()}
 	end
 	
 	sets = {}
 	
-	self:Print("All data has been reset.")
+	self:Print(L["All data has been reset."])
 end
 
 -- Applies settings to things like the bar window.
@@ -319,7 +319,7 @@ function Skada:PLAYER_REGEN_DISABLED()
 		self:RemoveAllBars()
 		
 		-- Create a new current set.
-		current = {players = {}, name = "Current", starttime = time(), changed = true}
+		current = {players = {}, name = L["Current"], starttime = time(), changed = true}
 
 		-- Tell each mode to apply its needed attributes.
 		for i, mode in ipairs(modes) do
@@ -330,7 +330,7 @@ function Skada:PLAYER_REGEN_DISABLED()
 
 		-- Also start the total set if it is nil.
 		if total == nil then
-			total = {players = {}, name = "Total", starttime = time(), changed = true}
+			total = {players = {}, name = L["Total"], starttime = time(), changed = true}
 			
 			-- Tell each mode to apply its needed attributes.
 			for i, mode in ipairs(modes) do
@@ -539,21 +539,21 @@ function Skada:UpdateBars()
 		
 	else
 		-- View available sets.
-		local bar = self.bargroup:GetBar("Total")
+		local bar = self.bargroup:GetBar(L["Total"])
 		if bar then
 			-- Potentially update name or something
 		else
-			bar = self.bargroup:NewCounterBar("total", "Total", 1, 1, nil, false)
+			bar = self.bargroup:NewCounterBar("total", L["Total"], 1, 1, nil, false)
 			bar:SetColorAt(0,self.db.profile.barcolor.r,self.db.profile.barcolor.g,self.db.profile.barcolor.b, self.db.profile.barcolor.a)
 			bar:EnableMouse(true)
 			bar:SetScript("OnMouseDown", function(bar, button) if button == "LeftButton" then Skada:DisplayModes("total") elseif button == "RightButton" then Skada:RightClick() end end)
 		end
 
-		local bar = self.bargroup:GetBar("Current")
+		local bar = self.bargroup:GetBar(L["Current"])
 		if bar then
 			-- Potentially update name or something
 		else
-			bar = self.bargroup:NewCounterBar("current", "Current", 1, 1, nil, false)
+			bar = self.bargroup:NewCounterBar("current", L["Current"], 1, 1, nil, false)
 			bar:SetColorAt(0,self.db.profile.barcolor.r,self.db.profile.barcolor.g,self.db.profile.barcolor.b, self.db.profile.barcolor.a)
 			bar:EnableMouse(true)
 			bar:SetScript("OnMouseDown", function(bar, button) if button == "LeftButton" then Skada:DisplayModes("current") elseif button == "RightButton" then Skada:RightClick() end end)
@@ -612,7 +612,7 @@ function Skada:DisplayModes(settime)
 	selectedspell = nil
 	selectedmode = nil
 
-	self.bargroup.button:SetText("Skada: Modes")
+	self.bargroup.button:SetText(L["Skada: Modes"])
 
 	-- Find the selected set
 	if settime == "current" or settime == "total" then
@@ -621,9 +621,9 @@ function Skada:DisplayModes(settime)
 	
 		for i, set in ipairs(sets) do
 			if set.starttime == settime then
-				if set.name == "Current" then
+				if set.name == L["Current"] then
 					selectedset = "current"
-				elseif set.name == "Total" then
+				elseif set.name == L["Total"] then
 					selectedset = "total"
 				else
 					selectedset = i
@@ -645,7 +645,7 @@ function Skada:DisplaySets()
 	selectedmode = nil
 	selectedset = nil
 
-	self.bargroup.button:SetText("Skada: Fights")
+	self.bargroup.button:SetText(L["Skada: Fights"])
 	
 	self:UpdateBars()
 end
