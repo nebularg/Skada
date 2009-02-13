@@ -1,6 +1,8 @@
+local L = LibStub("AceLocale-3.0"):GetLocale("Skada", false)
+
 local mod = Skada:NewModule("DeathsMode", "AceEvent-3.0")
 
-mod.name = "Deaths"
+mod.name = L["Deaths"]
 
 function mod:OnEnable()
 	self:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
@@ -13,7 +15,7 @@ function mod:OnDisable()
 end
 
 function mod:AddToTooltip(set, tooltip)
- 	GameTooltip:AddDoubleLine("Deaths:", set.deaths, 1,1,1)
+ 	GameTooltip:AddDoubleLine(L["Deaths:"], set.deaths, 1,1,1)
 end
 
 -- Called by Skada when a new player is added to a set.
@@ -74,7 +76,6 @@ function mod:Update(set)
 		end
 	end
 	
---			self:Print("maxdeaths: "..tostring(maxdamage))
 	-- For each player in the set, see if we have a bar already.
 	-- If so, update values, else create bar.
 	for i, player in ipairs(set.players) do
@@ -83,20 +84,12 @@ function mod:Update(set)
 			if bar then
 				bar:SetMaxValue(maxdeaths)
 				bar:SetValue(player.deaths)
-	--					self:Print("updated "..player.name.." to "..tostring(player.damage))
 			else
 				bar = Skada:CreateBar(tostring(player.id), player.name, player.deaths, maxdeaths, nil, false)
 				bar:EnableMouse()
 				bar:SetScript("OnMouseDown", function(bar, button) if button == "RightButton" then Skada:RightClick() end end)
-				local color = Skada.classcolors[player.class]
-				if color then
-					bar:SetColorAt(0, color.r, color.g, color.b, color.a)
-				else
-					color = Skada:GetDefaultBarColor()
-					bar:SetColorAt(0, color.r, color.g, color.b, color.a)
-				end
-				
-	--					self:Print("created "..player.name.." at "..tostring(player.damage))
+				local color = Skada.classcolors[player.class] or Skada:GetDefaultBarColor()
+				bar:SetColorAt(0, color.r, color.g, color.b, color.a)
 			end
 			bar:SetTimerLabel(tostring(player.deaths))
 		end
