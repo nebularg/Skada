@@ -160,7 +160,7 @@ function mod:Update(set)
 					bar:SetScript("OnMouseDown", function(bar, button)
 													if button == "LeftButton" then
 														auramod.playerid = player.id
-														auramod.name = player.name.."'s Debuffs"
+														auramod.name = player.name..L["'s Debuffs"]
 														Skada:DisplayMode(auramod)
 													elseif button == "RightButton" then
 														Skada:RightClick()
@@ -224,7 +224,7 @@ function auramod:Update(set)
 					bar:ShowIcon()
 				end
 			end
-			bar:SetTimerLabel(("%02.1f%%)"):format(uptime / maxtime * 100))
+			bar:SetTimerLabel(("(%02.1f%%)"):format(uptime / maxtime * 100))
 			
 		end
 	end
