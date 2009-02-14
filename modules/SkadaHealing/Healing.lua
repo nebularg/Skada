@@ -21,7 +21,7 @@ function mod:AddToTooltip(set, tooltip)
 		endtime = time()
 	end
 	local raidhps = set.healing / (endtime - set.starttime + 1)
- 	GameTooltip:AddDoubleLine(L["HPS"], ("%02.1f"):format(raidhps), 1,1,1)
+ 	GameTooltip:AddDoubleLine(L["HPS:"], ("%02.1f"):format(raidhps), 1,1,1)
 end
 
 -- Called by Skada when a new player is added to a set.
