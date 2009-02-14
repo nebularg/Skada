@@ -166,14 +166,8 @@ function mod:Update(set)
 														Skada:RightClick()
 													end
 												end)
-					local color = Skada.classcolors[player.class]
-					if color then
-						bar:SetColorAt(0, color.r, color.g, color.b, color.a)
-					else
-						color = Skada:GetDefaultBarColor()
-						bar:SetColorAt(0, color.r, color.g, color.b, color.a)
-					end
-					
+					local color = Skada.classcolors[player.class] or Skada:GetDefaultBarColor()
+					bar:SetColorAt(0, color.r, color.g, color.b, color.a)
 				end
 				bar:SetTimerLabel(("%02.1f%% / %u"):format(uptime / maxtime * 100, nr))
 			end
