@@ -115,7 +115,9 @@ function Skada:Report()
 		
 		-- For each active bar, print label and timer value.
 		for name, bar in pairs(self:GetBars()) do
-			SendChatMessage(("%s   %s"):format(bar:GetLabel(), bar:GetTimerLabel()))
+			if bar:IsShown() then -- Do not show bars not shown (due to maxbars limit).
+				SendChatMessage(("%s   %s"):format(bar:GetLabel(), bar:GetTimerLabel()))
+			end
 		end
 	end
 end
