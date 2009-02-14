@@ -55,6 +55,8 @@ L["reports the active mode"] = true
 L["Skada report on %s for %s, %s to %s:"] = true
 L["Only keep boss fighs"] = true
 L["Boss fights will be kept with this on, and non-boss fights are discarded."] = true
+L["Show raw threat"] = true
+L["Shows raw threat percentage relative to tank instead of modified for range."] = true
 
 -- SkadaDebuffs
 L["Debuff uptimes"] = true

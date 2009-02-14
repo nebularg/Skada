@@ -173,17 +173,12 @@ local function CheckPet(unit, pet)
 	local petGUID = UnitGUID(pet)
 	local unitGUID = UnitGUID(unit)
 	local unitName = UnitName(unit)
---	local c, c2 = UnitClass(pet)
-	
---	if c then
---		DEFAULT_CHAT_FRAME:AddMessage("c = "..c..", c2 = "..c2)
---	end
+
 	-- Add to pets if it does not already exist.
 	-- TODO: We have a problem here with stale data. We could remove
 	-- any existing pet when we add one, but this would not work with Mirror Image
 	-- and other effects with multiple pets per player.
 	if petGUID and unitGUID and unitName and not pets[petGUID] then
---DEFAULT_CHAT_FRAME:AddMessage("ahaa! "..petGUID.." belong to "..unitGUID..", "..unitName)
 		pets[petGUID] = {id = unitGUID, name = unitName}
 	end
 end
@@ -454,7 +449,7 @@ function Skada:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID,
 	-- Pet scheme: save the GUID in a table along with the GUID of the owner.
 	-- Note to self: this needs 1) to be made self-cleaning so it can't grow too much, and 2) saved persistently.
 	-- Now also done on raid roster/party changes.
-	if eventtype == 'SPELL_SUMMON' and self:UnitIsInteresting(srcName) then
+	if eventtype == 'SPELL_SUMMON' and self:UnitIsInterestingNoPets(srcName) then
 		pets[dstGUID] = {id = srcGUID, name = srcName}
 	end
 
