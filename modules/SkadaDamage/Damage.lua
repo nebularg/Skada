@@ -93,9 +93,6 @@ function mod:log_damage(set, dmg)
 			if dmg.crushing then
 				spell.crushing = spell.crushing + dmg.crushing
 			end
-	
-			-- Mark set as changed.
-			set.changed = true
 		end
 	end
 end

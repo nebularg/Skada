@@ -30,6 +30,9 @@ local modes = {}
 -- Pets; an array of pets and their owners.
 local pets = {}
 
+-- Flag marking if we need an update.
+local changed = true
+
 function Skada:OnInitialize()
 	-- Register some SharedMedia goodies.
 	media:Register("font", "Adventure",				[[Interface\Addons\Skada\fonts\Adventure.ttf]])
@@ -186,7 +189,6 @@ local function CheckPet(unit, pet)
 end
 
 function Skada:CheckPets()
---DEFAULT_CHAT_FRAME:AddMessage("checking out pets")
 	if GetNumRaidMembers() > 0 then
 		-- In raid.
 		for i = 1, GetNumRaidMembers(), 1 do
@@ -304,10 +306,7 @@ function Skada:Tick()
 		end
 		
 		self:RemoveAllBars()
-		local set = self:get_selected_set()
-		if set then
-			set.changed = 1
-		end
+		changed = true
 		self:UpdateBars()
 		
 		-- Auto-switch back to previous set/mode.
@@ -340,7 +339,7 @@ function Skada:PLAYER_REGEN_DISABLED()
 		self:RemoveAllBars()
 		
 		-- Create a new current set.
-		current = {players = {}, name = L["Current"], starttime = time(), changed = true}
+		current = {players = {}, name = L["Current"], starttime = time()}
 
 		-- Tell each mode to apply its needed attributes.
 		for i, mode in ipairs(modes) do
@@ -351,7 +350,7 @@ function Skada:PLAYER_REGEN_DISABLED()
 
 		-- Also start the total set if it is nil.
 		if total == nil then
-			total = {players = {}, name = L["Total"], starttime = time(), changed = true}
+			total = {players = {}, name = L["Total"], starttime = time()}
 			
 			-- Tell each mode to apply its needed attributes.
 			for i, mode in ipairs(modes) do
@@ -400,10 +399,7 @@ function Skada:RestoreView(theset, themode)
 	end
 	
 	-- Force an update.
-	local set = self:get_selected_set()
-	if set then
-		set.changed = true
-	end
+	changed = true
 	
 	-- Find the mode. The mode may not actually be available.
 	if themode then
@@ -425,6 +421,7 @@ function Skada:RestoreView(theset, themode)
 	end
 end
 
+-- Returns a player from the current.
 function Skada:get_player(set, playerid, playername)
 	-- Add player to set if it does not exist.
 	local player = nil
@@ -452,7 +449,6 @@ function Skada:get_player(set, playerid, playername)
 	return player
 end
 
-
 function Skada:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
 	-- Pet summons.
 	-- Pet scheme: save the GUID in a table along with the GUID of the owner.
@@ -465,13 +461,19 @@ function Skada:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID,
 	if current and dstName and UnitClassification(dstName) == "worldboss" then
 		current.gotboss = true
 	end
-
+	
 	-- This line will determine if the src player is being tracked.
 	if current and srcName and self:UnitIsInteresting(srcName) then
 		-- Store mob name for set name. For now, just save first name available, or if mob is a boss, re-save.
 		if dstName and not UnitIsFriend("player",dstName) and (current.mobname == nil or UnitClassification(dstName) == "worldboss") then
 			current.mobname = dstName
 		end
+		
+	end
+	
+	-- If we are active, and something happens to or by an interesting unit, mark as changed so we update our window.
+	if current and srcName and (self:UnitIsInteresting(srcName) or self:UnitIsInteresting(srcName)) then
+		changed = true
 	end
 end
 
@@ -535,17 +537,18 @@ Skada.classcolors = {
 }
 
 function Skada:UpdateBars()
+	if not changed then
+		return
+	end
+
 	if selectedmode then
 
 		local set = self:get_selected_set()
 		
-		-- If we have a set and this set has been changed since our last update, go on.
-		if set and set.changed then
+		-- If we have a set, go on.
+		if set then
 			-- Let mode handle the rest.
 			selectedmode:Update(set)
-			
-			-- Mark set as unchanged.
-			set.changed = false
 		end
 		
 	elseif selectedset then
@@ -553,8 +556,7 @@ function Skada:UpdateBars()
 		for i, mode in ipairs(modes) do
 			local bar = self.bargroup:GetBar(mode.name)
 			if not bar then
---				self:Print("mode "..mode.name.." not found; creating")
-				bar = self.bargroup:NewCounterBar(mode.name, mode.name, 1, 1, nil, false)
+				local bar = self:CreateBar(mode.name, mode.name, 1, 1, nil, false)
 				bar:SetColorAt(0,self.db.profile.barcolor.r,self.db.profile.barcolor.g,self.db.profile.barcolor.b, self.db.profile.barcolor.a)
 				bar:EnableMouse(true)
 				bar:SetScript("OnMouseDown", function(bar, button) if button == "LeftButton" then Skada:DisplayMode(mode) elseif button == "RightButton" then Skada:RightClick() end end)
@@ -563,21 +565,17 @@ function Skada:UpdateBars()
 		
 	else
 		-- View available sets.
-		local bar = self.bargroup:GetBar(L["Total"])
-		if bar then
-			-- Potentially update name or something
-		else
-			bar = self.bargroup:NewCounterBar("total", L["Total"], 1, 1, nil, false)
+		local bar = self:GetBar("total")
+		if not bar then
+			local bar = self:CreateBar("total", L["Total"], 1, 1, nil, false)
 			bar:SetColorAt(0,self.db.profile.barcolor.r,self.db.profile.barcolor.g,self.db.profile.barcolor.b, self.db.profile.barcolor.a)
 			bar:EnableMouse(true)
 			bar:SetScript("OnMouseDown", function(bar, button) if button == "LeftButton" then Skada:DisplayModes("total") elseif button == "RightButton" then Skada:RightClick() end end)
 		end
 
-		local bar = self.bargroup:GetBar(L["Current"])
-		if bar then
-			-- Potentially update name or something
-		else
-			bar = self.bargroup:NewCounterBar("current", L["Current"], 1, 1, nil, false)
+		local bar = self:GetBar("current")
+		if not bar then
+			local bar = self:CreateBar("current", L["Current"], 1, 1, nil, false)
 			bar:SetColorAt(0,self.db.profile.barcolor.r,self.db.profile.barcolor.g,self.db.profile.barcolor.b, self.db.profile.barcolor.a)
 			bar:EnableMouse(true)
 			bar:SetScript("OnMouseDown", function(bar, button) if button == "LeftButton" then Skada:DisplayModes("current") elseif button == "RightButton" then Skada:RightClick() end end)
@@ -585,11 +583,9 @@ function Skada:UpdateBars()
 
 		for i, set in ipairs(sets) do
 		
-			local bar = self.bargroup:GetBar(tostring(set.starttime))
-			if bar then
-				-- Potentially update name or something
-			else
-				bar = self.bargroup:NewCounterBar(tostring(set.starttime), set.name, 1, 1, nil, false)
+			local bar = self:GetBar(tostring(set.starttime))
+			if not bar then
+				local bar = self:CreateBar(tostring(set.starttime), set.name, 1, 1, nil, false)
 				bar:SetTimerLabel(date("%H:%M",set.starttime).." - "..date("%H:%M",set.endtime))
 				bar:SetColorAt(0,self.db.profile.barcolor.r,self.db.profile.barcolor.g,self.db.profile.barcolor.b, self.db.profile.barcolor.a)
 				bar:EnableMouse(true)
@@ -598,6 +594,9 @@ function Skada:UpdateBars()
 			
 		end
 	end
+	
+	-- Mark as unchanged.
+	changed = false
 end
 
 function Skada:GetModes()
@@ -619,12 +618,7 @@ function Skada:DisplayMode(mode)
 
 	self.bargroup.button:SetText(mode.name)
 
-	-- Force re-display
-	local set = self:get_selected_set()
-	if set then
-		set.changed = true
-	end
-
+	changed = true
 	self:UpdateBars()
 end
 
@@ -657,6 +651,7 @@ function Skada:DisplayModes(settime)
 		
 	end
 
+	changed = true
 	self:UpdateBars()
 end
 
@@ -671,6 +666,7 @@ function Skada:DisplaySets()
 
 	self.bargroup.button:SetText(L["Skada: Fights"])
 	
+	changed = true
 	self:UpdateBars()
 end
 
