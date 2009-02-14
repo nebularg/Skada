@@ -1,5 +1,7 @@
 local L = LibStub("AceLocale-3.0"):NewLocale("Skada", "enUS", true)
 
+if not L then return end
+
 L["Disable"] = true
 L["Profiles"] = true
 L["Hint: Left-Click to toggle Skada window."] = true
@@ -48,6 +50,10 @@ L["Return after combat"] = true
 L["Return to the previous set and mode after combat ends."] = true
 L["Show minimap button"] = true
 L["Toggles showing the minimap button."] = true
+
+L["reports the active mode"] = true
+
+L["Skada report on %s for %s, %s to %s:"] = true
 
 -- SkadaDebuffs
 L["Debuff uptimes"] = true

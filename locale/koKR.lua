@@ -1,5 +1,7 @@
 local L = LibStub("AceLocale-3.0"):NewLocale("Skada", "koKR", false)
 
+if not L then return end
+
 L["Disable"] = "비활성화"
 L["Profiles"] = "프로필"
 L["Hint: Left-Click to toggle Skada window."] = "힌트:\n좌-클릭으로 Skada 창을 전환합니다."

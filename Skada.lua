@@ -91,12 +91,32 @@ function Skada:Command(param)
 		self:PetDebug()
 	elseif param == "reset" then
 		self:Reset()
-	elseif param == "" then
+	elseif param == "config" then
 		self:OpenOptions()
+	elseif param == "report" then
+		self:Report()
 	else
 		self:Print("Usage:")
-		self:Print(("%-20s %s"):format("/skada",L["opens the configuration window"]))
-		self:Print(("%-20s %s"):format("/skada reset",L["resets all data"]))
+		self:Print(("%-20s %-s"):format("/skada report",L["reports the active mode"]))
+		self:Print(("%-20s %-s"):format("/skada reset",L["resets all data"]))
+		self:Print(("%-20s %-s"):format("/skada config",L["opens the configuration window"]))
+	end
+end
+
+-- Sends a report of the currently active set and mode to chat. 
+function Skada:Report()
+	local set = self:get_selected_set()
+	local mode = selectedmode
+	
+	if set and mode then
+		-- Title
+		local endtime = set.endtime or time()
+		SendChatMessage(string.format(L["Skada report on %s for %s, %s to %s:"], selectedmode.name, set.name, date("%X",set.starttime), date("%X",endtime)), "SAY")
+		
+		-- For each active bar, print label and timer value.
+		for name, bar in pairs(self:GetBars()) do
+			SendChatMessage(("%s   %s"):format(bar:GetLabel(), bar:GetTimerLabel()))
+		end
 	end
 end
 
@@ -230,9 +250,6 @@ end
 
 function Skada:Reset()
 	self:RemoveAllBars()
-	if set then
-		set.changed = true
-	end
 	
 	if current ~= nil then
 		current = {players = {}, damage = 0, damagetaken = 0, healing = 0, dispells = 0, overhealing = 0, deaths = 0, name = L["Current"], starttime = time()}
@@ -525,7 +542,6 @@ function Skada:UpdateBars()
 		
 	elseif selectedset then
 		-- View available modes.
-
 		for i, mode in ipairs(modes) do
 			local bar = self.bargroup:GetBar(mode.name)
 			if not bar then
@@ -688,6 +704,9 @@ function Skada:AddMode(mode)
 	if mode.name == self.db.profile.mode then
 		self:RestoreView(selectedset, mode.name)
 	end
+	
+	-- Sort modes.
+	table.sort(modes, function(a, b) return a.name < b.name end)
 end
 
 function Skada:RemoveMode(mode)

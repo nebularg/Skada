@@ -273,6 +273,8 @@ function spellmod:Update(set)
 			if spell.missed > 0 then
 				add_detail_bar(L["Missed"], spell.missed, spell.totalhits)
 			end
+			---[[
+			--This bit needs a section of its own somehow. Split the bar display maybe?
 			if spell.resisted > 0 then
 				add_detail_bar(L["Resisted"], spell.resisted, spell.totalhits)
 			end
@@ -285,6 +287,7 @@ function spellmod:Update(set)
 			if spell.absorbed > 0 then
 				add_detail_bar(L["Absorbed"], spell.absorbed, spell.totalhits)
 			end
+			---]]
 		end
 	end
 
