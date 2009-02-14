@@ -19,7 +19,7 @@ L["Current"] = "현재"
 L["Total"] = "전체"
 
 L["All data has been reset."] = "모든 자료가 초기화 되었습니다."
-L["Skada: Modes"] = "Skada: 방식"
+L["Skada: Modes"] = "Skada: 모드"
 L["Skada: Fights"] = "Skada: 전투"
 
 -- Options
@@ -43,13 +43,18 @@ L["Bar orientation"] = "바 진행 방향"
 L["The direction the bars are drawn in."] = "바의 진행 방향입니다."
 L["Left to right"] = "좌에서 우"
 L["Right to left"] = "우에서 좌"
-L["Combat mode"] = "전투 방식"
-L["Automatically switch to set 'Current' and this mode when entering combat."] = "전투 시작시 '현재'전투의 설정한 방식에 따라 자동적으로 전환합니다."
+L["Combat mode"] = "전투 모드"
+L["Automatically switch to set 'Current' and this mode when entering combat."] = "전투 시작시 '현재'전투의 설정한 모드에 따라 자동적으로 전환합니다."
 L["None"] = "없음"
 L["Return after combat"] = "전투 후 돌아가기"
-L["Return to the previous set and mode after combat ends."] = "전투 종료 후에 이전 설정 및 방식으로 돌아갑니다."
+L["Return to the previous set and mode after combat ends."] = "전투 종료 후에 이전 설정 및 모드으로 돌아갑니다."
 L["Show minimap button"] = "미니맵 버튼 표시"
 L["Toggles showing the minimap button."] = "미니맵 버튼 표시를 전환합니다."
+
+L["reports the active mode"] = "활동한 모드 보고"
+L["Skada report on %s for %s, %s to %s:"] = "%s - %s의 Skada 보고, %s ~ %s:"
+L["Only keep boss fighs"] = "보스 전투만 기록"
+L["Boss fights will be kept with this on, and non-boss fights are discarded."] = "보스와의 전투에서만 기록되며, 보스와의 전투가 아니면 기록하지 않습니다."
 
 -- SkadaDebuffs
 L["Debuff uptimes"] = "디버프 지속시간"
