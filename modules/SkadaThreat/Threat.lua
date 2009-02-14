@@ -87,14 +87,8 @@ function mod:Update(set)
 				bar = Skada:CreateBar(player.name, player.name, player.threat, 100, nil, false)
 				bar:EnableMouse()
 				bar:SetScript("OnMouseDown", function(bar, button) if button == "RightButton" then Skada:RightClick() end end)
-				bar:UnsetAllColors()
-				local color = Skada.classcolors[select(2, UnitClass(player.name))]
-				if color then
-					bar:SetColorAt(0, color.r, color.g, color.b, color.a)
-				else
-					color = Skada:GetDefaultBarColor()
-					bar:SetColorAt(0, color.r, color.g, color.b, color.a)
-				end
+				local color = Skada.classcolors[player.class] or Skada:GetDefaultBarColor()
+				bar:SetColorAt(0, color.r, color.g, color.b, color.a)
 			end
 			bar:SetTimerLabel(("%02.1f%%"):format(player.threat).."%")
 			bar.checked = true
