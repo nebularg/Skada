@@ -283,12 +283,14 @@ end
 function Skada:Tick()
 	if current and not InCombatLockdown() and not UnitIsDead("player") then
 	
-		-- Unless this a trivial set
-		if current.mobname ~= nil then
-			-- End current set.
-			current.endtime = time()
-			current.name = current.mobname
-			table.insert(sets, 1, current)
+		-- Save current set unless this a trivial set, or if we have the Only keep boss fights options on, and no boss in fight.
+		if not self.db.profile.onlykeepbosses or current.gotboss then
+			if current.mobname ~= nil then
+				-- End current set.
+				current.endtime = time()
+				current.name = current.mobname
+				table.insert(sets, 1, current)
+			end
 		end
 		
 		-- Reset current set.
@@ -456,6 +458,10 @@ function Skada:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID,
 	-- Now also done on raid roster/party changes.
 	if eventtype == 'SPELL_SUMMON' and self:UnitIsInteresting(srcName) then
 		pets[dstGUID] = {id = srcGUID, name = srcName}
+	end
+
+	if current and dstName and UnitClassification(dstName) == "worldboss" then
+		current.gotboss = true
 	end
 
 	-- This line will determine if the src player is being tracked.

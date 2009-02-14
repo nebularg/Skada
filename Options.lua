@@ -14,6 +14,7 @@ Skada.defaults = {
 		barcolor = {r = 0.41, g = 0.8, b = 0.94, a=1},
 		icon = {},
 		modeincombat="",
+		onlykeepbosses=false,
 		window = {shown = true},
 		returnaftercombat=false,
 		mmbutton=true,
@@ -208,6 +209,14 @@ Skada.options = {
 					        	end,
 					},
 
+					onlykeepbosses = {
+					        type="toggle",
+					        name=L["Only keep boss fighs"],
+					        desc=L["Boss fights will be kept with this on, and non-boss fights are discarded."],
+					        order=23,
+					        get=function() return Skada.db.profile.onlykeepbosses end,
+					        set=function() Skada.db.profile.onlykeepbosses = not Skada.db.profile.onlykeepbosses end,
+					},
 					
 		        },
 	        
