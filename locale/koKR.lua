@@ -55,6 +55,8 @@ L["reports the active mode"] = "활동한 모드 보고"
 L["Skada report on %s for %s, %s to %s:"] = "%s - %s의 Skada 보고, %s ~ %s:"
 L["Only keep boss fighs"] = "보스 전투만 기록"
 L["Boss fights will be kept with this on, and non-boss fights are discarded."] = "보스와의 전투에서만 기록되며, 보스와의 전투가 아니면 기록하지 않습니다."
+L["Show raw threat"] = "기본 위협 표시"
+L["Shows raw threat percentage relative to tank instead of modified for range."] = "탱커 범위에 대한 수정된 퍼센트로 대신하여 표시합니다."
 
 -- SkadaDebuffs
 L["Debuff uptimes"] = "디버프 지속시간"
