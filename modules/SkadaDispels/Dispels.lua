@@ -2,7 +2,7 @@ local L = LibStub("AceLocale-3.0"):GetLocale("Skada", false)
 
 local mod = Skada:NewModule("DispelMode", "AceEvent-3.0")
 
-mod.name = "Dispels"
+mod.name = L["Dispels"]
 
 function mod:OnEnable()
 	self:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")

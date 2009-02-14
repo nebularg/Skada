@@ -37,8 +37,8 @@ Skada.options = {
 				    barfont = {
 				         type = 'select',
 				         dialogControl = 'LSM30_Font',
-				         name = 'Bar font',
-				         desc = 'The font used by all bars.',
+				         name = L["Bar font"],
+				         desc = L["The font used by all bars."],
 				         values = AceGUIWidgetLSMlists.font,
 				         get = function() return Skada.db.profile.barfont end,
 				         set = function(self,key) 
@@ -50,8 +50,8 @@ Skada.options = {
 
 					barfontsize = {
 						type="range",
-						name="Bar font size",
-						desc="The font size of all bars.",
+						name=L["Bar font size"],
+						desc=L["The font size of all bars."],
 						min=7,
 						max=40,
 						step=1,
@@ -66,8 +66,8 @@ Skada.options = {
 				    bartexture = {
 				         type = 'select',
 				         dialogControl = 'LSM30_Statusbar',
-				         name = 'Bar texture',
-				         desc = 'The texture used by all bars.',
+				         name = L["Bar texture"],
+				         desc = L["The texture used by all bars."],
 				         values = AceGUIWidgetLSMlists.statusbar,
 				         get = function() return Skada.db.profile.bartexture end,
 				         set = function(self,key)
@@ -79,8 +79,8 @@ Skada.options = {
 
 					barspacing = {
 						type="range",
-						name="Bar spacing",
-						desc="Distance between bars.",
+						name=L["Bar spacing"],
+						desc=L["Distance between bars."],
 						min=0,
 						max=10,
 						step=1,
@@ -94,8 +94,8 @@ Skada.options = {
 
 					barheight = {
 						type="range",
-						name="Bar height",
-						desc="The height of the bars.",
+						name=L["Bar height"],
+						desc=L["The height of the bars."],
 						min=10,
 						max=40,
 						step=1,
@@ -109,8 +109,8 @@ Skada.options = {
 					
 					barwidth = {
 						type="range",
-						name="Bar width",
-						desc="The width of the bars.",
+						name=L["Bar width"],
+						desc=L["The width of the bars."],
 						min=80,
 						max=400,
 						step=1,
@@ -124,8 +124,8 @@ Skada.options = {
 															
 					color = {
 						type="color",
-						name="Bar color",
-						desc="Choose the default color of the bars.",
+						name=L["Bar color"],
+						desc=L["Choose the default color of the bars."],
 						get=function(i) 
 								local c = Skada.db.profile.barcolor
 								return c.r, c.g, c.b, a
@@ -139,8 +139,8 @@ Skada.options = {
 
 					barmax = {
 						type="range",
-						name="Max bars",
-						desc="The maximum number of bars shown.",
+						name=L["Max bars"],
+						desc=L["The maximum number of bars shown."],
 						min=0,
 						max=100,
 						step=1,
@@ -154,9 +154,9 @@ Skada.options = {
 
 					barorientation = {
 						type="select",
-						name="Bar orientation",
-						desc="The direction the bars are drawn in.",
-						values=	function() return {[1] = "Left to right", [3] = "Right to left"} end,
+						name=L["Bar orientation"],
+						desc=L["The direction the bars are drawn in."],
+						values=	function() return {[1] = L["Left to right"], [3] = L["Right to left"]} end,
 						get=function() return Skada.db.profile.barorientation end,
 						set=function(self, orientation)
 								Skada.db.profile.barorientation = orientation
@@ -169,11 +169,11 @@ Skada.options = {
 					
 					modeincombat = {
 						type="select",
-						name="Combat mode",
-						desc="Automatically switch to set 'Current' and this mode when entering combat.",
+						name=L["Combat mode"],
+						desc=L["Automatically switch to set 'Current' and this mode when entering combat."],
 						values=	function()
 									local modes = {}
-									modes[""] = "None"
+									modes[""] = L["None"]
 									for i, mode in ipairs(Skada:GetModes()) do
 										modes[mode.name] = mode.name
 									end
@@ -188,8 +188,8 @@ Skada.options = {
 					
 					returnaftercombat = {
 						type="toggle",
-	                	name="Return after combat",
-               			desc="Return to the previous set and mode after combat ends.",
+	                	name=L["Return after combat"],
+               			desc=L["Return to the previous set and mode after combat ends."],
 		                order=22,
        			        get=function() return Skada.db.profile.returnaftercombat end,
            			    set=function() Skada.db.profile.returnaftercombat = not Skada.db.profile.returnaftercombat end,
@@ -198,8 +198,8 @@ Skada.options = {
 					
 					mmbutton = {
 					        type="toggle",
-					        name="Show minimap button",
-					        desc="Toggles showing the minimap button.",
+					        name=L["Show minimap button"],
+					        desc=L["Toggles showing the minimap button."],
 					        order=23,
 					        get=function() return Skada.db.profile.mmbutton end,
 					        set=function()

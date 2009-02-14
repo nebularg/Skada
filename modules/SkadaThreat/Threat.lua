@@ -1,7 +1,9 @@
+local L = LibStub("AceLocale-3.0"):GetLocale("Skada", false)
+
 -- This mode is a bit special.
 local mod = Skada:NewModule("ThreatMode")
 
-mod.name = "Threat"
+mod.name = L["Threat"]
 
 function mod:OnEnable()
 	-- Listen for target changes

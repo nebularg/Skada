@@ -88,3 +88,6 @@ L["Healing"] = true
 L["HPS:"] = true
 L["'s Healing"] = true
 L["Overhealing"] = true
+
+-- SkadaThreat
+L["Threat"] = true

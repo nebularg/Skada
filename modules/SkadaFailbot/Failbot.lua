@@ -6,7 +6,7 @@ local playermod = Skada:NewModule("FailbotModePlayerView")
 local fail = LibStub("LibFail-1.0")
 local fail_events = fail:GetSupportedEvents()
 
-mod.name = "Fails"
+mod.name = L["Fails"]
 
 function mod:OnEnable()
 	Skada:AddMode(self)
@@ -17,7 +17,7 @@ function mod:OnDisable()
 end
 
 function mod:AddToTooltip(set, tooltip)
- 	GameTooltip:AddDoubleLine("Fails:", set.fails, 1,1,1)
+ 	GameTooltip:AddDoubleLine(L["Fails:"], set.fails, 1,1,1)
 end
 
 -- Called by Skada when a new player is added to a set.

@@ -3,7 +3,7 @@ local L = LibStub("AceLocale-3.0"):GetLocale("Skada", false)
 local mod = Skada:NewModule("HealingMode", "AceEvent-3.0")
 local playermod = Skada:NewModule("HealingModePlayerView")
 
-mod.name = "Healing"
+mod.name = L["Healing"]
 
 function mod:OnEnable()
 	self:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
@@ -21,7 +21,7 @@ function mod:AddToTooltip(set, tooltip)
 		endtime = time()
 	end
 	local raidhps = set.healing / (endtime - set.starttime + 1)
- 	GameTooltip:AddDoubleLine("HPS", ("%02.1f"):format(raidhps), 1,1,1)
+ 	GameTooltip:AddDoubleLine(L["HPS"], ("%02.1f"):format(raidhps), 1,1,1)
 end
 
 -- Called by Skada when a new player is added to a set.
