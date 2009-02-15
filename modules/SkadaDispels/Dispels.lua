@@ -15,7 +15,7 @@ function mod:OnDisable()
 end
 
 function mod:AddToTooltip(set, tooltip)
- 	GameTooltip:AddDoubleLine("Dispels:", set.dispells, 1,1,1)
+ 	GameTooltip:AddDoubleLine(L["Dispels:"], set.dispells, 1,1,1)
 end
 
 -- Called by Skada when a new player is added to a set.
