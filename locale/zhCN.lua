@@ -8,7 +8,7 @@ L["Hint: Left-Click to toggle Skada window."] = "左键点击打开窗口"
 L["Shift + Left-Click to reset."] = "Shift+左键点击重置"
 L["Right-click to configure"] = "右键点击配置"
 L["Options"] = "选项"
-L["Appearance"] = "环境"
+L["Appearance"] = "外观"
 L["A damage meter."] = "伤害统计"
 L["Skada summary"] = "Skada概要"
 
@@ -51,6 +51,11 @@ L["Return to the previous set and mode after combat ends."] = "当战斗结束�
 L["Show minimap button"] = "显示小地图按钮"
 L["Toggles showing the minimap button."] = "显示/隐藏小地图按钮"
 
+L["reports the active mode"] = "报告当前的模式"
+L["Skada report on %s for %s, %s to %s:"] = "Skada报告%s的%s, %s到%s:"
+L["Only keep boss fighs"] = "只保留Boss战"
+L["Boss fights will be kept with this on, and non-boss fights are discarded."] = "只保留Boss战的纪录, 非Boss战的纪录将被丢弃."
+
 -- SkadaDebuffs
 L["Debuff uptimes"] = "减益效果持续时间"
 L["'s Debuffs"] = "的减益效果"
@@ -92,4 +97,4 @@ L["'s Healing"] = "的治疗"
 L["Overhealing"] = "过量治疗"
 
 -- SkadaThreat
-L["Threat"] = "仇恨"
+L["Threat"] = "仇恨值"
