@@ -1,10 +1,12 @@
 local L = LibStub("AceLocale-3.0"):GetLocale("Skada", false)
 
 local mod = Skada:NewModule("DamageMode", "AceEvent-3.0")
+local dpsmod = Skada:NewModule("DPSMode", "AceEvent-3.0")
 local playermod = Skada:NewModule("DamageModePlayerView")
 local spellmod = Skada:NewModule("DamageModeSpellView")
 
 mod.name = L["Damage"]
+dpsmod.name = L["DPS"]
 
 function mod:OnEnable()
 	self:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
@@ -15,13 +17,26 @@ function mod:OnDisable()
 	Skada:RemoveMode(self)
 end
 
+function dpsmod:OnEnable()
+	Skada:AddMode(self)
+end
+
+function dpsmod:OnDisable()
+	Skada:RemoveMode(self)
+end
+
 function mod:AddToTooltip(set, tooltip)
-	local endtime = set.endtime
-	if not endtime then
-		endtime = time()
+	if set.time > 0 then
+		local raiddps = set.damage / math.max(1, set.time)
+	 	GameTooltip:AddDoubleLine(L["DPS"], ("%02.1f"):format(raiddps), 1,1,1)
+	else
+		local endtime = set.endtime
+		if not endtime then
+			endtime = time()
+		end
+		local raiddps = set.damage / math.max(1, endtime - set.starttime)
+	 	GameTooltip:AddDoubleLine(L["DPS"], ("%02.1f"):format(raiddps), 1,1,1)
 	end
-	local raiddps = set.damage / (endtime - set.starttime + 1)
- 	GameTooltip:AddDoubleLine(L["DPS"], ("%02.1f"):format(raiddps), 1,1,1)
 end
 
 -- Called by Skada when a new player is added to a set.
@@ -145,6 +160,22 @@ function mod:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID, s
 
 end
 
+local function getDPS(set, player)
+	local totaltime = 0
+	
+	-- Add recorded time (for total set)
+	if player.time > 0 then
+		totaltime = player.time
+	end
+	
+	-- Add in-progress time if set is not ended.
+	if not set.endtime and player.first then
+		totaltime = totaltime + math.max(0,player.last - player.first)
+	end
+
+	return player.damage / totaltime
+end
+
 function mod:Update(set)
 	-- Calculate the highest damage.
 	-- How to get rid of this iteration?
@@ -184,7 +215,7 @@ function mod:Update(set)
 				bar:SetColorAt(0, color.r, color.g, color.b, color.a)
 			end
 			bar:SetLabel(("%2u. %s"):format(i, player.name))
-			local dps = player.damage / (player.last - player.first + 1)
+			local dps = getDPS(set, player)
 			bar:SetTimerLabel(Skada:FormatNumber(player.damage)..(" (%02.1f, %02.1f%%)"):format(dps, player.damage / set.damage * 100))
 		end
 		
@@ -289,3 +320,56 @@ function spellmod:Update(set)
 	end
 
 end
+
+-- DPS-only view
+-- Adds a "dps" field to all players; bit lame, but hey.
+function dpsmod:Update(set)
+	-- Calculate the highest damage.
+	-- How to get rid of this iteration?
+	local maxdps = 0
+	for i, player in ipairs(set.players) do
+		player.dps = getDPS(set, player)
+		if player.dps > maxdps then
+			maxdps = player.dps
+		end
+	end
+	
+	-- Sort players according to dps.
+	table.sort(set.players, function(a,b) return a.dps > b.dps end)
+
+	-- For each player in the set, see if we have a bar already.
+	-- If so, update values, else create bar.
+	for i, player in ipairs(set.players) do
+		if player.dps > 0 then
+			--Skada:Print("found "..player.name)
+			local bar = Skada:GetBar(tostring(player.id))
+			if bar then
+				bar:SetMaxValue(maxdps)
+				bar:SetValue(player.dps)
+			else
+				bar = Skada:CreateBar(tostring(player.id), ("%2u. %s"):format(i, player.name), player.dps, maxdps, nil, false)
+				bar:EnableMouse()
+				bar.playername = player.name
+				bar:SetScript("OnMouseDown",function(bar, button)
+												if button == "LeftButton" then
+													playermod.name = player.name..L["'s Damage"]
+													playermod.playerid = player.id
+													Skada:DisplayMode(playermod)
+												elseif button == "RightButton" then
+													Skada:RightClick()
+												end
+											end)
+				local color = Skada.classcolors[player.class] or Skada:GetDefaultBarColor()
+				bar:SetColorAt(0, color.r, color.g, color.b, color.a)
+			end
+			bar:SetLabel(("%2u. %s"):format(i, player.name))
+			bar:SetTimerLabel(("%02.1f"):format(player.dps))
+		end
+		
+	end
+	
+	-- Sort the possibly changed bars.
+	Skada:SortBars()
+end
+
+
