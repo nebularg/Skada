@@ -247,14 +247,27 @@ function Skada:ToggleWindow()
 	end
 end
 
+local function createSet(setname)
+	local set = {players = {}, name = setname, starttime = time(), ["time"] = 0}
+
+	-- Tell each mode to apply its needed attributes.
+	for i, mode in ipairs(modes) do
+		if mode.AddSetAttributes ~= nil then
+			mode:AddSetAttributes(set)
+		end
+	end
+
+	return set
+end
+
 function Skada:Reset()
 	self:RemoveAllBars()
 	
 	if current ~= nil then
-		current = {players = {}, damage = 0, damagetaken = 0, healing = 0, dispells = 0, overhealing = 0, deaths = 0, name = L["Current"], starttime = time()}
+		current = createSet(L["Current"])
 	end
 	if total ~= nil then
-		total = {players = {}, damage = 0, damagetaken = 0, healing = 0, dispells = 0, overhealing = 0, deaths = 0, name = L["Total"], starttime = time()}
+		total = createSet(L["Total"])
 	end
 	
 	sets = {}
@@ -274,6 +287,21 @@ function Skada:ApplySettings()
 	self.bargroup:SetColorAt(0,self.db.profile.barcolor.r,self.db.profile.barcolor.g,self.db.profile.barcolor.b, self.db.profile.barcolor.a)
 	self.bargroup:SetMaxBars(self.db.profile.barmax)
 	self.bargroup:SortBars()
+	if self.db.profile.barslocked then
+		self.bargroup:Lock()
+	else
+		self.bargroup:Unlock()
+	end	
+end
+
+-- Iterates over all players in a set and adds to the "time" variable
+-- the time between first and last action.
+local function setPlayerActiveTimes(set)
+	for i, player in ipairs(set.players) do
+		if player.last then
+			player.time = player.time + (player.last - player.first)
+		end
+	end
 end
 
 -- Our scheme for segmenting fights:
@@ -287,9 +315,23 @@ function Skada:Tick()
 			if current.mobname ~= nil then
 				-- End current set.
 				current.endtime = time()
+				current.time = current.endtime - current.starttime
+				setPlayerActiveTimes(current)
 				current.name = current.mobname
 				table.insert(sets, 1, current)
 			end
+		end
+		
+		-- Add time spent to total set as well.
+		total.time = total.time + current.time
+		setPlayerActiveTimes(total)
+		
+		-- Set player.first and player.last to nil in total set.
+		-- Neccessary since first and last has no relevance over an entire raid.
+		-- Modes should look at the "time" value if available.
+		for i, player in ipairs(total.players) do
+			player.first = nil
+			player.last = nil
 		end
 		
 		-- Reset current set.
@@ -334,25 +376,11 @@ function Skada:PLAYER_REGEN_DISABLED()
 		self:RemoveAllBars()
 		
 		-- Create a new current set.
-		current = {players = {}, name = L["Current"], starttime = time()}
-
-		-- Tell each mode to apply its needed attributes.
-		for i, mode in ipairs(modes) do
-			if mode.AddSetAttributes ~= nil then
-				mode:AddSetAttributes(current)
-			end
-		end
+		current = createSet(L["Current"])
 
 		-- Also start the total set if it is nil.
 		if total == nil then
-			total = {players = {}, name = L["Total"], starttime = time()}
-			
-			-- Tell each mode to apply its needed attributes.
-			for i, mode in ipairs(modes) do
-				if mode.AddSetAttributes ~= nil then
-					mode:AddSetAttributes(total)
-				end
-			end
+			total = createSet(L["Total"])
 		end
 		
 		-- Auto-switch set/mode if configured.
@@ -427,7 +455,7 @@ function Skada:get_player(set, playerid, playername)
 	end
 	
 	if not player then
-		player = {id = playerid, class = select(2, UnitClass(playername)), name = playername, first = time()}
+		player = {id = playerid, class = select(2, UnitClass(playername)), name = playername, first = time(), ["time"] = 0}
 		
 		-- Tell each mode to apply its needed attributes.
 		for i, mode in ipairs(modes) do
@@ -437,6 +465,11 @@ function Skada:get_player(set, playerid, playername)
 		end
 		
 		table.insert(set.players, player)
+	end
+	
+	-- The total set clears out first and last timestamps.
+	if not player.first then
+		player.first = time()
 	end
 	
 	-- Mark now as the last time player did something worthwhile.

@@ -58,6 +58,9 @@ L["Boss fights will be kept with this on, and non-boss fights are discarded."] =
 L["Show raw threat"] = true
 L["Shows raw threat percentage relative to tank instead of modified for range."] = true
 
+L["Lock window"] = true
+L["Locks the bar window in place."] = true
+
 -- SkadaDebuffs
 L["Debuff uptimes"] = true
 L["'s Debuffs"] = true
