@@ -60,6 +60,8 @@ L["Shows raw threat percentage relative to tank instead of modified for range."]
 
 L["Lock window"] = true
 L["Locks the bar window in place."] = true
+L["Reverse bar growth"] = true
+L["Bars will grow up instead of down."] = true
 
 -- SkadaDebuffs
 L["Debuff uptimes"] = true

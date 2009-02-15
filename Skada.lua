@@ -277,6 +277,7 @@ end
 
 -- Applies settings to things like the bar window.
 function Skada:ApplySettings()
+	self.bargroup:ReverseGrowth(self.db.profile.reversegrowth)
 	self.bargroup:SetOrientation(self.db.profile.barorientation)
 	self.bargroup:SetHeight(self.db.profile.barheight)
 	self.bargroup:SetWidth(self.db.profile.barwidth)

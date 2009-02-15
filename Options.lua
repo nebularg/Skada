@@ -13,6 +13,7 @@ Skada.defaults = {
 		barorientation=1,
 		barcolor = {r = 0.41, g = 0.8, b = 0.94, a=1},
 		barslocked=false,
+		reversegrowth=false,
 		icon = {},
 		modeincombat="",
 		onlykeepbosses=false,
@@ -166,7 +167,31 @@ Skada.options = {
 							end,
 						order=17,
 					},
-										
+					
+					barslocked = {
+					        type="toggle",
+					        name=L["Lock window"],
+					        desc=L["Locks the bar window in place."],
+					        order=24,
+					        get=function() return Skada.db.profile.barslocked end,
+					        set=function() 
+					        		Skada.db.profile.barslocked = not Skada.db.profile.barslocked
+				         			Skada:ApplySettings()
+					        	end,
+					},
+
+					reversegrowth = {
+					        type="toggle",
+					        name=L["Reverse bar growth"],
+					        desc=L["Bars will grow up instead of down."],
+					        order=23,
+					        get=function() return Skada.db.profile.reversegrowth end,
+					        set=function() 
+					        		Skada.db.profile.reversegrowth = not Skada.db.profile.reversegrowth
+				         			Skada:ApplySettings()
+					        	end,
+					},
+															
 					hdrcd = {order=20, type="header", name=L["Options"]},
 					
 					modeincombat = {
@@ -219,18 +244,7 @@ Skada.options = {
 					        set=function() Skada.db.profile.onlykeepbosses = not Skada.db.profile.onlykeepbosses end,
 					},
 					
-					barslocked = {
-					        type="toggle",
-					        name=L["Lock window"],
-					        desc=L["Locks the bar window in place."],
-					        order=23,
-					        get=function() return Skada.db.profile.barslocked end,
-					        set=function() 
-					        		Skada.db.profile.barslocked = not Skada.db.profile.barslocked
-				         			Skada:ApplySettings()
-					        	end,
-					},
-										
+															
 		        },
 	        
 	        
