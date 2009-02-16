@@ -132,7 +132,7 @@ function mod:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID, s
 			-- White melee.
 			if not UnitIsUnit(srcName, dstName) then
 				local samount, soverkill, sschool, sresisted, sblocked, sabsorbed, scritical, sglancing, scrushing = ...
-				local dmg = {playerid = srcGUID, playername = srcName, spellid = 6603, spellname = "Attack", amount = samount, overkill = soverkill, resisted = sresisted, blocked = sblocked, absorbed = sabsorbed, critical = scritical, glancing = sglancing, crushing = scrushing}
+				local dmg = {playerid = srcGUID, playername = srcName, spellid = 6603, spellname = L["Attack"], amount = samount, overkill = soverkill, resisted = sresisted, blocked = sblocked, absorbed = sabsorbed, critical = scritical, glancing = sglancing, crushing = scrushing}
 	
 				Skada:FixPets(dmg)
 				self:log_damage(current, dmg)
@@ -140,7 +140,7 @@ function mod:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID, s
 			end
 		elseif eventtype == 'SWING_MISSED' then
 			-- Melee misses
-			local dmg = {playerid = srcGUID, playername = srcName, spellid = 6603, spellname = "Attack", amount = 0, overkill = 0, resisted = 0, blocked = 0, absorbed = 0, critical = 0, glancing = 0, crushing = 0, missed = 1}
+			local dmg = {playerid = srcGUID, playername = srcName, spellid = 6603, spellname = L["Attack"], amount = 0, overkill = 0, resisted = 0, blocked = 0, absorbed = 0, critical = 0, glancing = 0, crushing = 0, missed = 1}
 			
 			Skada:FixPets(dmg)
 			self:log_damage(current, dmg)
