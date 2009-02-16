@@ -106,7 +106,7 @@ function mod:Update(set)
 	-- For each bar, mark bar as unchecked.
 	local bars = Skada:GetBars()
 	if bars then
-		for i, bar in ipairs(bars) do
+		for name, bar in pairs(bars) do
 			bar.checked = false
 		end
 	end
@@ -137,7 +137,7 @@ function mod:Update(set)
 	
 	-- Remove all unchecked bars.
 	if bars then
-		for i, bar in ipairs(bars) do
+		for name, bar in pairs(bars) do
 			if not bar.checked then
 				Skada:RemoveBar(bar)
 			end
