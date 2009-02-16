@@ -43,7 +43,7 @@ local function onFail(event, who, fatal)
 	-- for these things.
 	if Skada:GetCurrentSet() then
 		local unitGUID = UnitGUID(who)
-		local player = Skada:get_player(Skada.GetCurrentSet(), unitGUID, who)
+		local player = Skada:get_player(Skada:GetCurrentSet(), unitGUID, who)
 		player.fails = player.fails + 1
 		
 		if player.failevents[event] then
@@ -55,7 +55,7 @@ local function onFail(event, who, fatal)
 	
 	if Skada:GetTotalSet() then
 		local unitGUID = UnitGUID(who)
-		local player = Skada:get_player(Skada.GetCurrentSet(), unitGUID, who)
+		local player = Skada:get_player(Skada:GetTotalSet(), unitGUID, who)
 		player.fails = player.fails + 1
 	
 		if player.failevents[event] then
