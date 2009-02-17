@@ -26,6 +26,9 @@ Skada.defaults = {
 		mmbutton=true,
 		set = "current",
 		mode = nil,
+		sets = {},
+		current = nil,
+		total = nil,
 	}
 }
 

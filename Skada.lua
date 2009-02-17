@@ -162,6 +162,10 @@ function Skada:PetDebug()
 end
 
 function Skada:OnEnable()
+	current = self.db.profile.current
+	total = self.db.profile.total
+	sets = self.db.profile.sets
+
 	self:RegisterEvent("PLAYER_REGEN_DISABLED")
 	self:RegisterEvent("PARTY_MEMBERS_CHANGED")
 	self:RegisterEvent("RAID_ROSTER_UPDATE")
@@ -317,6 +321,11 @@ function Skada:OnDisable()
 	else
 		self.db.profile.mode = nil
 	end
+
+	-- Save our precious sets.
+	current = self.db.profile.current
+	total = self.db.profile.total
+	sets = self.db.profile.sets
 end
 
 function Skada:ToggleWindow()
