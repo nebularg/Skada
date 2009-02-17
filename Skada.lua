@@ -33,6 +33,12 @@ local pets = {}
 -- Flag marking if we need an update.
 local changed = true
 
+-- Flag for if we were in a prarty/raid. Set first time in PLAYER_ENTERING_WORLD.
+local wasinparty = false
+
+-- By default we just use RAID_CLASS_COLORS as class colors.
+Skada.classcolors = RAID_CLASS_COLORS
+
 function Skada:OnInitialize()
 	-- Register some SharedMedia goodies.
 	media:Register("font", "Adventure",				[[Interface\Addons\Skada\fonts\Adventure.ttf]])
@@ -149,7 +155,7 @@ end
 
 function Skada:PetDebug()
 	self:CheckPets()
-self:Print("pets:")
+	self:Print("pets:")
 	for pet, owner in pairs(pets) do
 		self:Print("pet "..pet.." belongs to ".. owner.id..", "..owner.name)
 	end
@@ -161,10 +167,16 @@ function Skada:OnEnable()
 	self:RegisterEvent("RAID_ROSTER_UPDATE")
 	self:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
 	self:RegisterEvent("PLAYER_ENTERING_WORLD")
+	self:RegisterEvent("UNIT_TARGET")
+	self:RegisterEvent("UNIT_PET")
 	
 	self:ScheduleRepeatingTimer("UpdateBars", 0.5, nil)
 	self:ScheduleRepeatingTimer("Tick", 1, nil)
---	self:ScheduleRepeatingTimer("CheckPets", 60, nil)
+	
+	if type(CUSTOM_CLASS_COLORS) == "table" then
+		Skada.classcolors = CUSTOM_CLASS_COLORS
+	end
+	
 end
 
 local function CheckPet(unit, pet)
@@ -206,17 +218,87 @@ function Skada:CheckPets()
 	end
 end
 
+local wasininstance
+
+local function ask_for_reset()
+	StaticPopupDialogs["ResetSkadaDialog"] = {
+						text = "Do you want to reset Skada?", 
+						button1 = ACCEPT, 
+						button2 = CANCEL,
+						timeout = 30, 
+						whileDead = 0, 
+						hideOnEscape = 1, 
+						OnAccept = function() Skada:Reset() end,
+					}
+	StaticPopup_Show("ResetSkadaDialog")
+end
+
+-- Fired on entering a zone.
 function Skada:PLAYER_ENTERING_WORLD()
+	-- Check if we are entering an instance.
+	local inInstance, instanceType = IsInInstance()
+	local isininstance = inInstance and (instanceType == "party" or instanceType == "raid")
+
+	-- If we are entering an instance, and we were not previously in an instance, and we got this event before...
+	if isininstance and wasininstance ~= nil and not wasininstance and self.db.profile.reset.instance ~= 1 then
+		if self.db.profile.reset.instance == 3 then
+			ask_for_reset()
+		else
+			self:Reset()
+		end
+	end
+
+	-- Save a flag marking our previous (current) instance status.
+	if isininstance then
+		wasininstance = true
+	else
+		wasininstance = false
+	end
+
+	-- Mark our last party status. This is done so that the flag is set to correct value on relog/reloadui.
+	wasinparty = (GetNumPartyMembers() > 0 or GetNumRaidMembers() > 0)
+
 	-- Check for pets.
 	self:CheckPets()
 end
 
+-- Check if we join a party/raid.
+local function check_for_join_and_leave()
+	if GetNumPartyMembers() == 0 and GetNumRaidMembers() == 0 and wasinparty then
+		-- We left a party.
+		
+		if Skada.db.profile.reset.leave == 3 then
+			ask_for_reset()
+		elseif Skada.db.profile.reset.leave == 2 then
+			Skada:Reset()
+		end
+	end
+
+	if (GetNumRaidMembers() > 0 or GetNumPartyMembers() > 0) and not wasinparty then
+		-- We joined a raid.
+		
+		if Skada.db.profile.reset.join == 3 then
+			ask_for_reset()
+		elseif Skada.db.profile.reset.join == 2 then
+			Skada:Reset()
+		end
+		
+	end
+
+	-- Mark our last party status.
+	wasinparty = (GetNumPartyMembers() > 0 or GetNumRaidMembers() > 0)
+end
+
 function Skada:PARTY_MEMBERS_CHANGED()
+	check_for_join_and_leave()
+	
 	-- Check for new pets.
 	self:CheckPets()
 end
 
 function Skada:RAID_ROSTER_UPDATE()
+	check_for_join_and_leave()
+	
 	-- Check for new pets.
 	self:CheckPets()
 end
@@ -478,6 +560,14 @@ function Skada:get_player(set, playerid, playername)
 	return player
 end
 
+-- Save boss name and mark set as having a boss.
+function Skada:UNIT_TARGET(event, unitId)
+	if current and unitId and (UnitClassification(unitId.."target") == "worldboss" or UnitClassification(unitId.."target") == "boss") and not current.gotboss then
+		current.gotboss = true
+		current.mobname = UnitName(unitId.."target")
+	end
+end
+
 function Skada:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
 	-- Pet summons.
 	-- Pet scheme: save the GUID in a table along with the GUID of the owner.
@@ -487,21 +577,16 @@ function Skada:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID,
 		pets[dstGUID] = {id = srcGUID, name = srcName}
 	end
 
-	if current and dstName and UnitClassification(dstName) == "worldboss" then
-		current.gotboss = true
-	end
-	
-	-- This line will determine if the src player is being tracked.
 	if current and srcName and self:UnitIsInteresting(srcName) then
-		-- Store mob name for set name. For now, just save first name available, or if mob is a boss, re-save.
-		if dstName and not UnitIsFriend("player",dstName) and (current.mobname == nil or UnitClassification(dstName) == "worldboss") then
+		-- Store mob name for set name. For now, just save first unfriendly name available.
+		if dstName and not UnitIsFriend("player",dstName) and current.mobname == nil then
 			current.mobname = dstName
 		end
 		
 	end
 	
 	-- If we are active, and something happens to or by an interesting unit, mark as changed so we update our window.
-	if current and srcName and (self:UnitIsInteresting(srcName) or self:UnitIsInteresting(srcName)) then
+	if current and srcName and (self:UnitIsInteresting(srcName) or self:UnitIsInteresting(dstName)) then
 		changed = true
 	end
 end
@@ -545,25 +630,6 @@ function dataobj:OnClick(button)
 		Skada:OpenOptions()
 	end
 end
-
--- Snatched from Recount
-Skada.classcolors = {
-				["HUNTER"] = { r = 0.67, g = 0.83, b = 0.45, a=1 },
-				["WARLOCK"] = { r = 0.58, g = 0.51, b = 0.79, a=1 },
-				["PRIEST"] = { r = 1.0, g = 1.0, b = 1.0, a=1 },
-				["PALADIN"] = { r = 0.96, g = 0.55, b = 0.73, a=1 },
-				["MAGE"] = { r = 0.41, g = 0.8, b = 0.94, a=1 },
-				["ROGUE"] = { r = 1.0, g = 0.96, b = 0.41, a=1 },
-				["DRUID"] = { r = 1.0, g = 0.49, b = 0.04, a=1 },
-				["SHAMAN"] = { r = 0.14, g = 0.35, b = 1.0, a=1 },
-				["WARRIOR"] = { r = 0.78, g = 0.61, b = 0.43, a=1 },
-				["DEATHKNIGHT"] = { r = 0.77, g = 0.12, b = 0.23, a=1 },
-				["PET"] = { r = 0.09, g = 0.61, b = 0.55, a=1 },
-				["MOB"] = { r = 0.58, g = 0.24, b = 0.63, a=1 },
-				["UNKNOWN"] = { r = 0.1, g = 0.1, b = 0.1, a=1 },
-				["HOSTILE"] = { r = 0.7, g = 0.1, b = 0.1, a=1 },
-				["UNGROUPED"] = { r = 0.63, g = 0.58, b = 0.24, a=1 },
-}
 
 function Skada:UpdateBars()
 	if not changed then
@@ -722,10 +788,14 @@ end
 
 -- Formats a number into human readable form.
 function Skada:FormatNumber(number)
-	if number > 1000000 then
-		return 	("%02.1fM"):format(number / 1000000)
+	if self.db.profile.numberformat == 1 then
+		if number > 1000000 then
+			return 	("%02.1fM"):format(number / 1000000)
+		else
+			return 	("%02.1fK"):format(number / 1000)
+		end
 	else
-		return 	("%02.1fK"):format(number / 1000)
+		return number
 	end
 end
 

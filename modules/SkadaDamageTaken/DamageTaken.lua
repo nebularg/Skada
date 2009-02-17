@@ -104,10 +104,6 @@ function mod:Update(set)
 			if bar then
 				bar:SetMaxValue(maxdamagetaken)
 				bar:SetValue(player.damagetaken)
-				local color = Skada.classcolors[player.class]
-				if color then
-					bar:SetColorAt(0, color.r, color.g, color.b, color.a)
-				end
 			else
 				bar = Skada:CreateBar(tostring(player.id), player.name, player.damagetaken, maxdamagetaken, nil, false)
 				bar:EnableMouse()
@@ -121,7 +117,7 @@ function mod:Update(set)
 												end
 											end)
 				local color = Skada.classcolors[player.class] or Skada:GetDefaultBarColor()
-				bar:SetColorAt(0, color.r, color.g, color.b, color.a)
+				bar:SetColorAt(0, color.r, color.g, color.b, color.a or 1)
 			end
 			bar:SetTimerLabel(Skada:FormatNumber(player.damagetaken)..(" (%02.1f%%)"):format(player.damagetaken / set.damagetaken * 100))
 			

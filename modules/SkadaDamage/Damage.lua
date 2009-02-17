@@ -170,10 +170,10 @@ local function getDPS(set, player)
 	
 	-- Add in-progress time if set is not ended.
 	if not set.endtime and player.first then
-		totaltime = totaltime + math.max(0,player.last - player.first)
+		totaltime = totaltime + player.last - player.first
 	end
 
-	return player.damage / totaltime
+	return player.damage / math.max(1,totaltime)
 end
 
 function mod:Update(set)
@@ -212,7 +212,7 @@ function mod:Update(set)
 												end
 											end)
 				local color = Skada.classcolors[player.class] or Skada:GetDefaultBarColor()
-				bar:SetColorAt(0, color.r, color.g, color.b, color.a)
+				bar:SetColorAt(0, color.r, color.g, color.b, color.a or 1)
 			end
 			bar:SetLabel(("%2u. %s"):format(i, player.name))
 			local dps = getDPS(set, player)
@@ -360,7 +360,7 @@ function dpsmod:Update(set)
 												end
 											end)
 				local color = Skada.classcolors[player.class] or Skada:GetDefaultBarColor()
-				bar:SetColorAt(0, color.r, color.g, color.b, color.a)
+				bar:SetColorAt(0, color.r, color.g, color.b, color.a or 1)
 			end
 			bar:SetLabel(("%2u. %s"):format(i, player.name))
 			bar:SetTimerLabel(("%02.1f"):format(player.dps))

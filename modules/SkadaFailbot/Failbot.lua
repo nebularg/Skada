@@ -98,7 +98,7 @@ function mod:Update(set)
 													Skada:DisplayMode(playermod)
 											 elseif button == "RightButton" then Skada:RightClick() end end)
 				local color = Skada.classcolors[player.class] or Skada:GetDefaultBarColor()
-				bar:SetColorAt(0, color.r, color.g, color.b, color.a)
+				bar:SetColorAt(0, color.r, color.g, color.b, color.a or 1)
 				
 			end
 			bar:SetTimerLabel(tostring(player.fails))

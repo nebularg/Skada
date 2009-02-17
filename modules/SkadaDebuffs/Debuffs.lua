@@ -167,7 +167,7 @@ function mod:Update(set)
 													end
 												end)
 					local color = Skada.classcolors[player.class] or Skada:GetDefaultBarColor()
-					bar:SetColorAt(0, color.r, color.g, color.b, color.a)
+					bar:SetColorAt(0, color.r, color.g, color.b, color.a or 1)
 				end
 				bar:SetTimerLabel(("%02.1f%% / %u"):format(uptime / maxtime * 100, nr))
 			end

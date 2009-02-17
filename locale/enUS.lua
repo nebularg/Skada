@@ -58,10 +58,22 @@ L["Boss fights will be kept with this on, and non-boss fights are discarded."] =
 L["Show raw threat"] = true
 L["Shows raw threat percentage relative to tank instead of modified for range."] = true
 
-L["Lock window"] = true
-L["Locks the bar window in place."] = true
-L["Reverse bar growth"] = true
-L["Bars will grow up instead of down."] = true
+L["Lock window"] = "Lock window"
+L["Locks the bar window in place."] = "Locks the bar window in place."
+L["Reverse bar growth"] = "Reverse bar growth"
+L["Bars will grow up instead of down."] = "Bars will grow up instead of down."
+L["Number format"] = "Number format"
+L["Controls the way large numbers are displayed."] = "Controls the way large numbers are displayed."
+L["Reset on entering instance"] = "Reset on entering instance"
+L["Controls if data is reset when you enter an instance."] = "Controls if data is reset when you enter an instance."
+L["Reset on joining a group"] = "Reset on joining a group"
+L["Controls if data is reset when you join a group."] = "Controls if data is reset when you join a group."
+L["Reset on leaving a group"] = "Reset on leaving a group"
+L["Controls if data is reset when you leave a group."] = "Controls if data is reset when you leave a group."
+L["General options"] = "General options"
+L["Mode switching"] = "Mode switching"
+L["Data resets"] = "Data resets"
+L["Bars"] = "Bars"
 
 -- SkadaDebuffs
 L["Debuff uptimes"] = true

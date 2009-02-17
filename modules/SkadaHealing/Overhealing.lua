@@ -51,7 +51,7 @@ function mod:Update(set)
 				bar:EnableMouse()
 				bar:SetScript("OnMouseDown", function(bar, button) if button == "RightButton" then Skada:RightClick() end end)
 				local color = Skada.classcolors[player.class] or Skada:GetDefaultBarColor()
-				bar:SetColorAt(0, color.r, color.g, color.b, color.a)
+				bar:SetColorAt(0, color.r, color.g, color.b, color.a or 1)
 				
 	--			Skada:Print("created "..player.name.." at "..tostring(player.overhealing))
 			end

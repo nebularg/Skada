@@ -127,7 +127,7 @@ function mod:Update(set)
 												end
 											end)
 				local color = Skada.classcolors[player.class] or Skada:GetDefaultBarColor()
-				bar:SetColorAt(0, color.r, color.g, color.b, color.a)
+				bar:SetColorAt(0, color.r, color.g, color.b, color.a or 1)
 				
 	--			Skada:Print("created "..player.name.." at "..tostring(player.healing))
 			end
@@ -151,10 +151,10 @@ local function getHPS(set, player)
 	
 	-- Add in-progress time if set is not ended.
 	if not set.endtime and player.first then
-		totaltime = totaltime + math.max(0,player.last - player.first)
+		totaltime = totaltime + player.last - player.first
 	end
 
-	return player.healing / totaltime
+	return player.healing / math.max(1,totaltime)
 end
 
 -- Detail view of a player.
