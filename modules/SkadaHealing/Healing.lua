@@ -132,12 +132,29 @@ function mod:Update(set)
 	--			Skada:Print("created "..player.name.." at "..tostring(player.healing))
 			end
 			bar:SetLabel(("%2u. %s"):format(i, player.name))
-			bar:SetTimerLabel(Skada:FormatNumber(player.healing)..(" (%02.1f%%)"):format(player.healing / set.healing * 100))
+			local hps = getHPS(set, player)
+			bar:SetTimerLabel(Skada:FormatNumber(player.healing)..(" (%02.1f, %02.1f%%)"):format(hps, player.healing / set.healing * 100))
 		end
 	end
 	
 	-- Sort the possibly changed bars.
 	Skada:SortBars()
+end
+
+local function getHPS(set, player)
+	local totaltime = 0
+	
+	-- Add recorded time (for total set)
+	if player.time > 0 then
+		totaltime = player.time
+	end
+	
+	-- Add in-progress time if set is not ended.
+	if not set.endtime and player.first then
+		totaltime = totaltime + math.max(0,player.last - player.first)
+	end
+
+	return player.healing / totaltime
 end
 
 -- Detail view of a player.
