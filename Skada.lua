@@ -102,8 +102,18 @@ function Skada:Command(param)
 		self:Reset()
 	elseif param == "config" then
 		self:OpenOptions()
-	elseif param == "report" then
-		self:Report()
+	elseif param:sub(1,6) == "report" then
+		local chan = "say"
+		local max = 0
+		for word in param:gmatch("[%a%d]+") do
+			if word == "raid" or word == "guild" or word == "party" then
+				chan = word
+			end
+			if tonumber(word) ~= nil then
+				max = tonumber(word)
+			end
+		end
+		self:Report(chan, max)
 	else
 		self:Print("Usage:")
 		self:Print(("%-20s %-s"):format("/skada report",L["reports the active mode"]))
@@ -113,19 +123,24 @@ function Skada:Command(param)
 end
 
 -- Sends a report of the currently active set and mode to chat. 
-function Skada:Report()
+function Skada:Report(chan, max)
 	local set = self:get_selected_set()
 	local mode = selectedmode
 	
 	if set and mode then
 		-- Title
 		local endtime = set.endtime or time()
-		SendChatMessage(string.format(L["Skada report on %s for %s, %s to %s:"], selectedmode.name, set.name, date("%X",set.starttime), date("%X",endtime)), "SAY")
+		SendChatMessage(string.format(L["Skada report on %s for %s, %s to %s:"], selectedmode.name, set.name, date("%X",set.starttime), date("%X",endtime)), string.upper(chan))
 		
 		-- For each active bar, print label and timer value.
+		local i = 0
 		for name, bar in pairs(self:GetBars()) do
 			if bar:IsShown() then -- Do not show bars not shown (due to maxbars limit).
-				SendChatMessage(("%s   %s"):format(bar:GetLabel(), bar:GetTimerLabel()))
+				SendChatMessage(("%s   %s"):format(bar:GetLabel(), bar:GetTimerLabel()), string.upper(chan))
+			end
+			i = i + 1
+			if i == max then
+				break
 			end
 		end
 	end
