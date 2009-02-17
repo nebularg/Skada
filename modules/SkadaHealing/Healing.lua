@@ -91,6 +91,22 @@ function mod:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID, s
 
 end
 
+local function getHPS(set, player)
+	local totaltime = 0
+	
+	-- Add recorded time (for total set)
+	if player.time > 0 then
+		totaltime = player.time
+	end
+	
+	-- Add in-progress time if set is not ended.
+	if not set.endtime and player.first then
+		totaltime = totaltime + player.last - player.first
+	end
+
+	return player.healing / math.max(1,totaltime)
+end
+
 function mod:Update(set)
 	-- Calculate the highest damage.
 	-- How to get rid of this iteration?
@@ -139,22 +155,6 @@ function mod:Update(set)
 	
 	-- Sort the possibly changed bars.
 	Skada:SortBars()
-end
-
-local function getHPS(set, player)
-	local totaltime = 0
-	
-	-- Add recorded time (for total set)
-	if player.time > 0 then
-		totaltime = player.time
-	end
-	
-	-- Add in-progress time if set is not ended.
-	if not set.endtime and player.first then
-		totaltime = totaltime + player.last - player.first
-	end
-
-	return player.healing / math.max(1,totaltime)
 end
 
 -- Detail view of a player.
