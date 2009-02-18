@@ -98,22 +98,35 @@ end
 function Skada:Command(param)
 	if param == "pets" then
 		self:PetDebug()
+	elseif param == "test" then
+		local id, name = GetChannelName("aohunters");
+		self:Print("id: "..id)
 	elseif param == "reset" then
 		self:Reset()
 	elseif param == "config" then
 		self:OpenOptions()
 	elseif param:sub(1,6) == "report" then
+		param = param:sub(7)
 		local chan = "say"
 		local max = 0
+		local chantype = "preset"
 		for word in param:gmatch("[%a%d]+") do
-			if word == "raid" or word == "guild" or word == "party" or word == "self" or word == "officer" then
+			if word == "raid" or word == "guild" or word == "party" or word == "officer" then
+				chantype = "preset"
 				chan = word
-			end
-			if tonumber(word) ~= nil then
+			elseif word == "self" then
+				chantype = "self"
+			elseif tonumber(word) ~= nil then
 				max = tonumber(word)
+			elseif select(1, GetChannelName(word)) > 0 then
+				chan = word
+				chantype = "CHANNEL"
+			else
+				chan = word
+				chantype = "WHISPER"
 			end
 		end
-		self:Report(chan, max)
+		self:Report(chan, chantype, max)
 	else
 		self:Print("Usage:")
 		self:Print(("%-20s %-s"):format("/skada report",L["reports the active mode"]))
@@ -122,8 +135,24 @@ function Skada:Command(param)
 	end
 end
 
+local function sendchat(msg, chan, chantype)
+	if chantype == "self" then
+		-- To self.
+		Skada:Print(msg)
+	elseif chantype == "WHISPER" then
+		-- To player.
+		SendChatMessage(msg, "WHISPER", GetDefaultLanguage("player"), chan)
+	elseif chantype == "CHANNEL" then
+		-- To channel.
+		SendChatMessage(msg, "CHANNEL", GetDefaultLanguage("player"), select(1, GetChannelName(chan)))
+	elseif chantype == "preset" then
+		-- To a preset channel id (say, guild, etc).
+		SendChatMessage(msg, string.upper(chan))
+	end
+end
+
 -- Sends a report of the currently active set and mode to chat. 
-function Skada:Report(chan, max)
+function Skada:Report(chan, chantype, max)
 	local set = self:get_selected_set()
 	local mode = selectedmode
 	
@@ -138,19 +167,11 @@ function Skada:Report(chan, max)
 	
 		-- Title
 		local endtime = set.endtime or time()
-		if chan == "self" then
-			self:Print(string.format(L["Skada report on %s for %s, %s to %s:"], selectedmode.name, set.name, date("%X",set.starttime), date("%X",endtime)))
-		else
-			SendChatMessage(string.format(L["Skada report on %s for %s, %s to %s:"], selectedmode.name, set.name, date("%X",set.starttime), date("%X",endtime)), string.upper(chan))
-		end
+		sendchat(string.format(L["Skada report on %s for %s, %s to %s:"], selectedmode.name, set.name, date("%X",set.starttime), date("%X",endtime)), chan, chantype)
 		
 		-- For each active bar, print label and timer value.
 		for i, bar in ipairs(list) do
-			if chan == "self" then
-				self:Print(("%s   %s"):format(bar:GetLabel(), bar:GetTimerLabel()))
-			else
-				SendChatMessage(("%s   %s"):format(bar:GetLabel(), bar:GetTimerLabel()), string.upper(chan))
-			end
+			sendchat(("%s   %s"):format(bar:GetLabel(), bar:GetTimerLabel()), chan, chantype)
 			if i == max or (max == 0 and i == self.db.profile.barmax) then
 				break
 			end
@@ -826,7 +847,7 @@ end
 function Skada:FormatNumber(number)
 	if self.db.profile.numberformat == 1 then
 		if number > 1000000 then
-			return 	("%02.1fM"):format(number / 1000000)
+			return 	("%02.2fM"):format(number / 1000000)
 		else
 			return 	("%02.1fK"):format(number / 1000)
 		end
