@@ -15,8 +15,6 @@
 
 embeds.xml
 
-LibDataBroker-1.1.lua
-
 locale\enUS.lua
 locale\koKR.lua
 locale\zhCN.lua
