@@ -106,7 +106,7 @@ function Skada:Command(param)
 		local chan = "say"
 		local max = 0
 		for word in param:gmatch("[%a%d]+") do
-			if word == "raid" or word == "guild" or word == "party" or word == "self" then
+			if word == "raid" or word == "guild" or word == "party" or word == "self" or word == "officer" then
 				chan = word
 			end
 			if tonumber(word) ~= nil then
@@ -138,7 +138,7 @@ function Skada:Report(chan, max)
 	
 		-- Title
 		local endtime = set.endtime or time()
-		if word == "self" then
+		if chan == "self" then
 			self:Print(string.format(L["Skada report on %s for %s, %s to %s:"], selectedmode.name, set.name, date("%X",set.starttime), date("%X",endtime)))
 		else
 			SendChatMessage(string.format(L["Skada report on %s for %s, %s to %s:"], selectedmode.name, set.name, date("%X",set.starttime), date("%X",endtime)), string.upper(chan))
@@ -146,7 +146,7 @@ function Skada:Report(chan, max)
 		
 		-- For each active bar, print label and timer value.
 		for i, bar in ipairs(list) do
-			if word == "self" then
+			if chan == "self" then
 				self:Print(("%s   %s"):format(bar:GetLabel(), bar:GetTimerLabel()))
 			else
 				SendChatMessage(("%s   %s"):format(bar:GetLabel(), bar:GetTimerLabel()), string.upper(chan))
@@ -350,9 +350,9 @@ function Skada:OnDisable()
 	end
 
 	-- Save our precious sets.
-	current = self.db.profile.current
-	total = self.db.profile.total
-	sets = self.db.profile.sets
+	self.db.profile.current = current
+	self.db.profile.total = total
+	self.db.profile.sets = sets
 end
 
 function Skada:ToggleWindow()
