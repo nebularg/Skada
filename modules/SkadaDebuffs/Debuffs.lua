@@ -140,10 +140,7 @@ function mod:Update(set)
 			local bar = Skada:GetBar(tostring(player.id))
 			
 			-- Calculate player max possible uptime.
-			local maxtime = time() - player.first
-			if set.endtime then
-				maxtime = set.endtime - player.first
-			end
+			local maxtime = Skada:PlayerActiveTime(set, player)
 			
 			-- Now divide by the number of spells to get the average uptime.
 			--Skada:Print(uptime.." divided on "..nr.." spells = "..(uptime / nr))

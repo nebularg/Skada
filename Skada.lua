@@ -929,6 +929,22 @@ function Skada:UnitIsInterestingNoPets(name)
 	return name and (UnitIsUnit("player",name) or UnitInRaid(name) or UnitInParty(name))
 end
 
+-- Returns the time (in seconds) a player has been active for a set.
+function Skada:PlayerActiveTime(set, player)
+	local maxtime = 0
+	
+	-- Add recorded time (for total set)
+	if player.time > 0 then
+		maxtime = player.time
+	end
+	
+	-- Add in-progress time if set is not ended.
+	if not set.endtime and player.first then
+		maxtime = maxtime + player.last - player.first
+	end
+	return maxtime
+end
+
 -- Modify objects if they are pets.
 -- Expects to find "playerid", "playername", and optionally "spellname" in the object.
 -- Playerid and playername are exchanged for the pet owner's, and spellname is modified to include pet name.

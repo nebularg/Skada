@@ -161,18 +161,8 @@ function mod:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID, s
 end
 
 local function getDPS(set, player)
-	local totaltime = 0
+	local totaltime = Skada:PlayerActiveTime(set, player)
 	
-	-- Add recorded time (for total set)
-	if player.time > 0 then
-		totaltime = player.time
-	end
-	
-	-- Add in-progress time if set is not ended.
-	if not set.endtime and player.first then
-		totaltime = totaltime + player.last - player.first
-	end
-
 	return player.damage / math.max(1,totaltime)
 end
 
