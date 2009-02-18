@@ -106,7 +106,7 @@ function Skada:Command(param)
 		local chan = "say"
 		local max = 0
 		for word in param:gmatch("[%a%d]+") do
-			if word == "raid" or word == "guild" or word == "party" then
+			if word == "raid" or word == "guild" or word == "party" or word == "self" then
 				chan = word
 			end
 			if tonumber(word) ~= nil then
@@ -138,15 +138,21 @@ function Skada:Report(chan, max)
 	
 		-- Title
 		local endtime = set.endtime or time()
-		SendChatMessage(string.format(L["Skada report on %s for %s, %s to %s:"], selectedmode.name, set.name, date("%X",set.starttime), date("%X",endtime)), string.upper(chan))
+		if word == "self" then
+			self:Print(string.format(L["Skada report on %s for %s, %s to %s:"], selectedmode.name, set.name, date("%X",set.starttime), date("%X",endtime)))
+		else
+			SendChatMessage(string.format(L["Skada report on %s for %s, %s to %s:"], selectedmode.name, set.name, date("%X",set.starttime), date("%X",endtime)), string.upper(chan))
+		end
 		
 		-- For each active bar, print label and timer value.
 		for i, bar in ipairs(list) do
-			if bar:IsShown() then -- Do not show bars not shown (due to maxbars limit).
+			if word == "self" then
+				self:Print(("%s   %s"):format(bar:GetLabel(), bar:GetTimerLabel()))
+			else
 				SendChatMessage(("%s   %s"):format(bar:GetLabel(), bar:GetTimerLabel()), string.upper(chan))
-				if i == max then
-					break
-				end
+			end
+			if i == max or (max == 0 and i == self.db.profile.barmax) then
+				break
 			end
 		end
 	end
