@@ -184,11 +184,8 @@ function auramod:Update(set)
 	
 	if player then
 		-- Calculate player max possible uptime.
-		local maxtime = time() - player.first
-		if set.endtime then
-			maxtime = set.endtime - player.first
-		end
-	
+		local maxtime = Skada:PlayerActiveTime(set, player)
+		
 		for spellname, spell in pairs(player.auras) do
 			
 			local uptime = spell.uptime
