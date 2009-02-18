@@ -129,23 +129,24 @@ function Skada:Report(chan, max)
 	
 	if set and mode then
 		local bars = self:GetBars()
+		local list = {}
+		
+		for name, bar in pairs(bars) do table.insert(list, bar)	end
 
-		-- Sort bar table to value.
-		table.sort(bars, function(a,b) return a:GetValue() > b:GetValue() end)
+		-- Sort our temporary table according to value.
+		table.sort(list, function(a,b) return a:GetValue() > b:GetValue() end)
 	
 		-- Title
 		local endtime = set.endtime or time()
 		SendChatMessage(string.format(L["Skada report on %s for %s, %s to %s:"], selectedmode.name, set.name, date("%X",set.starttime), date("%X",endtime)), string.upper(chan))
 		
 		-- For each active bar, print label and timer value.
-		local i = 0
-		for name, bar in pairs(bars) do
+		for i, bar in pairs(list) do
 			if bar:IsShown() then -- Do not show bars not shown (due to maxbars limit).
 				SendChatMessage(("%s   %s"):format(bar:GetLabel(), bar:GetTimerLabel()), string.upper(chan))
-			end
-			i = i + 1
-			if i == max then
-				break
+				if i == max then
+					break
+				end
 			end
 		end
 	end
