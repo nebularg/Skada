@@ -1,7 +1,7 @@
 local L = LibStub("AceLocale-3.0"):GetLocale("Skada", false)
 local media = LibStub("LibSharedMedia-3.0")
 
-Skada.resetoptions = {[1] = "No", [2] = "Yes", [3] = "Ask"}
+Skada.resetoptions = {[1] = L["No"], [2] = L["Yes"], [3] = L["Ask"]}
 
 Skada.defaults = {
 	profile = {
@@ -315,7 +315,7 @@ Skada.options = {
 								type="select",
 								name=L["Number format"],
 								desc=L["Controls the way large numbers are displayed."],
-								values=	function() return {[1] = "Condensed", [2] = "Detailed"} end,
+								values=	function() return {[1] = L["Condensed"], [2] = L["Detailed"]} end,
 								get=function() return Skada.db.profile.numberformat end,
 								set=function(self, opt) Skada.db.profile.numberformat = opt end,
 								order=24,

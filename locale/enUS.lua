@@ -75,6 +75,12 @@ L["Mode switching"] = "Mode switching"
 L["Data resets"] = "Data resets"
 L["Bars"] = "Bars"
 
+L["Yes"] = "Yes"
+L["No"] = "No"
+L["Ask"] = "Ask"
+L["Condensed"] = "Condensed"
+L["Detailed"] = "Detailed"
+
 -- SkadaDebuffs
 L["Debuff uptimes"] = true
 L["'s Debuffs"] = true
