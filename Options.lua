@@ -15,6 +15,7 @@ Skada.defaults = {
 		barorientation=1,
 		barcolor = {r = 0.41, g = 0.8, b = 0.94, a=1},
 		barslocked=false,
+		title = {texture="Round", bordertexture="None", borderthickness=2, color = {r=0,g=0,b=0,a=0.6}},
 		reversegrowth=false,
 		reset={instance=1, join=1, leave=1},
 		icon = {},
@@ -206,11 +207,77 @@ Skada.options = {
 						}
 	        		},
 					
+	        		titleoptions = {
+	        			type = "group",
+	        			name = L["Title bar"],
+	        			order=2,
+						args = {
+						    texture = {
+						         type = 'select',
+						         dialogControl = 'LSM30_Statusbar',
+						         name = L["Background texture"],
+						         desc = L["The texture used as the background of the title."],
+						         values = AceGUIWidgetLSMlists.statusbar,
+						         get = function() return Skada.db.profile.title.texture end,
+						         set = function(self,key)
+					         				Skada.db.profile.title.texture = key
+						         			Skada:ApplySettings()
+										end,
+								order=1,
+						    },						    
+						    
+						    bordertexture = {
+						         type = 'select',
+						         dialogControl = 'LSM30_Border',
+						         name = L["Border texture"],
+						         desc = L["The texture used for the border of the title."],
+						         values = AceGUIWidgetLSMlists.border,
+						         get = function() return Skada.db.profile.title.bordertexture end,
+						         set = function(self,key)
+					         				Skada.db.profile.title.bordertexture = key
+						         			Skada:ApplySettings()
+										end,
+								order=2,
+						    },					
 					
+							borderthickness = {
+								type="range",
+								name=L["Border thickness"],
+								desc=L["The thickness of the borders."],
+								min=0,
+								max=100,
+								step=1,
+								get=function() return Skada.db.profile.title.borderthickness end,
+								set=function(self, val)
+											Skada.db.profile.title.borderthickness = val
+						         			Skada:ApplySettings()
+										end,
+								order=3,
+							},
+							
+							color = {
+								type="color",
+								name=L["Background color"],
+								desc=L["The background color of the title."],
+								hasAlpha=true,
+								get=function(i) 
+										local c = Skada.db.profile.title.color
+										return c.r, c.g, c.b, c.a
+									end,
+								set=function(i, r,g,b,a) 
+										Skada.db.profile.title.color = {["r"] = r, ["g"] = g, ["b"] = b, ["a"] = a}
+										Skada:ApplySettings()
+									end,
+								order=4,
+							},
+							
+						}
+	        		},
+	        		
 	        		resetoptions = {
 	        			type = "group",
 	        			name = L["Data resets"],
-	        			order=2,
+	        			order=3,
 						args = {
 
 							resetinstance = {
@@ -250,7 +317,7 @@ Skada.options = {
 	        		switchoptions = {
 	        			type = "group",
 	        			name = L["Mode switching"],
-	        			order=3,
+	        			order=4,
 						args = {
 												
 							modeincombat = {
@@ -287,9 +354,9 @@ Skada.options = {
 	        		generaloptions = {
 	        			type = "group",
 	        			name = L["General options"],
-	        			order=4,
+	        			order=5,
 						args = {
-												
+							
 							mmbutton = {
 							        type="toggle",
 							        name=L["Show minimap button"],

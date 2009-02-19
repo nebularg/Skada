@@ -60,6 +60,7 @@ function Skada:OnInitialize()
 	media:Register("statusbar", "Outline",			[[Interface\Addons\Skada\statusbar\Outline]])
 	media:Register("statusbar", "Perl",				[[Interface\Addons\Skada\statusbar\Perl]])
 	media:Register("statusbar", "Smooth",			[[Interface\Addons\Skada\statusbar\Smooth]])
+	media:Register("statusbar", "Round",			[[Interface\Addons\Skada\statusbar\Round]])
 
 	-- DB
 	self.db = LibStub("AceDB-3.0"):New("SkadaDB", self.defaults)
@@ -410,28 +411,37 @@ function Skada:Reset()
 	end
 	
 	sets = {}
+	changed = true
 	
 	self:Print(L["All data has been reset."])
 end
 
 -- Applies settings to things like the bar window.
 function Skada:ApplySettings()
-	self.bargroup:ReverseGrowth(self.db.profile.reversegrowth)
-	self.bargroup:SetOrientation(self.db.profile.barorientation)
-	self.bargroup:SetHeight(self.db.profile.barheight)
-	self.bargroup:SetWidth(self.db.profile.barwidth)
-	self.bargroup:SetTexture(media:Fetch('statusbar', self.db.profile.bartexture))
-	self.bargroup:SetFont(media:Fetch('font', self.db.profile.barfont), self.db.profile.barfontsize)
-	self.bargroup:SetSpacing(self.db.profile.barspacing)
-	self.bargroup:UnsetAllColors()
-	self.bargroup:SetColorAt(0,self.db.profile.barcolor.r,self.db.profile.barcolor.g,self.db.profile.barcolor.b, self.db.profile.barcolor.a)
-	self.bargroup:SetMaxBars(self.db.profile.barmax)
-	self.bargroup:SortBars()
+	local g = self.bargroup
+	g:ReverseGrowth(self.db.profile.reversegrowth)
+	g:SetOrientation(self.db.profile.barorientation)
+	g:SetHeight(self.db.profile.barheight)
+	g:SetWidth(self.db.profile.barwidth)
+	g:SetTexture(media:Fetch('statusbar', self.db.profile.bartexture))
+	g:SetFont(media:Fetch('font', self.db.profile.barfont), self.db.profile.barfontsize)
+	g:SetSpacing(self.db.profile.barspacing)
+	g:UnsetAllColors()
+	g:SetColorAt(0,self.db.profile.barcolor.r,self.db.profile.barcolor.g,self.db.profile.barcolor.b, self.db.profile.barcolor.a)
+	g:SetMaxBars(self.db.profile.barmax)
 	if self.db.profile.barslocked then
-		self.bargroup:Lock()
+		g:Lock()
 	else
-		self.bargroup:Unlock()
-	end	
+		g:Unlock()
+	end
+	g:SortBars()
+
+	local thickness = self.db.profile.title.borderthickness
+	local backdrop = {bgFile = media:Fetch("statusbar", self.db.profile.title.texture), edgeFile = media:Fetch("border", self.db.profile.title.bordertexture), tile = false, tileSize = 0, edgeSize = thickness,	insets = {left = thickness / 4, right = thickness / 4, top = thickness / 4, bottom = thickness / 4}}
+	g.button:SetBackdrop(backdrop)
+	local color = self.db.profile.title.color
+	g.button:SetBackdropColor(color.r, color.g, color.b, color.a or 1)
+
 end
 
 -- Iterates over all players in a set and adds to the "time" variable

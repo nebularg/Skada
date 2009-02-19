@@ -81,6 +81,16 @@ L["Ask"] = "Ask"
 L["Condensed"] = "Condensed"
 L["Detailed"] = "Detailed"
 
+L["Title bar"] = "Title bar"
+L["Background texture"] = "Background texture"
+L["The texture used as the background of the title."] = "The texture used as the background of the title."
+L["Border texture"] = "Border texture"
+L["The texture used for the border of the title."] = "The texture used for the border of the title."
+L["Border thickness"] = "Border thickness"
+L["The thickness of the borders."] = "The thickness of the borders."
+L["Background color"] = "Background color"
+L["The background color of the title."] = "The background color of the title."
+
 -- SkadaDebuffs
 L["Debuff uptimes"] = true
 L["'s Debuffs"] = true
