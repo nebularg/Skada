@@ -105,7 +105,6 @@ Skada.options = {
 						         			Skada:ApplySettings()
 										end,
 								order=13,
-		       					width="full",
 							},
 		
 							barheight = {
