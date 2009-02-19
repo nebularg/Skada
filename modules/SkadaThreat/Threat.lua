@@ -47,7 +47,7 @@ local function add_to_threattable(name, tbl)
 		if Skada.db.profile.rawthreat then
 			if threatvalue then
 				local class = select(2, UnitClass(name))
-				table.insert(tbl, {["name"] = name, ["threat"] = threatvalue, ["class"] = class})
+				table.insert(tbl, {["name"] = name, ["threat"] = threatvalue, ["class"] = class, ["value"] = threatvalue})
 				if threatvalue > maxthreat then
 					maxthreat = threatvalue
 				end
@@ -55,9 +55,17 @@ local function add_to_threattable(name, tbl)
 		else
 			if threatpct then
 				local class = select(2, UnitClass(name))
-				table.insert(tbl, {["name"] = name, ["threat"] = threatpct, ["class"] = class})
+				table.insert(tbl, {["name"] = name, ["threat"] = threatpct, ["class"] = class, ["value"] = threatvalue})
 			end
 		end
+	end
+end
+
+local function format_threatvalue(value)
+	if value >= 100000 then
+		return ("%2.1fk"):format(value / 100000)
+	else
+		return ("%d"):format(value / 100)
 	end
 end
 
@@ -132,7 +140,7 @@ function mod:Update(set)
 				local color = Skada.classcolors[player.class] or Skada:GetDefaultBarColor()
 				bar:SetColorAt(0, color.r, color.g, color.b, color.a or 1)
 			end
-			bar:SetTimerLabel(("%02.1f%%"):format(player.threat / maxthreat * 100).."%")
+			bar:SetTimerLabel(format_threatvalue(player.value)..(", %02.1f%%"):format(player.threat / maxthreat * 100).."%")
 			bar.checked = true
 		end
 	end
