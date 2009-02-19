@@ -387,6 +387,9 @@ do
 		
 		list.texture = DEFAULT_TEXTURE
 		list.spacing = 0
+		
+		-- MODIFIED
+		list.offset = 0
 
 		return list
 	end
@@ -807,6 +810,17 @@ function barListPrototype:SetSortFunction(func)
 	self.sortFunc = func
 end
 
+-- MODIFIED
+function barListPrototype:SetBarOffset(offset)
+	self.offset = offset
+	self:SortBars()
+end
+
+-- MODIFIED
+function barListPrototype:GetBarOffset()
+	return self.offset
+end
+
 -- group:SetSortFunction(group.NOOP) to disable sorting
 function barListPrototype.NOOP() end
 
@@ -873,6 +887,8 @@ do
 			end
 		end
 		local totalHeight = 0
+		-- MODIFIED
+		local shown = 0
 		for i = 1, #values do
 			local origTo = to
 			local v = values[i]
@@ -902,10 +918,12 @@ do
 			end
 			
 			v:ClearAllPoints()
-			if self.maxBars and i > self.maxBars then
+			-- MODIFIED
+			if (self.maxBars and shown >= self.maxBars) or (i < self:GetBarOffset() + 1) then
 				v:Hide()
 			else
 				v:Show()
+				shown = shown + 1
 				if vertical then
 					totalHeight = totalHeight + v:GetWidth() + x1			
 					v:SetPoint("TOP"..from, lastBar, "TOP"..to, x1, y1)

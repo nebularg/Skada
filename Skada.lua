@@ -907,11 +907,30 @@ function Skada:RemoveBar(bar)
 	self.bargroup:RemoveBar(bar)
 end
 
+local function getNumberOfBars()
+	local bars = Skada.bargroup:GetBars()
+	local n = 0
+	for i, bar in pairs(bars) do n = n + 1 end
+	return n
+end
+
+local function OnMouseWheel(bar, direction)
+	if direction == 1 and Skada.bargroup:GetBarOffset() > 0 then
+		Skada.bargroup:SetBarOffset(Skada.bargroup:GetBarOffset() - 1)
+	elseif direction == -1 and ((getNumberOfBars() - Skada.bargroup:GetMaxBars() - Skada.bargroup:GetBarOffset()) > 1) then
+		Skada.bargroup:SetBarOffset(Skada.bargroup:GetBarOffset() + 1)
+	end
+end
+
 function Skada:CreateBar(name, label, value, maxvalue, icon, o)
-	return self.bargroup:NewCounterBar(name, label, value, maxvalue, icon, o)
+	local bar = self.bargroup:NewCounterBar(name, label, value, maxvalue, icon, o)
+	bar:EnableMouseWheel(true)
+	bar:SetScript("OnMouseWheel", OnMouseWheel)
+	return bar
 end
 
 function Skada:RemoveAllBars()
+	self.bargroup:SetBarOffset(0)
 	local bars = self.bargroup:GetBars()
 	if bars then
 		for i, bar in pairs(bars) do
