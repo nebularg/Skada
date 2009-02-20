@@ -102,10 +102,18 @@ function mod:Update(set)
 			if name then
 				add_to_threattable(name, threattable)
 
-				if UnitExists("raid"..i.."pet") then
+				if UnitExists("party"..i.."pet") then
 					add_to_threattable(select(1, UnitName("party"..i.."pet")), threattable)
 				end
 			end
+		end
+		
+		-- Don't forget ourselves.
+		add_to_threattable(UnitName("player"), threattable)
+		
+		-- Maybe we have a pet?
+		if UnitExists("pet") then
+			add_to_threattable(UnitName("pet"), threattable)
 		end
 	else
 		-- We are all alone.
