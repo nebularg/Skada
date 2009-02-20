@@ -136,7 +136,7 @@ function mod:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID, s
 				dmg.blocked = sblocked
 				dmg.absorbed = sabsorbed
 				dmg.critical = scritical
-				dng.glancing = sglancing
+				dmg.glancing = sglancing
 				dmg.crushing = scrushing
 
 				Skada:FixPets(dmg)
