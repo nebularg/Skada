@@ -74,6 +74,8 @@ function mod:log_heal(set, heal)
 	end
 end
 
+local heal = {}
+
 function mod:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
 	if Skada:IsDataCollectionActive() and srcName and (eventtype == 'SPELL_HEAL' or eventtype == 'SPELL_PERIODIC_HEAL') and Skada:UnitIsInteresting(srcName) then
 	
@@ -82,7 +84,14 @@ function mod:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID, s
 
 		-- Healing
 		local spellId, spellName, spellSchool, samount, soverhealing, scritical = ...
-		local heal = {playerid = srcGUID, playername = srcName, spellid = spellId, spellname = spellName, amount = samount, overhealing = soverhealing, critical = scritical}
+		
+		heal.playerid = srcGUID
+		heal.playername = srcName
+		heal.spellid = spellId
+		heal.spellname = spellName
+		heal.amount = samount
+		heal.overhealing = soverhealing
+		heal.critical = scritical
 		
 		Skada:FixPets(heal)
 		self:log_heal(current, heal)

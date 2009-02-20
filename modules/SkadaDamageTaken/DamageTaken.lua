@@ -57,6 +57,8 @@ function mod:log_damage_taken(set, dmg)
 	end
 end
 
+local dmg = {}
+
 function mod:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
 
 	if Skada:IsDataCollectionActive() and dstName and Skada:UnitIsInteresting(dstName) then
@@ -67,14 +69,24 @@ function mod:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID, s
 		-- Damage taken.
 		if eventtype == 'SPELL_DAMAGE' or eventtype == 'SPELL_PERIODIC_DAMAGE' or eventtype == 'SPELL_BUILDING_DAMAGE' or eventtype == 'RANGE_DAMAGE' then
 			local spellId, spellName, spellSchool, samount, soverkill, sschool, sresisted, sblocked, sabsorbed, scritical, sglancing, scrushing = ...
-			local dmg = {playerid = dstGUID, playername = dstName, spellid = spellId, spellname = spellName, amount = samount}
-
+			
+			dmg.playerid = dstGUID
+			dmg.playername = dstName
+			dmg.spellid = spellId
+			dmg.spellname = spellName
+			dmg.amount = samount
+			
 			self:log_damage_taken(current, dmg)
 			self:log_damage_taken(total, dmg)
 		elseif eventtype == 'SWING_DAMAGE' then
 			-- White melee.
 			local samount, soverkill, sschool, sresisted, sblocked, sabsorbed, scritical, sglancing, scrushing = ...
-			local dmg = {playerid = dstGUID, playername = dstName, spellid = 6603, spellname = L["Attack"], amount = samount}
+			
+			dmg.playerid = dstGUID
+			dmg.playername = dstName
+			dmg.spellid = 6603
+			dmg.spellname = L["Attack"]
+			dmg.amount = samount
 
 			self:log_damage_taken(current, dmg)
 			self:log_damage_taken(total, dmg)

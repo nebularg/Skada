@@ -112,6 +112,8 @@ function mod:log_damage(set, dmg)
 	end
 end
 
+local dmg = {}
+
 function mod:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
 	-- This line will determine if the src player is being tracked.
 	if Skada:IsDataCollectionActive() and srcName and Skada:UnitIsInteresting(srcName) then
@@ -123,7 +125,20 @@ function mod:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID, s
 		if eventtype == 'SPELL_DAMAGE' or eventtype == 'SPELL_PERIODIC_DAMAGE' or eventtype == 'SPELL_BUILDING_DAMAGE' or eventtype == 'RANGE_DAMAGE' then
 			if not UnitIsUnit(srcName, dstName) then
 				local spellId, spellName, spellSchool, samount, soverkill, sschool, sresisted, sblocked, sabsorbed, scritical, sglancing, scrushing = ...
-				local dmg = {playerid = srcGUID, playername = srcName, spellid = spellId, spellname = spellName, amount = samount, overkill = soverkill, resisted = sresisted, blocked = sblocked, absorbed = sabsorbed, critical = scritical, glancing = sglancing, crushing = scrushing}
+
+				dmg.playerid = srcGUID
+				dmg.playername = srcName
+				dmg.spellid = spellId
+				dmg.spellname = spellName
+				dmg.amount = samount
+				dmg.overkill = soverkill
+				dmg.resisted = sresisted
+				dmg.blocked = sblocked
+				dmg.absorbed = sabsorbed
+				dmg.critical = scritical
+				dng.glancing = sglancing
+				dmg.crushing = scrushing
+
 				Skada:FixPets(dmg)
 				self:log_damage(current, dmg)
 				self:log_damage(total, dmg)
@@ -132,8 +147,20 @@ function mod:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID, s
 			-- White melee.
 			if not UnitIsUnit(srcName, dstName) then
 				local samount, soverkill, sschool, sresisted, sblocked, sabsorbed, scritical, sglancing, scrushing = ...
-				local dmg = {playerid = srcGUID, playername = srcName, spellid = 6603, spellname = L["Attack"], amount = samount, overkill = soverkill, resisted = sresisted, blocked = sblocked, absorbed = sabsorbed, critical = scritical, glancing = sglancing, crushing = scrushing}
-	
+				
+				dmg.playerid = srcGUID
+				dmg.playername = srcName
+				dmg.spellid = 6603
+				dmg.spellname = L["Attack"]
+				dmg.amount = samount
+				dmg.overkill = soverkill
+				dmg.resisted = sresisted
+				dmg.blocked = sblocked
+				dmg.absorbed = sabsorbed
+				dmg.critical = scritical
+				dmg.glancing = sglancing
+				dmg.crushing = scrushing
+				
 				Skada:FixPets(dmg)
 				self:log_damage(current, dmg)
 				self:log_damage(total, dmg)
@@ -141,6 +168,20 @@ function mod:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID, s
 		elseif eventtype == 'SWING_MISSED' then
 			-- Melee misses
 			local dmg = {playerid = srcGUID, playername = srcName, spellid = 6603, spellname = L["Attack"], amount = 0, overkill = 0, resisted = 0, blocked = 0, absorbed = 0, critical = 0, glancing = 0, crushing = 0, missed = 1}
+
+			dmg.playerid = srcGUID
+			dmg.playername = srcName
+			dmg.spellid = 6603
+			dmg.spellname = L["Attack"]
+			dmg.amount = 0
+			dmg.overkill = 0
+			dmg.resisted = 0
+			dmg.blocked = 0
+			dmg.absorbed = 0
+			dmg.critical = 0
+			dmg.glancing = 0
+			dmg.crushing = 0
+			dmg.missed = 1
 			
 			Skada:FixPets(dmg)
 			self:log_damage(current, dmg)
@@ -149,7 +190,20 @@ function mod:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID, s
 		elseif eventtype == 'SPELL_DAMAGE_MISSED' or eventtype == 'SPELL_PERIODIC_MISSED' or eventtype == 'RANGE_MISSED' then
 			-- Misses
 			local spellId, spellName, spellSchool, missType, samount = ...
-			local dmg = {playerid = srcGUID, playername = srcName, spellid = spellId, spellname = spellName, amount = 0, overkill = 0, resisted = 0, blocked = 0, absorbed = 0, critical = 0, glancing = 0, crushing = 0, missed = 1}
+
+			dmg.playerid = srcGUID
+			dmg.playername = srcName
+			dmg.spellid = spellId
+			dmg.spellname = spellName
+			dmg.amount = 0
+			dmg.overkill = 0
+			dmg.resisted = 0
+			dmg.blocked = 0
+			dmg.absorbed = 0
+			dmg.critical = 0
+			dmg.glancing = 0
+			dmg.crushing = 0
+			dmg.missed = 1
 			
 			Skada:FixPets(dmg)
 			self:log_damage(current, dmg)
