@@ -48,6 +48,8 @@ function mod:log_dispell(set, dispell)
 	end
 end
 
+local dispell = {}
+
 function mod:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
 	if Skada:IsDataCollectionActive() and srcName and eventtype == 'SPELL_DISPEL' and Skada:UnitIsInteresting(srcName) then
 	
@@ -56,7 +58,13 @@ function mod:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID, s
 
 		-- Dispells
 		local spellId, spellName, spellSchool, sextraSpellId, sextraSpellName, sextraSchool, auraType = ...
-		local dispell = {playerid = srcGUID, playername = srcName, spellid = spellId, spellname = spellName, extraspellid = sextraSpellId, extraspellname = sextraSpellName}
+		
+		dispell.playerid = srcGUID
+		dispell.playername = srcName
+		dispell.spellid = spellId
+		dispell.spellname = spellName
+		dispell.extraspellid = sextraSpellId
+		dispell.extraspellname = sextraSpellName		
 		
 		self:log_dispell(current, dispell)
 		self:log_dispell(total, dispell)

@@ -69,6 +69,8 @@ local function format_threatvalue(value)
 	end
 end
 
+local threattable = {}
+
 function mod:Update(set)
 	if not UnitExists("target") then
 		-- We have no target - wipe all threat bars.
@@ -76,7 +78,9 @@ function mod:Update(set)
 		return
 	end
 	
-	local threattable = {}
+	-- Clear threat table
+	while table.maxn(threattable) > 0 do table.remove(threattable) end
+	
 	maxthreat = 0
 	
 	if GetNumRaidMembers() > 0 then

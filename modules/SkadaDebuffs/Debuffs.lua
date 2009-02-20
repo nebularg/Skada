@@ -103,6 +103,8 @@ function mod:log_auraremove(set, aura)
 	end
 end
 
+local aura = {}
+
 function mod:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
 
 	if Skada:IsDataCollectionActive() and srcName and (eventtype == 'SPELL_AURA_APPLIED' or eventtype == 'SPELL_AURA_REMOVED') and Skada:UnitIsInteresting(srcName) then
@@ -112,16 +114,28 @@ function mod:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID, s
 
 		if eventtype == 'SPELL_AURA_APPLIED' then
 			local spellId, spellName, spellSchool, auraType = ...
-			local aura = {playerid = srcGUID, playername = srcName, spellid = spellId, spellname = spellName, ["auratype"] = auraType}
 			if auraType == "DEBUFF" then
+
+				aura.playerid = srcGUID
+				aura.playername = srcName
+				aura.spellid = spellId
+				aura.spellname = spellName
+				aura.auratype = auraType
+				
 				Skada:FixPets(aura)
 				self:log_auraapply(current, aura)
 				self:log_auraapply(total, aura)
 			end
 		elseif eventtype == 'SPELL_AURA_REMOVED' then
 			local spellId, spellName, spellSchool, auraType = ...
-			local aura = {playerid = srcGUID, playername = srcName, spellid = spellId, spellname = spellName, ["auratype"] = auraType}
 			if auraType == "DEBUFF" then
+			
+				aura.playerid = srcGUID
+				aura.playername = srcName
+				aura.spellid = spellId
+				aura.spellname = spellName
+				aura.auratype = auraType
+			
 				Skada:FixPets(aura)
 				self:log_auraremove(current, aura)
 				self:log_auraremove(total, aura)
