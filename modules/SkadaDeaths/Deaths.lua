@@ -1,8 +1,10 @@
 local L = LibStub("AceLocale-3.0"):GetLocale("Skada", false)
 
 local mod = Skada:NewModule("DeathsMode", "AceEvent-3.0")
+local deathlog = Skada:NewModule("DeathLogMode", "AceEvent-3.0")
 
 mod.name = L["Deaths"]
+deathlog.name = L["Deathlog"]
 
 function mod:OnEnable()
 	self:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
@@ -14,6 +16,16 @@ function mod:OnDisable()
 	Skada:RemoveMode(self)
 end
 
+-- Called by Skada when a set is complete.
+function mod:SetComplete(set)
+	-- Clean; remove logs from all who did not die.
+	for i, player in ipairs(set.players) do
+		if player.deaths == 0 then
+			player.deathlog = nil
+		end
+	end
+end
+
 function mod:AddToTooltip(set, tooltip)
  	GameTooltip:AddDoubleLine(L["Deaths:"], set.deaths, 1,1,1)
 end
@@ -22,6 +34,7 @@ end
 function mod:AddPlayerAttributes(player)
 	if not player.deaths then
 		player.deaths = 0
+		player.deathlog = {}
 	end
 end
 
@@ -32,12 +45,26 @@ function mod:AddSetAttributes(set)
 	end
 end
 
-function mod:log_death(set, playerid, playername)
+function mod:log_deathlog(set, playerid, playername, spellid, spellname, amount, timestamp)
+	if set then
+		local player = Skada:get_player(set, playerid, playername)
+		
+		table.insert(player.deathlog, 1, {["spellid"] = spellid, ["spellname"] = spellname, ["amount"] = amount, ["ts"] = timestamp})
+		
+		-- Trim.
+		while table.maxn(player.deathlog) > 10 do table.remove(player.deathlog) end
+	end
+end
+
+function mod:log_death(set, playerid, playername, timestamp)
 	if set then
 		local player = Skada:get_player(set, playerid, playername)
 		
 		-- Add to player deaths.
 		player.deaths = player.deaths + 1
+		
+		-- Set timestamp for death.
+		player.deathts = timestamp
 		
 		-- Also add to set deaths.
 		set.deaths = set.deaths + 1
@@ -48,16 +75,35 @@ function mod:log_death(set, playerid, playername)
 end
 
 function mod:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
-	if Skada:IsDataCollectionActive() and dstName and eventtype == 'UNIT_DIED' and Skada:UnitIsInterestingNoPets(dstName) then
-	
+	-- Deaths
+	if Skada:IsDataCollectionActive() and dstName and Skada:UnitIsInterestingNoPets(dstName) then
 		local current = Skada:GetCurrentSet()
-		local total = Skada:GetTotalSet()
-		
-		if not UnitIsFeignDeath(dstName) then	-- Those pesky hunters
-			if current then
-				self:log_death(current, dstGUID, dstName)
+	
+		if eventtype == 'UNIT_DIED' then
+	
+			if not UnitIsFeignDeath(dstName) then	-- Those pesky hunters
+				local current = Skada:GetCurrentSet()
+				local total = Skada:GetTotalSet()
+				if current then
+					self:log_death(current, dstGUID, dstName, timestamp)
+				end
+				self:log_death(total, dstGUID, dstName, timestamp)
 			end
-			self:log_death(total, dstGUID, dstName)
+			
+		elseif eventtype == 'SPELL_DAMAGE' or eventtype == 'SPELL_PERIODIC_DAMAGE' or eventtype == 'SPELL_BUILDING_DAMAGE' or eventtype == 'RANGE_DAMAGE' then
+			-- Spell damage.
+			local spellId, spellName, spellSchool, samount, soverkill, sschool, sresisted, sblocked, sabsorbed, scritical, sglancing, scrushing = ...
+
+			self:log_deathlog(current, dstGUID, dstName, spellId, srcName.."'s "..spellName, samount, timestamp)
+				
+		elseif eventtype == 'SWING_DAMAGE' then
+			-- White melee.
+			local samount, soverkill, sschool, sresisted, sblocked, sabsorbed, scritical, sglancing, scrushing = ...
+			local spellid = 6603
+			local spellname = L["Attack"]
+			
+			self:log_deathlog(current, dstGUID, dstName, spellid, srcName.."'s "..spellname, samount, timestamp)
+			
 		end
 
 	end
@@ -87,7 +133,12 @@ function mod:Update(set)
 			else
 				bar = Skada:CreateBar(tostring(player.id), player.name, player.deaths, maxdeaths, nil, false)
 				bar:EnableMouse()
-				bar:SetScript("OnMouseDown", function(bar, button) if button == "RightButton" then Skada:RightClick() end end)
+				bar:SetScript("OnMouseDown", function(bar, button)
+												if button == "LeftButton" then
+													deathlog.playerid = player.id
+													deathlog.name = player.name.."'s Death"
+													Skada:DisplayMode(deathlog)
+												elseif button == "RightButton" then Skada:RightClick() end end)
 				local color = Skada.classcolors[player.class] or Skada:GetDefaultBarColor()
 				bar:SetColorAt(0, color.r, color.g, color.b, color.a or 1)
 			end
@@ -97,5 +148,52 @@ function mod:Update(set)
 		
 	-- Sort the possibly changed bars.
 	Skada:SortBars()
+end
+
+local function sort_by_ts(a,b)
+	return a.ts > b.ts
+end
+
+-- Death log.
+function deathlog:Update(set)
+	local player = Skada:get_player(set, self.playerid)
 	
+	-- Reset our sort function.
+	Skada:SetSortFunction(nil)
+
+	-- Find the max amount
+	local maxhit = 0
+	for i, log in ipairs(player.deathlog) do
+		if log.amount > maxhit then
+			maxhit = log.amount
+		end
+	end
+	
+	for i, log in ipairs(player.deathlog) do
+		local diff = tonumber(log.ts) - tonumber(player.deathts)
+		-- Ignore hits older than 30s before death.
+		if diff > -30 then
+			local bar = Skada:GetBar("log"..i)
+			if bar then
+				bar:SetMaxValue(maxhit)
+				bar:SetValue(log.amount)
+			else
+				local icon = select(3, GetSpellInfo(log.spellid))
+				bar = Skada:CreateBar("log"..i, log.spellname, log.amount, maxhit, icon, false)
+				bar.ts = log.ts
+				bar:EnableMouse()
+				bar:SetScript("OnMouseDown", function(bar, button) if button == "RightButton" then Skada:RightClick() end end)
+				local color = Skada:GetDefaultBarColor()
+				bar:SetColorAt(0, color.r, color.g, color.b, color.a or 1)
+				if icon then
+					bar:ShowIcon()
+				end
+			end
+			bar:SetTimerLabel(Skada:FormatNumber(log.amount)..", "..("%02.3f"):format(diff))
+		end
+	end
+	
+	-- Use our special sort function and sort.
+	Skada:SetSortFunction(sort_by_ts)
+	Skada:SortBars()
 end
