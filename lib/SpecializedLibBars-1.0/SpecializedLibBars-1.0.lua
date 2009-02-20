@@ -805,8 +805,12 @@ function barListPrototype:IsVertical()
 	return self.orientation % 2 == 0
 end
 
+-- MODIFIED
+-- Allows nil sort function.
 function barListPrototype:SetSortFunction(func)
-	assert(type(func) == "function")
+	if func then
+		assert(type(func) == "function")
+	end
 	self.sortFunc = func
 end
 

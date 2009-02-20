@@ -468,6 +468,14 @@ function Skada:Tick()
 				current.time = current.endtime - current.starttime
 				setPlayerActiveTimes(current)
 				current.name = current.mobname
+				
+				-- Tell each mode that set has finished and do whatever it wants to do about it.
+				for i, mode in ipairs(modes) do
+					if mode.SetComplete ~= nil then
+						mode:SetComplete(current)
+					end
+				end
+				
 				table.insert(sets, 1, current)
 			end
 		end
@@ -555,6 +563,9 @@ function Skada:PLAYER_REGEN_DISABLED()
 				self:DisplayMode(mymode)
 			end
 		end
+		
+		-- Force immediate update.
+		self:UpdateBars()
 	end
 end
 
@@ -848,10 +859,13 @@ function Skada:RightClick(group, button)
 	end
 end
 
---
--- API
--- These functions are meant to be used by modes.
---
+
+--[[
+
+API
+Everything below this is OK to use in modes.
+
+--]]
 
 -- Formats a number into human readable form.
 function Skada:FormatNumber(number)
@@ -866,6 +880,7 @@ function Skada:FormatNumber(number)
 	end
 end
 
+-- Register a mode.
 function Skada:AddMode(mode)
 	table.insert(modes, mode)
 	
@@ -879,9 +894,17 @@ function Skada:AddMode(mode)
 	table.sort(modes, function(a, b) return a.name < b.name end)
 end
 
+-- Unregister a mode.
 function Skada:RemoveMode(mode)
 	table.remove(modes, mode)
 end
+
+
+--[[
+
+Bars
+
+--]]
 
 function Skada:GetDefaultBarColor()
 	return self.db.profile.barcolor
@@ -889,6 +912,10 @@ end
 
 function Skada:GetBarGroup()
 	return self.bargroup
+end
+
+function Skada:SetSortFunction(func)
+	self.bargroup:SetSortFunction(func)
 end
 
 function Skada:SortBars()
@@ -930,7 +957,13 @@ function Skada:CreateBar(name, label, value, maxvalue, icon, o)
 end
 
 function Skada:RemoveAllBars()
+	-- Reset sort function.
+	self.bargroup:SetSortFunction(nil)
+	
+	-- Reset scroll offset.
 	self.bargroup:SetBarOffset(0)
+	
+	-- Remove the bars.
 	local bars = self.bargroup:GetBars()
 	if bars then
 		for i, bar in pairs(bars) do
@@ -938,8 +971,17 @@ function Skada:RemoveAllBars()
 			self.bargroup:RemoveBar(bar)
 		end
 	end
+	
+	-- Clean up.
 	self.bargroup:SortBars()
 end
+
+
+--[[
+
+Sets
+
+--]]
 
 -- If selectedset is "current", returns current set if we are in combat, otherwise returns the last set.
 function Skada:get_selected_set()
