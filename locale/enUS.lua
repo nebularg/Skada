@@ -81,6 +81,10 @@ L["Ask"] = "Ask"
 L["Condensed"] = "Condensed"
 L["Detailed"] = "Detailed"
 
+L["'s Death"] = "'s Death"
+L["Hide when solo"] = "Hide when solo"
+L["Hides Skada's window when not in a party or raid."] = "Hides Skada's window when not in a party or raid."
+
 L["Title bar"] = "Title bar"
 L["Background texture"] = "Background texture"
 L["The texture used as the background of the title."] = "The texture used as the background of the title."

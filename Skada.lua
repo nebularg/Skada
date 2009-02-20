@@ -80,7 +80,10 @@ function Skada:OnInitialize()
 	self:ApplySettings()
 	self.bargroup:HideIcon()
 	if self.db.profile.window.shown then
-		self.bargroup:Show()
+		-- Don't show window if we are solo and we have enabled the "Hide when solo" option.
+		if not (self.db.profile.hidesolo and GetNumRaidMembers() == 0 and GetNumPartyMembers() == 0) then
+			self.bargroup:Show()
+		end
 	else
 		self.bargroup:Hide()
 	end
@@ -325,6 +328,11 @@ local function check_for_join_and_leave()
 		elseif Skada.db.profile.reset.leave == 2 then
 			Skada:Reset()
 		end
+		
+		-- Hide window if we have enabled the "Hide when solo" option.
+		if Skada.db.profile.hidesolo then
+			Skada.bargroup:Hide()
+		end
 	end
 
 	if (GetNumRaidMembers() > 0 or GetNumPartyMembers() > 0) and not wasinparty then
@@ -335,7 +343,11 @@ local function check_for_join_and_leave()
 		elseif Skada.db.profile.reset.join == 2 then
 			Skada:Reset()
 		end
-		
+
+		-- Show window if we have enabled the "Hide when solo" option.
+		if Skada.db.profile.hidesolo then
+			Skada.bargroup:Show()
+		end
 	end
 
 	-- Mark our last party status.

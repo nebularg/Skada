@@ -25,6 +25,7 @@ Skada.defaults = {
 		window = {shown = true},
 		returnaftercombat=false,
 		mmbutton=true,
+		hidesolo=false,
 		set = "current",
 		mode = nil,
 		sets = {},
@@ -367,7 +368,7 @@ Skada.options = {
 											Skada:ShowMMButton(Skada.db.profile.mmbutton)
 							        	end,
 							},
-		
+
 							onlykeepbosses = {
 							        type="toggle",
 							        name=L["Only keep boss fighs"],
@@ -377,6 +378,15 @@ Skada.options = {
 							        set=function() Skada.db.profile.onlykeepbosses = not Skada.db.profile.onlykeepbosses end,
 							},
 							
+							hidesolo = {
+							        type="toggle",
+							        name=L["Hide when solo"],
+							        desc=L["Hides Skada's window when not in a party or raid."],
+							        order=24,
+							        get=function() return Skada.db.profile.hidesolo end,
+							        set=function() Skada.db.profile.hidesolo = not Skada.db.profile.hidesolo end,
+							},
+
 							numberformat = {
 								type="select",
 								name=L["Number format"],
@@ -384,7 +394,7 @@ Skada.options = {
 								values=	function() return {[1] = L["Condensed"], [2] = L["Detailed"]} end,
 								get=function() return Skada.db.profile.numberformat end,
 								set=function(self, opt) Skada.db.profile.numberformat = opt end,
-								order=24,
+								order=25,
 							},
 						}
 	        		},
