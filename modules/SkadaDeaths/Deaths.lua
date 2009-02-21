@@ -4,7 +4,6 @@ local mod = Skada:NewModule("DeathsMode", "AceEvent-3.0")
 local deathlog = Skada:NewModule("DeathLogMode", "AceEvent-3.0")
 
 mod.name = L["Deaths"]
-deathlog.name = L["Deathlog"]
 
 function mod:OnEnable()
 	self:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")

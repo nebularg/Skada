@@ -1,6 +1,6 @@
 ## Interface: 30000
 ## Title: Skada |r[|caaedc99fDeaths|r]
-## Notes: Adds a Deaths Taken mode and data collection to Skada.
+## Notes: Adds a Deaths mode and data collection to Skada.
 ## Author: Zarnivoop
 ## Version: 1.0
 ## Dependencies: Skada
