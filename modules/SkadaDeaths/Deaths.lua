@@ -51,7 +51,7 @@ function mod:log_deathlog(set, playerid, playername, spellid, spellname, amount,
 		table.insert(player.deathlog, 1, {["spellid"] = spellid, ["spellname"] = spellname, ["amount"] = amount, ["ts"] = timestamp})
 		
 		-- Trim.
-		while table.maxn(player.deathlog) > 10 do table.remove(player.deathlog) end
+		while table.maxn(player.deathlog) > 15 do table.remove(player.deathlog) end
 	end
 end
 
@@ -93,7 +93,7 @@ function mod:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID, s
 			-- Spell damage.
 			local spellId, spellName, spellSchool, samount, soverkill, sschool, sresisted, sblocked, sabsorbed, scritical, sglancing, scrushing = ...
 
-			self:log_deathlog(current, dstGUID, dstName, spellId, srcName.."'s "..spellName, samount, timestamp)
+			self:log_deathlog(current, dstGUID, dstName, spellId, srcName.."'s "..spellName, 0-samount, timestamp)
 				
 		elseif eventtype == 'SWING_DAMAGE' then
 			-- White melee.
@@ -101,9 +101,17 @@ function mod:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID, s
 			local spellid = 6603
 			local spellname = L["Attack"]
 			
-			self:log_deathlog(current, dstGUID, dstName, spellid, srcName.."'s "..spellname, samount, timestamp)
+			self:log_deathlog(current, dstGUID, dstName, spellid, srcName.."'s "..spellname, 0-samount, timestamp)
 			
-		end
+		elseif eventtype == 'SPELL_HEAL' or eventtype == 'SPELL_PERIODIC_HEAL' then
+	
+			-- Healing
+			local spellId, spellName, spellSchool, samount, soverhealing, scritical = ...
+			smount = min(0, samount - soverhealing)
+			
+			self:log_deathlog(current, dstGUID, dstName, spellId, srcName.."'s "..spellName, samount, timestamp)
+	end
+
 
 	end
 
@@ -135,7 +143,7 @@ function mod:Update(set)
 				bar:SetScript("OnMouseDown", function(bar, button)
 												if button == "LeftButton" then
 													deathlog.playerid = player.id
-													deathlog.name = player.name.."'s Death"
+													deathlog.name = player.name..L["'s Death"]
 													Skada:DisplayMode(deathlog)
 												elseif button == "RightButton" then Skada:RightClick() end end)
 				local color = Skada.classcolors[player.class] or Skada:GetDefaultBarColor()
@@ -178,17 +186,20 @@ function deathlog:Update(set)
 				bar:SetValue(log.amount)
 			else
 				local icon = select(3, GetSpellInfo(log.spellid))
-				bar = Skada:CreateBar("log"..i, log.spellname, log.amount, maxhit, icon, false)
+				bar = Skada:CreateBar("log"..i, log.spellname, math.abs(log.amount), maxhit, icon, false)
 				bar.ts = log.ts
 				bar:EnableMouse()
 				bar:SetScript("OnMouseDown", function(bar, button) if button == "RightButton" then Skada:RightClick() end end)
-				local color = Skada:GetDefaultBarColor()
-				bar:SetColorAt(0, color.r, color.g, color.b, color.a or 1)
+				if log.amount > 0 then
+					bar:SetColorAt(0, 0, 255, 0, 1)
+				else
+					bar:SetColorAt(0, 255, 0, 0, 1)
+				end
 				if icon then
 					bar:ShowIcon()
 				end
 			end
-			bar:SetTimerLabel(Skada:FormatNumber(log.amount)..", "..("%02.3f"):format(diff))
+			bar:SetTimerLabel(Skada:FormatNumber(log.amount)..", "..("%+2.3f"):format(diff))
 		end
 	end
 	
