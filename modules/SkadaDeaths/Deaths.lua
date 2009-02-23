@@ -44,6 +44,14 @@ function mod:AddSetAttributes(set)
 	end
 end
 
+function mod:log_resurrect(set, playerid, playername)
+	if set then
+		local player = Skada:get_player(set, playerid, playername)
+		
+		player.deathlog = {}
+	end
+end
+
 function mod:log_deathlog(set, playerid, playername, spellid, spellname, amount, timestamp)
 	if set then
 		local player = Skada:get_player(set, playerid, playername)
@@ -75,10 +83,10 @@ end
 
 function mod:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
 	-- Deaths
-	if Skada:IsDataCollectionActive() and dstName and Skada:UnitIsInterestingNoPets(dstName) then
+	if Skada:IsDataCollectionActive() and dstName and Skada:UnitIsInteresting(dstName) then
 		local current = Skada:GetCurrentSet()
 	
-		if eventtype == 'UNIT_DIED' then
+		if eventtype == 'UNIT_DIED' and Skada:UnitIsInterestingNoPets(dstName) then
 	
 			if not UnitIsFeignDeath(dstName) then	-- Those pesky hunters
 				local current = Skada:GetCurrentSet()
@@ -90,9 +98,10 @@ function mod:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID, s
 			end
 			
 		elseif srcName and eventtype == 'SPELL_DAMAGE' or eventtype == 'SPELL_PERIODIC_DAMAGE' or eventtype == 'SPELL_BUILDING_DAMAGE' or eventtype == 'RANGE_DAMAGE' then
-			-- Spell damage.
+			-- Spell damage. We have to fix for pets. (hi there, Malygos!)
 			local spellId, spellName, spellSchool, samount, soverkill, sschool, sresisted, sblocked, sabsorbed, scritical, sglancing, scrushing = ...
-
+			
+			dstGUID, dstName = Skada:FixMyPets(dstGUID, dstName)
 			self:log_deathlog(current, dstGUID, dstName, spellId, srcName.."'s "..spellName, 0-samount, timestamp)
 				
 		elseif srcName and eventtype == 'SWING_DAMAGE' then
@@ -101,6 +110,7 @@ function mod:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID, s
 			local spellid = 6603
 			local spellname = L["Attack"]
 			
+			dstGUID, dstName = Skada:FixMyPets(dstGUID, dstName)
 			self:log_deathlog(current, dstGUID, dstName, spellid, srcName.."'s "..spellname, 0-samount, timestamp)
 			
 		elseif srcName and eventtype == 'SPELL_HEAL' or eventtype == 'SPELL_PERIODIC_HEAL' then
@@ -109,7 +119,12 @@ function mod:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID, s
 			local spellId, spellName, spellSchool, samount, soverhealing, scritical = ...
 			smount = min(0, samount - soverhealing)
 			
+			srcGUID, srcName = Skada:FixMyPets(srcGUID, srcName)
+			dstGUID, dstName = Skada:FixMyPets(dstGUID, dstName)
 			self:log_deathlog(current, dstGUID, dstName, spellId, srcName.."'s "..spellName, samount, timestamp)
+		elseif srcName and eventtype == 'SPELL_RESURRECT' then
+			-- Clear deathlog for this player.
+			self:log_resurrect(dstGUID, dstName)
 		end
 
 	end
@@ -188,7 +203,7 @@ function deathlog:Update(set)
 				bar = Skada:CreateBar("log"..i, log.spellname, math.abs(log.amount), maxhit, icon, false)
 				bar.ts = log.ts
 				bar:EnableMouse()
-				bar:SetScript("OnMouseDown", function(bar, button) if button == "RightButton" then Skada:RightClick() end end)
+				bar:SetScript("OnMouseDown", function(bar, button) if button == "RightButton" then Skada:DisplayMode(mod) end end)
 				if log.amount > 0 then
 					bar:SetColorAt(0, 0, 255, 0, 1)
 				else
@@ -198,7 +213,7 @@ function deathlog:Update(set)
 					bar:ShowIcon()
 				end
 			end
-			bar:SetTimerLabel(Skada:FormatNumber(log.amount)..", "..("%+2.3f"):format(diff))
+			bar:SetTimerLabel(Skada:FormatNumber(log.amount)..", "..("%2.3f"):format(diff))
 		end
 	end
 	
