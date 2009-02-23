@@ -89,13 +89,13 @@ function mod:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID, s
 				self:log_death(total, dstGUID, dstName, timestamp)
 			end
 			
-		elseif eventtype == 'SPELL_DAMAGE' or eventtype == 'SPELL_PERIODIC_DAMAGE' or eventtype == 'SPELL_BUILDING_DAMAGE' or eventtype == 'RANGE_DAMAGE' then
+		elseif srcName and eventtype == 'SPELL_DAMAGE' or eventtype == 'SPELL_PERIODIC_DAMAGE' or eventtype == 'SPELL_BUILDING_DAMAGE' or eventtype == 'RANGE_DAMAGE' then
 			-- Spell damage.
 			local spellId, spellName, spellSchool, samount, soverkill, sschool, sresisted, sblocked, sabsorbed, scritical, sglancing, scrushing = ...
 
 			self:log_deathlog(current, dstGUID, dstName, spellId, srcName.."'s "..spellName, 0-samount, timestamp)
 				
-		elseif eventtype == 'SWING_DAMAGE' then
+		elseif srcName and eventtype == 'SWING_DAMAGE' then
 			-- White melee.
 			local samount, soverkill, sschool, sresisted, sblocked, sabsorbed, scritical, sglancing, scrushing = ...
 			local spellid = 6603
@@ -103,15 +103,14 @@ function mod:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID, s
 			
 			self:log_deathlog(current, dstGUID, dstName, spellid, srcName.."'s "..spellname, 0-samount, timestamp)
 			
-		elseif eventtype == 'SPELL_HEAL' or eventtype == 'SPELL_PERIODIC_HEAL' then
+		elseif srcName and eventtype == 'SPELL_HEAL' or eventtype == 'SPELL_PERIODIC_HEAL' then
 	
 			-- Healing
 			local spellId, spellName, spellSchool, samount, soverhealing, scritical = ...
 			smount = min(0, samount - soverhealing)
 			
 			self:log_deathlog(current, dstGUID, dstName, spellId, srcName.."'s "..spellName, samount, timestamp)
-	end
-
+		end
 
 	end
 
