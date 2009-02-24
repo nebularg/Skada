@@ -103,8 +103,7 @@ function Skada:Command(param)
 	if param == "pets" then
 		self:PetDebug()
 	elseif param == "test" then
-		local id, name = GetChannelName("aohunters");
-		self:Print("id: "..id)
+		self:OpenMenu()
 	elseif param == "reset" then
 		self:Reset()
 	elseif param == "config" then
@@ -136,6 +135,14 @@ function Skada:Command(param)
 		self:Print(("%-20s %-s"):format("/skada report",L["reports the active mode"]))
 		self:Print(("%-20s %-s"):format("/skada reset",L["resets all data"]))
 		self:Print(("%-20s %-s"):format("/skada config",L["opens the configuration window"]))
+	end
+end
+
+local function find_mode(name)
+	for i, mode in ipairs(modes) do
+		if mode.name == name then
+			return mode
+		end
 	end
 end
 
@@ -192,7 +199,9 @@ function Skada:ShowMMButton(show)
 end
 
 function Skada:AnchorClicked(cbk, group, button)
-	if button == "RightButton" then
+	if IsShiftKeyDown() then
+		Skada:OpenMenu()
+	elseif button == "RightButton" then
 		Skada:RightClick()
 	end
 end
@@ -428,6 +437,176 @@ function Skada:Reset()
 	self:Print(L["All data has been reset."])
 end
 
+function Skada:OpenMenu()
+
+	local report_channel = "Say"
+	local report_number = 10
+	local report_mode = nil
+	if selectedmode then
+		report_mode = selectedmode
+	end
+
+	local skadamenu = CreateFrame("Frame", "SkadaMenu")
+	skadamenu.displayMode = "MENU"
+	local info = {}
+	skadamenu.initialize = function(self, level)
+	    if not level then return end
+	    wipe(info)
+	    if level == 1 then
+	        -- Create the title of the menu
+	        info.isTitle = 1
+	        info.text = "Skada Menu"
+	        info.notCheckable = 1
+	        UIDropDownMenu_AddButton(info, level)
+	        
+	        wipe(info)
+	        info.text = "Switch to mode"
+	        info.hasArrow = 1
+	        info.value = "show"
+	        info.notCheckable = 1
+	        UIDropDownMenu_AddButton(info, level)
+
+	        wipe(info)
+	        info.text = "Report"
+	        info.hasArrow = 1
+	        info.value = "report"
+	        info.notCheckable = 1
+	        UIDropDownMenu_AddButton(info, level)
+	        
+	        -- Add a blank separator
+	        wipe(info)
+	        info.disabled = 1
+	        info.notCheckable = 1
+	        UIDropDownMenu_AddButton(info, level)
+	        
+	        wipe(info)
+	        info.text = "Toggle window"
+	        info.func = function() Skada:ToggleWindow() end
+	        info.notCheckable = 1
+	        UIDropDownMenu_AddButton(info, level)
+
+	        -- Close menu item
+	        wipe(info)
+	        info.text         = CLOSE
+	        info.func         = function() CloseDropDownMenus() end
+	        info.checked      = nil
+	        info.notCheckable = 1
+	        UIDropDownMenu_AddButton(info, level)
+	    elseif level == 2 then
+		    if UIDROPDOWNMENU_MENU_VALUE == "show" then
+		        for i, module in ipairs(Skada:GetModes()) do
+			        wipe(info)
+		            info.text = module.name
+		            info.func = function() Skada:DisplayMode(module) end
+			        info.notCheckable = 1
+		            UIDropDownMenu_AddButton(info, level)
+		        end
+		    elseif UIDROPDOWNMENU_MENU_VALUE == "report" then
+		        wipe(info)
+		        info.text = "Mode"
+		        info.hasArrow = 1
+		        info.value = "modes"
+		        info.notCheckable = 1
+		        UIDropDownMenu_AddButton(info, level)
+		        
+		        wipe(info)
+		        info.text = "Lines"
+		        info.hasArrow = 1
+		        info.value = "number"
+		        info.notCheckable = 1
+		        UIDropDownMenu_AddButton(info, level)
+		        
+		        wipe(info)
+		        info.text = "Channel"
+		        info.hasArrow = 1
+		        info.value = "channels"
+		        info.notCheckable = 1
+		        UIDropDownMenu_AddButton(info, level)
+		        
+		        wipe(info)
+		        info.text = "Send report"
+		        info.func = function()
+		        				if report_mode ~= nil then
+		        					-- Reporting is done on current bars... so we have to switch to the selected mode.
+		        					local old_mode = selectedmode
+			        				Skada:DisplayMode(report_mode)
+			        				Skada:UpdateBars()
+			        				if report_channel == "Self" then
+										Skada:Report(report_channel, "self", report_number)
+									else
+										Skada:Report(report_channel, "preset", report_number)
+									end
+									-- Switch back to previous mode. Can you say "ugly"?
+									if old_mode then
+										Skada:DisplayMode(old_mode)
+				        				Skada:UpdateBars()
+									end
+								else
+									self:Print("No mode selected for report.")
+								end
+		        			end
+		        info.notCheckable = 1
+		        UIDropDownMenu_AddButton(info, level)
+		    end
+		elseif level == 3 then
+		    if UIDROPDOWNMENU_MENU_VALUE == "modes" then
+
+		        for i, module in ipairs(Skada:GetModes()) do
+			        wipe(info)
+		            info.text = module.name
+		            info.checked = (report_mode == module)
+		            info.func = function() report_mode = module end
+		            UIDropDownMenu_AddButton(info, level)
+		        end
+		    elseif UIDROPDOWNMENU_MENU_VALUE == "number" then
+		        for i = 1,10 do
+			        wipe(info)
+		            info.text = i
+		            info.checked = (report_number == i)
+		            info.func = function() report_number = i end
+		            UIDropDownMenu_AddButton(info, level)
+		        end
+		    elseif UIDROPDOWNMENU_MENU_VALUE == "channels" then
+		        wipe(info)
+	            
+		        info.text = "Say"
+		        info.checked = (report_channel == "Say")
+		        info.func = function() report_channel = "Say" end
+		        UIDropDownMenu_AddButton(info, level)
+        
+	            info.text = "Raid"
+	            info.checked = (report_channel == "Raid")
+	            info.func = function() report_channel = "Raid" end
+	            UIDropDownMenu_AddButton(info, level)
+
+	            info.text = "Party"
+	            info.checked = (report_channel == "Party")
+	            info.func = function() report_channel = "Party" end
+	            UIDropDownMenu_AddButton(info, level)
+	            
+	            info.text = "Guild"
+	            info.checked = (report_channel == "Guild")
+	            info.func = function() report_channel = "Guild" end
+	            UIDropDownMenu_AddButton(info, level)
+	            
+	            info.text = "Officer"
+	            info.checked = (report_channel == "Officer")
+	            info.func = function() report_channel = "Officer" end
+	            UIDropDownMenu_AddButton(info, level)
+	            
+	            info.text = "Self"
+	            info.checked = (report_channel == "Self")
+	            info.func = function() report_channel = "Self" end
+	            UIDropDownMenu_AddButton(info, level)
+		    end
+		
+	    end
+	end
+	
+	ToggleDropDownMenu(1, nil, skadamenu, self.bargroup:GetName(), 0, 0)
+
+end
+
 -- Applies settings to things like the bar window.
 function Skada:ApplySettings()
 	local g = self.bargroup
@@ -528,14 +707,6 @@ function Skada:Tick()
 			end
 		end
 		
-	end
-end
-
-local function find_mode(name)
-	for i, mode in ipairs(modes) do
-		if mode.name == name then
-			return mode
-		end
 	end
 end
 
@@ -1071,4 +1242,16 @@ function Skada:FixPets(action)
 		end
 	end
 
+end
+
+-- Same thing, only takes two arguments and returns two arguments.
+function Skada:FixMyPets(playerGUID, playerName)
+	if not UnitIsPlayer(playerName) then
+		local pet = pets[playerGUID]
+		if pet then
+			return pet.id, pet.name
+		end
+	end
+	-- No pet match - return the player.
+	return playerGUID, playerName
 end

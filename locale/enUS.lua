@@ -95,6 +95,8 @@ L["The thickness of the borders."] = "The thickness of the borders."
 L["Background color"] = "Background color"
 L["The background color of the title."] = "The background color of the title."
 
+L["'s "] = "'s "
+
 -- SkadaDebuffs
 L["Debuff uptimes"] = true
 L["'s Debuffs"] = true
