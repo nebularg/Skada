@@ -97,21 +97,29 @@ function mod:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID, s
 				self:log_death(total, dstGUID, dstName, timestamp)
 			end
 			
-		elseif srcName and eventtype == 'SPELL_DAMAGE' or eventtype == 'SPELL_PERIODIC_DAMAGE' or eventtype == 'SPELL_BUILDING_DAMAGE' or eventtype == 'RANGE_DAMAGE' then
+		elseif (eventtype == 'SPELL_DAMAGE' or eventtype == 'SPELL_PERIODIC_DAMAGE' or eventtype == 'SPELL_BUILDING_DAMAGE' or eventtype == 'RANGE_DAMAGE') then
 			-- Spell damage. We have to fix for pets. (hi there, Malygos!)
 			local spellId, spellName, spellSchool, samount, soverkill, sschool, sresisted, sblocked, sabsorbed, scritical, sglancing, scrushing = ...
 			
 			dstGUID, dstName = Skada:FixMyPets(dstGUID, dstName)
-			self:log_deathlog(current, dstGUID, dstName, spellId, srcName.."'s "..spellName, 0-samount, timestamp)
+			if srcName then
+				self:log_deathlog(current, dstGUID, dstName, spellId, srcName..L["'s "]..spellName, 0-samount, timestamp)
+			else
+				self:log_deathlog(current, dstGUID, dstName, spellId, spellName, 0-samount, timestamp)
+			end
 				
-		elseif srcName and eventtype == 'SWING_DAMAGE' then
+		elseif eventtype == 'SWING_DAMAGE' then
 			-- White melee.
 			local samount, soverkill, sschool, sresisted, sblocked, sabsorbed, scritical, sglancing, scrushing = ...
 			local spellid = 6603
 			local spellname = L["Attack"]
 			
 			dstGUID, dstName = Skada:FixMyPets(dstGUID, dstName)
-			self:log_deathlog(current, dstGUID, dstName, spellid, srcName.."'s "..spellname, 0-samount, timestamp)
+			if srcName then
+				self:log_deathlog(current, dstGUID, dstName, spellid, srcName..L["'s "]..spellname, 0-samount, timestamp)
+			else
+				self:log_deathlog(current, dstGUID, dstName, spellid, spellname, 0-samount, timestamp)
+			end
 			
 		elseif srcName and eventtype == 'SPELL_HEAL' or eventtype == 'SPELL_PERIODIC_HEAL' then
 	
@@ -124,7 +132,7 @@ function mod:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID, s
 			self:log_deathlog(current, dstGUID, dstName, spellId, srcName.."'s "..spellName, samount, timestamp)
 		elseif srcName and eventtype == 'SPELL_RESURRECT' then
 			-- Clear deathlog for this player.
-			self:log_resurrect(dstGUID, dstName)
+			self:log_resurrect(current, dstGUID, dstName)
 		end
 
 	end
@@ -197,7 +205,7 @@ function deathlog:Update(set)
 			local bar = Skada:GetBar("log"..i)
 			if bar then
 				bar:SetMaxValue(maxhit)
-				bar:SetValue(log.amount)
+				bar:SetValue(max.abs(log.amount))
 			else
 				local icon = select(3, GetSpellInfo(log.spellid))
 				bar = Skada:CreateBar("log"..i, log.spellname, math.abs(log.amount), maxhit, icon, false)
