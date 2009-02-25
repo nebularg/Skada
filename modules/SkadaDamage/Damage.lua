@@ -8,6 +8,25 @@ local spellmod = Skada:NewModule("DamageModeSpellView")
 mod.name = L["Damage"]
 dpsmod.name = L["DPS"]
 
+local function getDPS(set, player)
+	local totaltime = Skada:PlayerActiveTime(set, player)
+	
+	return player.damage / math.max(1,totaltime)
+end
+
+local function getRaidDPS(set)
+	if set.time > 0 then
+		return set.damage / math.max(1, set.time)
+	else
+		local endtime = set.endtime
+		if not endtime then
+			endtime = time()
+		end
+		return set.damage / math.max(1, endtime - set.starttime)
+	end
+end
+
+
 function mod:OnEnable()
 	self:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
 	Skada:AddMode(self)
@@ -25,18 +44,26 @@ function dpsmod:OnDisable()
 	Skada:RemoveMode(self)
 end
 
+mod.Feeds = {
+	["Personal DPS"] =	function()
+							local current = Skada:GetCurrentSet()
+							if current then
+								local player = current.players[UnitGUID("player")]
+								if player then
+									return ("%02.1f"):format(getDPS(current, player))
+								end
+							end
+						end,
+	["Raid DPS"] =		function()
+							local current = Skada:GetCurrentSet()
+							if current then
+								return ("%02.1f"):format(getRaidDPS(current))
+							end
+						end
+}
+
 function mod:AddToTooltip(set, tooltip)
-	if set.time > 0 then
-		local raiddps = set.damage / math.max(1, set.time)
-	 	GameTooltip:AddDoubleLine(L["DPS"], ("%02.1f"):format(raiddps), 1,1,1)
-	else
-		local endtime = set.endtime
-		if not endtime then
-			endtime = time()
-		end
-		local raiddps = set.damage / math.max(1, endtime - set.starttime)
-	 	GameTooltip:AddDoubleLine(L["DPS"], ("%02.1f"):format(raiddps), 1,1,1)
-	end
+ 	GameTooltip:AddDoubleLine(L["DPS"], ("%02.1f"):format(getRaidDPS(set)), 1,1,1)
 end
 
 -- Called by Skada when a new player is added to a set.
@@ -212,12 +239,6 @@ function mod:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID, s
 		end
 	end
 
-end
-
-local function getDPS(set, player)
-	local totaltime = Skada:PlayerActiveTime(set, player)
-	
-	return player.damage / math.max(1,totaltime)
 end
 
 function mod:Update(set)

@@ -893,6 +893,12 @@ function dataobj:OnClick(button)
 end
 
 function Skada:UpdateBars()
+	-- Update data feed.
+	-- This is done even if our set has not changed, since for example DPS changes even though the data does not.
+	if selected_data_feed ~= nil then
+		
+	end
+	
 	if not changed then
 		return
 	end
