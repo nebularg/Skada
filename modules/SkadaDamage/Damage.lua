@@ -165,6 +165,7 @@ function mod:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID, s
 				dmg.critical = scritical
 				dmg.glancing = sglancing
 				dmg.crushing = scrushing
+				dmg.missed = nil
 
 				Skada:FixPets(dmg)
 				self:log_damage(current, dmg)
@@ -187,6 +188,7 @@ function mod:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID, s
 				dmg.critical = scritical
 				dmg.glancing = sglancing
 				dmg.crushing = scrushing
+				dmg.missed = nil
 				
 				Skada:FixPets(dmg)
 				self:log_damage(current, dmg)
@@ -194,7 +196,6 @@ function mod:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID, s
 			end
 		elseif eventtype == 'SWING_MISSED' then
 			-- Melee misses
-			local dmg = {playerid = srcGUID, playername = srcName, spellid = 6603, spellname = L["Attack"], amount = 0, overkill = 0, resisted = 0, blocked = 0, absorbed = 0, critical = 0, glancing = 0, crushing = 0, missed = 1}
 
 			dmg.playerid = srcGUID
 			dmg.playername = srcName
