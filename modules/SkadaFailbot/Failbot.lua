@@ -94,7 +94,7 @@ function mod:Update(set)
 				bar:SetScript("OnMouseDown", function(bar, button) 
 												if button == "LeftButton" then
 													playermod.playerid = player.id
-													playermod.name = player.name.."'s Fails"
+													playermod.name = player.name..L["'s Fails"]
 													Skada:DisplayMode(playermod)
 											 elseif button == "RightButton" then Skada:RightClick() end end)
 				local color = Skada.classcolors[player.class] or Skada:GetDefaultBarColor()

@@ -1,0 +1,62 @@
+1.0-9:
+* Added a "/skada toggle" command for toggling showing the window other than through clicking.
+* Added data feeds for showing in an LDB display addon such as Titan Panel. Currently there are personal DPS, raid DPS, and Threat feeds available. These feeds are only available if you are running the corresponding module.
+* Added a menu on shift-clicking the window header; currently has options for setting mode and for reporting. The reporting bit is a little limited at the moment.
+* Added an optional background frame. It can either change size dynamically according to the number of shown bars, or have a fixed size, which whill then determine the number of shown bars.
+* Fixed Total segment not being saved - note that you have reset once for this to start working.
+* Fixed profile changing/resetting/copying not taking immediate effect and not saving some settings properly.
+
+1.0-8:
+* Fixed self and party pets not appearing in Threat mode when in a party.
+* Improved memory usage.
+
+1.0-7:
+* The window is now scrollable.
+* Threat mode now shows threat value in addition to percentage relative to tank.
+* /skada report now accepts channel and player names. Also officer's channel and "self".
+* Fixed a serious issue with the .toc, which caused Skada not to be loaded if the user did not have LibDataBroker from another addon loaded.
+* The header is now customizable. The default appearance is a bit prettier as well.
+
+1.0-6:
+* Fixed Debuff uptimes for Total segment.
+* Fixed reporting (the order was off).
+
+1.0-5:
+* Now translated (mostly) to German, French, Korean, Traditional and Simplified Chinese.
+* Added reverse bars as an option.
+* Fixed Fails not showing up in the Total segment (and twice in the current one).
+* Fix for Threat bars now being removed.
+* HPS added to Healing mode.
+* Added support for Class Colors.
+* Added automatic/asked data reset options.
+* Added option for choosing condensed or detailed number format.
+* Fight segments are now stored persistently and will not disappear after a relog/reloadui.
+* Reporting improved; can now do /skada report [say|guild|party|raid] [number].
+
+r37:
+* Added a window lock option.
+* Added a DPS mode.
+* DPS measurement improved; should now be accurate for the "Total" segment.
+
+r29:
+* Fixed a nasty memory leak.
+
+r23:
+* Added zhCN translation, courtesy of wowui.cn.
+
+r22:
+* Added a simple /skada report function.
+* Fixed damage spell details; don't show resists, absorbs etc for now. Maybe split view at some point.
+* Translations fixed; got error from the ones not loaded previously.
+
+r17:
+
+* Fully translateable.
+* Added /skada reset command.
+* Fixed a bug where bars would not be cleaned up in-between fights, causing leftover bars to remain.
+
+r6:
+
+* Added option to show/hide minimap button.
+* Fixed pet cache bug leaking memory.
+* Fixed Failbot detailed views.

@@ -13,23 +13,23 @@ Skada.defaults = {
 		barheight=15,
 		barwidth=180,
 		barorientation=1,
-		barcolor = {r = 0.41, g = 0.8, b = 0.94, a=1},
+		barcolor = {r = 0.3, g = 0.3, b = 0.8, a=1},
 		barslocked=false,
-		title = {texture="Round", bordertexture="None", borderthickness=2, color = {r=0,g=0,b=0,a=0.6}},
+		title = {margin=0, texture="Round", bordertexture="None", borderthickness=2, color = {r=0,g=0,b=0,a=0.6}},
 		reversegrowth=false,
 		reset={instance=1, join=1, leave=1},
 		icon = {},
 		modeincombat="",
 		numberformat=1,
 		onlykeepbosses=false,
-		window = {shown = true},
+		window = {shown = true, enablebackground = false, margin=0, height=150, texture="None", bordertexture="None", borderthickness=0, color = {r=0,g=0,b=0.5,a=0.5}},
 		returnaftercombat=false,
 		mmbutton=true,
 		hidesolo=false,
 		set = "current",
 		mode = nil,
+		feed = "",
 		sets = {},
-		current = nil,
 		total = nil,
 	}
 }
@@ -142,9 +142,10 @@ Skada.options = {
 								type="color",
 								name=L["Bar color"],
 								desc=L["Choose the default color of the bars."],
+								hasAlpha=true,
 								get=function(i) 
 										local c = Skada.db.profile.barcolor
-										return c.r, c.g, c.b, a
+										return c.r, c.g, c.b, c.a
 									end,
 								set=function(i, r,g,b,a) 
 										Skada.db.profile.barcolor = {["r"] = r, ["g"] = g, ["b"] = b, ["a"] = a}
@@ -240,13 +241,13 @@ Skada.options = {
 								order=2,
 						    },					
 					
-							borderthickness = {
+							thickness = {
 								type="range",
 								name=L["Border thickness"],
 								desc=L["The thickness of the borders."],
 								min=0,
-								max=100,
-								step=1,
+								max=50,
+								step=0.5,
 								get=function() return Skada.db.profile.title.borderthickness end,
 								set=function(self, val)
 											Skada.db.profile.title.borderthickness = val
@@ -254,7 +255,22 @@ Skada.options = {
 										end,
 								order=3,
 							},
-							
+
+							margin = {
+								type="range",
+								name=L["Margin"],
+								desc=L["The margin between the outer edge and the background texture."],
+								min=0,
+								max=50,
+								step=0.5,
+								get=function() return Skada.db.profile.title.margin end,
+								set=function(self, val)
+											Skada.db.profile.title.margin = val
+						         			Skada:ApplySettings()
+										end,
+								order=4,
+							},	
+														
 							color = {
 								type="color",
 								name=L["Background color"],
@@ -268,9 +284,119 @@ Skada.options = {
 										Skada.db.profile.title.color = {["r"] = r, ["g"] = g, ["b"] = b, ["a"] = a}
 										Skada:ApplySettings()
 									end,
-								order=4,
+								order=5,
 							},
 							
+						}
+	        		},
+
+	        		windowoptions = {
+	        			type = "group",
+	        			name = L["Background"],
+	        			order=2,
+						args = {
+
+							enablebackground = {
+							        type="toggle",
+							        name=L["Enable"],
+							        desc=L["Adds a background frame under the bars. The height of the background frame determines how many bars are shown. This will override the max number of bars setting."],
+							        order=0,
+							        get=function() return Skada.db.profile.window.enablebackground end,
+							        set=function() 
+							        		Skada.db.profile.window.enablebackground = not Skada.db.profile.window.enablebackground
+						         			Skada:ApplySettings()
+							        	end,
+							},
+							
+						    texture = {
+						         type = 'select',
+						         dialogControl = 'LSM30_Statusbar',
+						         name = L["Background texture"],
+						         desc = L["The texture used as the background."],
+						         values = AceGUIWidgetLSMlists.statusbar,
+						         get = function() return Skada.db.profile.window.texture end,
+						         set = function(self,key)
+					         				Skada.db.profile.window.texture = key
+						         			Skada:ApplySettings()
+										end,
+								order=1,
+						    },						    
+						    
+						    bordertexture = {
+						         type = 'select',
+						         dialogControl = 'LSM30_Border',
+						         name = L["Border texture"],
+						         desc = L["The texture used for the borders."],
+						         values = AceGUIWidgetLSMlists.border,
+						         get = function() return Skada.db.profile.window.bordertexture end,
+						         set = function(self,key)
+					         				Skada.db.profile.window.bordertexture = key
+						         			Skada:ApplySettings()
+										end,
+								order=2,
+						    },					
+					
+							thickness = {
+								type="range",
+								name=L["Border thickness"],
+								desc=L["The thickness of the borders."],
+								min=0,
+								max=50,
+								step=0.5,
+								get=function() return Skada.db.profile.window.borderthickness end,
+								set=function(self, val)
+											Skada.db.profile.window.borderthickness = val
+						         			Skada:ApplySettings()
+										end,
+								order=3,
+							},
+							
+							margin = {
+								type="range",
+								name=L["Margin"],
+								desc=L["The margin between the outer edge and the background texture."],
+								min=0,
+								max=50,
+								step=0.5,
+								get=function() return Skada.db.profile.window.margin end,
+								set=function(self, val)
+											Skada.db.profile.window.margin = val
+						         			Skada:ApplySettings()
+										end,
+								order=4,
+							},							
+
+							height = {
+								type="range",
+								name=L["Window height"],
+								desc=L["The height of the window. If this is 0 the height is dynamically changed according to how many bars exist."],
+								min=0,
+								max=600,
+								step=1,
+								get=function() return Skada.db.profile.window.height end,
+								set=function(self, height)
+											Skada.db.profile.window.height = height
+						         			Skada:ApplySettings()
+										end,
+								order=5,
+							},
+							
+							color = {
+								type="color",
+								name=L["Background color"],
+								desc=L["The color of the background."],
+								hasAlpha=true,
+								get=function(i) 
+										local c = Skada.db.profile.window.color
+										return c.r, c.g, c.b, c.a
+									end,
+								set=function(i, r,g,b,a) 
+										Skada.db.profile.window.color = {["r"] = r, ["g"] = g, ["b"] = b, ["a"] = a}
+										Skada:ApplySettings()
+									end,
+								order=6,
+							},							
+														
 						}
 	        		},
 	        		
@@ -396,6 +522,25 @@ Skada.options = {
 								set=function(self, opt) Skada.db.profile.numberformat = opt end,
 								order=25,
 							},
+							
+							datafeed = {
+								type="select",
+								name=L["Data feed"],
+								desc=L["Choose which data feed to show in the DataBroker view. This requires an LDB display addon, such as Titan Panel."],
+								values=	function()
+											local feeds = {}
+											feeds[""] = L["None"]
+											for name, func in pairs(Skada:GetFeeds()) do feeds[name] = name end
+											return feeds
+										end,
+								get=function() return Skada.db.profile.feed end,
+								set=function(self, feed)
+											Skada.db.profile.feed = feed
+											if feed ~= "" then Skada:SetFeed(Skada:GetFeeds()[feed]) end
+										end,
+								order=26,
+							},
+							
 						}
 	        		},
 	        }

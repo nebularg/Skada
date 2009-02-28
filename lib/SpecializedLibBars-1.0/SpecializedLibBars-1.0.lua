@@ -350,13 +350,15 @@ do
 		barLists[self][name] = list
 		list.name = name
 		
-		-- list:SetBackdrop({
-			-- bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
-			-- edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-			-- inset = 0,
-			-- edgeSize = 12,
-			-- tile = true
-		-- })
+		--[[
+		list:SetBackdrop({
+			bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
+			edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+			inset = 0,
+			edgeSize = 12,
+			tile = true
+		})
+		--]]
 
 		list.button = CreateFrame("Button", nil, list)
 		list.button:SetBackdrop(frame_defaults)

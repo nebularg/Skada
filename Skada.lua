@@ -39,6 +39,12 @@ local wasinparty = false
 -- By default we just use RAID_CLASS_COLORS as class colors.
 Skada.classcolors = RAID_CLASS_COLORS
 
+-- The selected data feed.
+local selectedfeed = nil
+
+-- A list of data feeds available. Modules add to it.
+local feeds = {}
+
 function Skada:OnInitialize()
 	-- Register some SharedMedia goodies.
 	media:Register("font", "Adventure",				[[Interface\Addons\Skada\fonts\Adventure.ttf]])
@@ -77,26 +83,14 @@ function Skada:OnInitialize()
 	self.bargroup.RegisterCallback(self,"AnchorClicked")
 	self.bargroup:EnableMouse(true)
 	self.bargroup:SetScript("OnMouseDown", function(self, button) if button == "RightButton" then Skada:RightClick() end end)
-	self:ApplySettings()
 	self.bargroup:HideIcon()
-	if self.db.profile.window.shown then
-		-- Don't show window if we are solo and we have enabled the "Hide when solo" option.
-		if not (self.db.profile.hidesolo and GetNumRaidMembers() == 0 and GetNumPartyMembers() == 0) then
-			self.bargroup:Show()
-		end
-	else
-		self.bargroup:Hide()
-	end
-	
-	-- Restore window position.
-	win.RegisterConfig(self.bargroup, self.db.profile)
-	win.RestorePosition(self.bargroup)
-
-	-- Minimap button.
-	icon:Register("Skada", dataobj, self.db.profile.icon)
-	self:ShowMMButton(self.db.profile.mmbutton)
 	
 	self:RegisterChatCommand("skada", "Command")
+	self.db.RegisterCallback(self, "OnProfileChanged", "ReloadSettings")
+	self.db.RegisterCallback(self, "OnProfileCopied", "ReloadSettings")
+	self.db.RegisterCallback(self, "OnProfileReset", "ReloadSettings")
+	
+	self:ReloadSettings()
 end
 
 function Skada:Command(param)
@@ -106,6 +100,8 @@ function Skada:Command(param)
 		self:OpenMenu()
 	elseif param == "reset" then
 		self:Reset()
+	elseif param == "toggle" then
+		self:ToggleWindow()
 	elseif param == "config" then
 		self:OpenOptions()
 	elseif param:sub(1,6) == "report" then
@@ -223,10 +219,6 @@ function Skada:PetDebug()
 end
 
 function Skada:OnEnable()
-	current = self.db.profile.current
-	total = self.db.profile.total
-	sets = self.db.profile.sets
-
 	self:RegisterEvent("PLAYER_REGEN_DISABLED")
 	self:RegisterEvent("PARTY_MEMBERS_CHANGED")
 	self:RegisterEvent("RAID_ROSTER_UPDATE")
@@ -235,13 +227,12 @@ function Skada:OnEnable()
 	self:RegisterEvent("UNIT_TARGET")
 	self:RegisterEvent("UNIT_PET")
 	
-	self:ScheduleRepeatingTimer("UpdateBars", 0.5, nil)
-	self:ScheduleRepeatingTimer("Tick", 1, nil)
+	self:ScheduleRepeatingTimer("UpdateBars", 0.5)
+	self:ScheduleRepeatingTimer("Tick", 1)
 	
 	if type(CUSTOM_CLASS_COLORS) == "table" then
 		Skada.classcolors = CUSTOM_CLASS_COLORS
 	end
-	
 end
 
 local function CheckPet(unit, pet)
@@ -287,7 +278,7 @@ local wasininstance
 
 local function ask_for_reset()
 	StaticPopupDialogs["ResetSkadaDialog"] = {
-						text = "Do you want to reset Skada?", 
+						text = L["Do you want to reset Skada?"], 
 						button1 = ACCEPT, 
 						button2 = CANCEL,
 						timeout = 30, 
@@ -391,11 +382,6 @@ function Skada:OnDisable()
 	else
 		self.db.profile.mode = nil
 	end
-
-	-- Save our precious sets.
-	self.db.profile.current = current
-	self.db.profile.total = total
-	self.db.profile.sets = sets
 end
 
 function Skada:ToggleWindow()
@@ -433,6 +419,9 @@ function Skada:Reset()
 	
 	sets = {}
 	changed = true
+
+	self.db.profile.sets = sets
+	self.db.profile.total = total
 	
 	self:Print(L["All data has been reset."])
 end
@@ -604,8 +593,38 @@ function Skada:OpenMenu()
 	end
 	
 	ToggleDropDownMenu(1, nil, skadamenu, self.bargroup:GetName(), 0, 0)
-
 end
+
+function Skada:ReloadSettings()
+	total = self.db.profile.total
+	sets = self.db.profile.sets
+
+	if self.db.profile.window.shown then
+		-- Don't show window if we are solo and we have enabled the "Hide when solo" option.
+		if not (self.db.profile.hidesolo and GetNumRaidMembers() == 0 and GetNumPartyMembers() == 0) then
+			self.bargroup:Show()
+		end
+	else
+		self.bargroup:Hide()
+	end
+	
+	-- Restore window position.
+	win.RegisterConfig(self.bargroup, self.db.profile)
+	win.RestorePosition(self.bargroup)
+
+	-- Minimap button.
+	if not icon:IsRegistered("Skada") then
+		icon:Register("Skada", dataobj, self.db.profile.icon)
+	else
+		icon:Refresh("Skada", self.db.profile.icon)
+	end
+	self:ShowMMButton(self.db.profile.mmbutton)
+	
+	self:ApplySettings()
+end
+
+local titlebackdrop = {}
+local windowbackdrop = {}
 
 -- Applies settings to things like the bar window.
 function Skada:ApplySettings()
@@ -627,12 +646,80 @@ function Skada:ApplySettings()
 	end
 	g:SortBars()
 
-	local thickness = self.db.profile.title.borderthickness
-	local backdrop = {bgFile = media:Fetch("statusbar", self.db.profile.title.texture), edgeFile = media:Fetch("border", self.db.profile.title.bordertexture), tile = false, tileSize = 0, edgeSize = thickness,	insets = {left = thickness / 4, right = thickness / 4, top = thickness / 4, bottom = thickness / 4}}
-	g.button:SetBackdrop(backdrop)
+	-- Header
+	local inset = self.db.profile.title.margin
+	titlebackdrop.bgFile = media:Fetch("statusbar", self.db.profile.title.texture)
+	if self.db.profile.title.borderthickness > 0 then
+		titlebackdrop.edgeFile = media:Fetch("border", self.db.profile.title.bordertexture)
+	else
+		titlebackdrop.edgeFile = nil
+	end
+	titlebackdrop.tile = false
+	titlebackdrop.tileSize = 0
+	titlebackdrop.edgeSize = self.db.profile.title.borderthickness
+	titlebackdrop.insets = {left = inset, right = inset, top = inset, bottom = inset}
+	g.button:SetBackdrop(titlebackdrop)
 	local color = self.db.profile.title.color
 	g.button:SetBackdropColor(color.r, color.g, color.b, color.a or 1)
+	
+	-- Window
+	if self.db.profile.window.enablebackground then
+		if g.bgframe == nil then
+			g.bgframe = CreateFrame("Frame", nil, UIParent)
+			g.bgframe:SetFrameStrata("BACKGROUND")
+			g.bgframe:EnableMouse()
+			g.bgframe:SetScript("OnMouseDown", function(frame, btn) if btn == "RightButton" then Skada:RightClick() end end)
+		end
 
+		local inset = self.db.profile.window.margin
+		windowbackdrop.bgFile = media:Fetch("statusbar", self.db.profile.window.texture)
+		if self.db.profile.window.borderthickness > 0 then
+			windowbackdrop.edgeFile = media:Fetch("border", self.db.profile.window.bordertexture)
+		else
+			windowbackdrop.edgeFile = nil
+		end
+		windowbackdrop.tile = false
+		windowbackdrop.tileSize = 0
+		windowbackdrop.edgeSize = self.db.profile.window.borderthickness
+		windowbackdrop.insets = {left = inset, right = inset, top = inset, bottom = inset}
+		g.bgframe:SetBackdrop(windowbackdrop)
+		local color = self.db.profile.window.color
+		g.bgframe:SetBackdropColor(color.r, color.g, color.b, color.a or 1)
+		g.bgframe:SetWidth(g:GetWidth() + (self.db.profile.window.borderthickness * 2))
+		g.bgframe:SetHeight(self.db.profile.window.height)
+
+		g.bgframe:ClearAllPoints()
+		if self.db.profile.reversegrowth then
+			g.bgframe:SetPoint("LEFT", g.button, "LEFT", -self.db.profile.window.borderthickness, 0)
+			g.bgframe:SetPoint("RIGHT", g.button, "RIGHT", self.db.profile.window.borderthickness, 0)
+			g.bgframe:SetPoint("BOTTOM", g.button, "TOP", 0, 0)
+		else
+			g.bgframe:SetPoint("LEFT", g.button, "LEFT", -self.db.profile.window.borderthickness, 0)
+			g.bgframe:SetPoint("RIGHT", g.button, "RIGHT", self.db.profile.window.borderthickness, 0)
+			g.bgframe:SetPoint("TOP", g.button, "BOTTOM", 0, 0)
+		end
+		g.bgframe:Show()
+		
+		-- Calculate max number of bars to show if our height is not dynamic.
+		if self.db.profile.window.height > 0 then
+			local maxbars = math.floor(self.db.profile.window.height / math.max(1, self.db.profile.barheight + self.db.profile.barspacing))
+			g:SetMaxBars(maxbars)
+		else
+			-- Adjust background height according to current bars.
+			self:AdjustBackgroundHeight()
+		end
+		
+	elseif g.bgframe then
+		g.bgframe:Hide()
+	end
+	
+	self.bargroup:SortBars()
+end
+
+-- Set a data feed as selectedfeed.
+function Skada:SetFeed(feed)
+	selectedfeed = feed
+	self:UpdateBars()
 end
 
 -- Iterates over all players in a set and adds to the "time" variable
@@ -722,6 +809,7 @@ function Skada:PLAYER_REGEN_DISABLED()
 		-- Also start the total set if it is nil.
 		if total == nil then
 			total = createSet(L["Total"])
+			self.db.profile.total = total
 		end
 		
 		-- Auto-switch set/mode if configured.
@@ -789,13 +877,17 @@ function Skada:RestoreView(theset, themode)
 end
 
 -- Returns a player from the current.
-function Skada:get_player(set, playerid, playername)
+function Skada:get_player(set, playerid, playername, do_not_create)
 	-- Add player to set if it does not exist.
 	local player = nil
 	for i, p in ipairs(set.players) do
 		if p.id == playerid then
 			player = p
 		end
+	end
+
+	if not player and do_not_create then
+		return
 	end
 	
 	if not player then
@@ -895,8 +987,13 @@ end
 function Skada:UpdateBars()
 	-- Update data feed.
 	-- This is done even if our set has not changed, since for example DPS changes even though the data does not.
-	if selected_data_feed ~= nil then
-		
+	if selectedfeed ~= nil then
+		local feedtext = selectedfeed()
+		if feedtext then
+			dataobj.text = feedtext
+		else
+			dataobj.text = ""
+		end
 	end
 	
 	if not changed then
@@ -957,15 +1054,29 @@ function Skada:UpdateBars()
 		end
 	end
 	
+	-- Adjust our background frame if background height is dynamic.
+	if self.bargroup.bgframe and self.db.profile.window.height == 0 then
+		self:AdjustBackgroundHeight()
+	end
+	
 	-- Mark as unchanged.
 	changed = false
 end
 
+function Skada:AdjustBackgroundHeight()
+	local numbars = 0
+	if self:GetBars() ~= nil then
+		for name, bar in pairs(self:GetBars()) do if bar:IsShown() then numbars = numbars + 1 end end
+		local height = numbars * (self.db.profile.barheight + self.db.profile.barspacing) + self.db.profile.window.borderthickness
+		if self.bargroup.bgframe:GetHeight() ~= height then
+			self.bargroup.bgframe:SetHeight(height)
+		end
+	end
+end
+		
 function Skada:GetModes()
 	return modes
 end
-
-
 
 -- Sets up the mode view.
 function Skada:DisplayMode(mode)
@@ -1078,6 +1189,16 @@ function Skada:AddMode(mode)
 	if mode.name == self.db.profile.mode then
 		self:RestoreView(selectedset, mode.name)
 	end
+
+	-- Find if we now have our chosen feed.
+	-- Also a bit ugly.
+	if selectedfeed == nil and self.db.profile.feed ~= "" then
+		for name, feed in pairs(feeds) do
+			if name == self.db.profile.feed then
+				self:SetFeed(feed)
+			end
+		end
+	end
 	
 	-- Sort modes.
 	table.sort(modes, function(a, b) return a.name < b.name end)
@@ -1086,8 +1207,28 @@ end
 -- Unregister a mode.
 function Skada:RemoveMode(mode)
 	table.remove(modes, mode)
+	
+	-- Remove feeds.
+	
 end
 
+function Skada:GetFeeds()
+	return feeds
+end
+
+-- Register a data feed.
+function Skada:AddFeed(name, func)
+	feeds[name] = func
+end
+
+-- Unregister a data feed.
+function Skada:RemoveFeed(name, func)
+	for i, feed in ipairs(feeds) do
+		if feed.name == name then
+			table.remove(feeds, i)
+		end
+	end
+end
 
 --[[
 
