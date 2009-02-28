@@ -665,7 +665,7 @@ function Skada:ApplySettings()
 	-- Window
 	if self.db.profile.window.enablebackground then
 		if g.bgframe == nil then
-			g.bgframe = CreateFrame("Frame", nil, UIParent)
+			g.bgframe = CreateFrame("Frame", nil, self.bargroup)
 			g.bgframe:SetFrameStrata("BACKGROUND")
 			g.bgframe:EnableMouse()
 			g.bgframe:SetScript("OnMouseDown", function(frame, btn) if btn == "RightButton" then Skada:RightClick() end end)
