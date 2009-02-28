@@ -1,7 +1,7 @@
 local L = LibStub("AceLocale-3.0"):GetLocale("Skada", false)
 
 local mod = Skada:NewModule("DamageMode", "AceEvent-3.0")
-local dpsmod = Skada:NewModule("DPSMode", "AceEvent-3.0")
+local dpsmod = Skada:NewModule("DPSMode")
 local playermod = Skada:NewModule("DamageModePlayerView")
 local spellmod = Skada:NewModule("DamageModeSpellView")
 
@@ -26,14 +26,32 @@ local function getRaidDPS(set)
 	end
 end
 
-
 function mod:OnEnable()
 	self:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
+	
+	Skada:AddFeed(L["Damage: Personal DPS"], function()
+								local current = Skada:GetCurrentSet()
+								if current then
+									local player = Skada:get_player(current, UnitGUID("player"), UnitName("player"), true)
+									if player then
+										return ("%02.1f"):format(getDPS(current, player)..L["DPS"])
+									end
+								end
+							end)
+	Skada:AddFeed(L["Damage: Raid DPS"], function()
+								local current = Skada:GetCurrentSet()
+								if current then
+									return ("%02.1f"):format(getRaidDPS(current)..L["RDPS"])
+								end
+							end)
 	Skada:AddMode(self)
 end
 
 function mod:OnDisable()
 	Skada:RemoveMode(self)
+	
+	Skada:RemoveFeed(L["Damage: Personal DPS"])
+	Skada:RemoveFeed(L["Damage: Raid DPS"])
 end
 
 function dpsmod:OnEnable()
@@ -43,24 +61,6 @@ end
 function dpsmod:OnDisable()
 	Skada:RemoveMode(self)
 end
-
-mod.Feeds = {
-	["Personal DPS"] =	function()
-							local current = Skada:GetCurrentSet()
-							if current then
-								local player = current.players[UnitGUID("player")]
-								if player then
-									return ("%02.1f"):format(getDPS(current, player))
-								end
-							end
-						end,
-	["Raid DPS"] =		function()
-							local current = Skada:GetCurrentSet()
-							if current then
-								return ("%02.1f"):format(getRaidDPS(current))
-							end
-						end
-}
 
 function mod:AddToTooltip(set, tooltip)
  	GameTooltip:AddDoubleLine(L["DPS"], ("%02.1f"):format(getRaidDPS(set)), 1,1,1)
