@@ -34,14 +34,14 @@ function mod:OnEnable()
 								if current then
 									local player = Skada:get_player(current, UnitGUID("player"), UnitName("player"), true)
 									if player then
-										return ("%02.1f"):format(getDPS(current, player)..L["DPS"])
+										return ("%02.1f"):format(getDPS(current, player))..L["DPS"]
 									end
 								end
 							end)
 	Skada:AddFeed(L["Damage: Raid DPS"], function()
 								local current = Skada:GetCurrentSet()
 								if current then
-									return ("%02.1f"):format(getRaidDPS(current)..L["RDPS"])
+									return ("%02.1f"):format(getRaidDPS(current))..L["RDPS"]
 								end
 							end)
 	Skada:AddMode(self)
