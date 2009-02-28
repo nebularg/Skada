@@ -27,9 +27,17 @@ function mod:OnInitialize()
 end
 
 function mod:OnEnable()
-	-- Listen for target changes
-	
-
+	-- Add our feed.
+	Skada:AddFeed(L["Threat: Personal Threat"], function()
+								local current = Skada:GetCurrentSet()
+								if current and UnitExists("target") then
+									local isTanking, status, threatpct, rawthreatpct, threatvalue = UnitDetailedThreatSituation("player", "target")
+									if threatpct then
+										return ("%02.1f%%"):format(threatpct)
+									end
+								end
+							end)
+							
 	-- Enable us
 	Skada:AddMode(self)
 end
