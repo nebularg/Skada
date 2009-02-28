@@ -435,7 +435,11 @@ function Skada:OpenMenu()
 		report_mode = selectedmode
 	end
 
-	local skadamenu = CreateFrame("Frame", "SkadaMenu")
+	if not self.skadamenu then
+		self.skadamenu = CreateFrame("Frame", "SkadaMenu")
+	end
+	local skadamenu = self.skadamenu
+	
 	skadamenu.displayMode = "MENU"
 	local info = {}
 	skadamenu.initialize = function(self, level)
@@ -471,6 +475,12 @@ function Skada:OpenMenu()
 	        wipe(info)
 	        info.text = "Toggle window"
 	        info.func = function() Skada:ToggleWindow() end
+	        info.notCheckable = 1
+	        UIDropDownMenu_AddButton(info, level)
+
+	        wipe(info)
+	        info.text = "Configure"
+	        info.func = function() Skada:OpenOptions() end
 	        info.notCheckable = 1
 	        UIDropDownMenu_AddButton(info, level)
 
@@ -592,7 +602,8 @@ function Skada:OpenMenu()
 	    end
 	end
 	
-	ToggleDropDownMenu(1, nil, skadamenu, self.bargroup:GetName(), 0, 0)
+	local x,y = GetCursorPosition(UIParent); 
+	ToggleDropDownMenu(1, nil, skadamenu, "UIParent", x / UIParent:GetEffectiveScale() , y / UIParent:GetEffectiveScale())
 end
 
 function Skada:ReloadSettings()
@@ -965,7 +976,7 @@ function dataobj:OnEnter()
  	
     GameTooltip:AddLine(L["Hint: Left-Click to toggle Skada window."], 0, 1, 0)
     GameTooltip:AddLine(L["Shift + Left-Click to reset."], 0, 1, 0)
-    GameTooltip:AddLine(L["Right-click to configure"], 0, 1, 0)
+    GameTooltip:AddLine(L["Right-click to open menu"], 0, 1, 0)
     
     GameTooltip:Show()
 end
@@ -980,7 +991,7 @@ function dataobj:OnClick(button)
 	elseif button == "LeftButton" then
 		Skada:ToggleWindow()
 	elseif button == "RightButton" then
-		Skada:OpenOptions()
+		Skada:OpenMenu()
 	end
 end
 
