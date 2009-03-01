@@ -193,8 +193,8 @@ function deathlog:Update(set)
 	-- Find the max amount
 	local maxhit = 0
 	for i, log in ipairs(player.deathlog) do
-		if log.amount > maxhit then
-			maxhit = log.amount
+		if math.abs(log.amount) > maxhit then
+			maxhit = math.abs(log.amount)
 		end
 	end
 	
@@ -205,7 +205,7 @@ function deathlog:Update(set)
 			local bar = Skada:GetBar("log"..i)
 			if bar then
 				bar:SetMaxValue(maxhit)
-				bar:SetValue(max.abs(log.amount))
+				bar:SetValue(math.abs(log.amount))
 			else
 				local icon = select(3, GetSpellInfo(log.spellid))
 				bar = Skada:CreateBar("log"..i, log.spellname, math.abs(log.amount), maxhit, icon, false)
