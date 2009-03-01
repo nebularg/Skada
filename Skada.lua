@@ -426,6 +426,24 @@ function Skada:Reset()
 	self:Print(L["All data has been reset."])
 end
 
+-- Delete a set.
+function Skada:DeleteSet(set)
+	if not set then set = selectedset end
+
+	if set == "current" then
+		current = nil
+	elseif set == "total" then
+		total = nil
+		self.db.profile.total = nil
+	else
+		if sets[set] then
+			table.remove(sets, set)
+		end
+	end
+	changed = true
+	self:UpdateBars()
+end
+
 function Skada:OpenMenu()
 
 	local report_channel = "Say"
@@ -465,6 +483,14 @@ function Skada:OpenMenu()
 	        info.value = "report"
 	        info.notCheckable = 1
 	        UIDropDownMenu_AddButton(info, level)
+	        
+	        if selectedset then
+		        wipe(info)
+		        info.text = "Delete segment"
+		        info.func = function() Skada:DeleteSet() end
+		        info.notCheckable = 1
+		        UIDropDownMenu_AddButton(info, level)
+		    end
 	        
 	        -- Add a blank separator
 	        wipe(info)

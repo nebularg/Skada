@@ -138,6 +138,7 @@ L["Missed"] = true
 L["Resisted"] = true
 L["Blocked"] = true
 L["Glancing"] = true
+L["Crushing"] = "Crushing"
 L["Absorbed"] = true
 
 -- SkadaDispels
