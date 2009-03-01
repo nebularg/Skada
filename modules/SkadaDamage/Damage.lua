@@ -126,14 +126,12 @@ function mod:log_damage(set, dmg)
 				spell.critical = spell.critical + dmg.critical
 			elseif dmg.missed then
 				spell.missed = spell.missed + 1
+			elseif dmg.glancing then
+				spell.glancing = spell.glancing + dmg.glancing
+			elseif dmg.crushing then
+				spell.crushing = spell.crushing + dmg.crushing
 			else
 				spell.hit = spell.hit + 1
-			end
-			if dmg.glancing then
-				spell.glancing = spell.glancing + dmg.glancing
-			end
-			if dmg.crushing then
-				spell.crushing = spell.crushing + dmg.crushing
 			end
 		end
 	end
@@ -367,21 +365,24 @@ function spellmod:Update(set)
 			if spell.missed > 0 then
 				add_detail_bar(L["Missed"], spell.missed, spell.totalhits)
 			end
-			---[[
+			if spell.glancing > 0 then
+				add_detail_bar(L["Glancing"], spell.glancing, spell.totalhits)
+			end
+			if spell.crushing > 0 then
+				add_detail_bar(L["Crushing"], spell.crushing, spell.totalhits)
+			end
 			--This bit needs a section of its own somehow. Split the bar display maybe?
+			--[[
 			if spell.resisted > 0 then
 				add_detail_bar(L["Resisted"], spell.resisted, spell.totalhits)
 			end
 			if spell.blocked > 0 then
 				add_detail_bar(L["Blocked"], spell.blocked, spell.totalhits)
 			end
-			if spell.glancing > 0 then
-				add_detail_bar(L["Glancing"], spell.glancing, spell.totalhits)
-			end
 			if spell.absorbed > 0 then
 				add_detail_bar(L["Absorbed"], spell.absorbed, spell.totalhits)
 			end
-			---]]
+			--]]
 		end
 	end
 
