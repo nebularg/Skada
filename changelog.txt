@@ -1,3 +1,7 @@
+1.0-10
+* Added a "Delete segment" option to the menu.
+* Fixed mousewheel scrolling not working on background frame.
+
 1.0-9:
 * Added a death log to deaths mode; shows the last heals and damage on the player.
 * Added a "/skada toggle" command for toggling showing the window other than through clicking.

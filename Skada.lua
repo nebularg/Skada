@@ -373,7 +373,6 @@ function Skada:UNIT_PET()
 	self:CheckPets()
 end
 
-
 function Skada:OnDisable()
 	-- Save some settings.
 	self.db.profile.selectedset = selectedset
@@ -415,14 +414,18 @@ function Skada:Reset()
 	end
 	if total ~= nil then
 		total = createSet(L["Total"])
+		self.db.profile.total = total
 	end
 	
-	sets = {}
+	-- Delete sets that are not marked as persistent.
+	for i, set in ipairs(sets) do
+		if not sets[table.maxn(sets)].persistent then
+			table.remove(sets)
+		end
+		if i > table.maxn(sets) then break end
+	end
 	changed = true
 
-	self.db.profile.sets = sets
-	self.db.profile.total = total
-	
 	self:Print(L["All data has been reset."])
 end
 
@@ -440,6 +443,18 @@ function Skada:DeleteSet(set)
 			table.remove(sets, set)
 		end
 	end
+	changed = true
+	self:UpdateBars()
+end
+
+-- Keep a set persistently (reset does not delete it).
+function Skada:KeepSet(set)
+	if not set then set = selectedset end
+	
+	if sets[set] then
+		table.remove(sets, set)
+	end
+	
 	changed = true
 	self:UpdateBars()
 end
@@ -488,6 +503,12 @@ function Skada:OpenMenu()
 		        wipe(info)
 		        info.text = "Delete segment"
 		        info.func = function() Skada:DeleteSet() end
+		        info.notCheckable = 1
+		        UIDropDownMenu_AddButton(info, level)
+		        
+		        wipe(info)
+		        info.text = "Keep segment"
+		        info.func = function() Skada:KeepSet() end
 		        info.notCheckable = 1
 		        UIDropDownMenu_AddButton(info, level)
 		    end
@@ -660,6 +681,21 @@ function Skada:ReloadSettings()
 	self:ApplySettings()
 end
 
+local function getNumberOfBars()
+	local bars = Skada.bargroup:GetBars()
+	local n = 0
+	for i, bar in pairs(bars) do n = n + 1 end
+	return n
+end
+
+local function OnMouseWheel(frame, direction)
+	if direction == 1 and Skada.bargroup:GetBarOffset() > 0 then
+		Skada.bargroup:SetBarOffset(Skada.bargroup:GetBarOffset() - 1)
+	elseif direction == -1 and ((getNumberOfBars() - Skada.bargroup:GetMaxBars() - Skada.bargroup:GetBarOffset()) > 1) then
+		Skada.bargroup:SetBarOffset(Skada.bargroup:GetBarOffset() + 1)
+	end
+end
+
 local titlebackdrop = {}
 local windowbackdrop = {}
 
@@ -705,7 +741,9 @@ function Skada:ApplySettings()
 			g.bgframe = CreateFrame("Frame", nil, self.bargroup)
 			g.bgframe:SetFrameStrata("BACKGROUND")
 			g.bgframe:EnableMouse()
+			g.bgframe:EnableMouseWheel()
 			g.bgframe:SetScript("OnMouseDown", function(frame, btn) if btn == "RightButton" then Skada:RightClick() end end)
+			g.bgframe:SetScript("OnMouseWheel", OnMouseWheel)
 		end
 
 		local inset = self.db.profile.window.margin
@@ -811,8 +849,10 @@ function Skada:Tick()
 		current = nil
 		
 		-- Trim segments.
-		while table.maxn(sets) > 10 do
-			table.remove(sets)
+		for i=table.maxn(sets), 1, -1 do
+			if table.maxn(sets) > self.db.profile.setstokeep and not sets[i].persistent then
+				table.remove(sets, i)
+			end
 		end
 		
 		self:RemoveAllBars()
@@ -1299,21 +1339,6 @@ end
 
 function Skada:RemoveBar(bar)
 	self.bargroup:RemoveBar(bar)
-end
-
-local function getNumberOfBars()
-	local bars = Skada.bargroup:GetBars()
-	local n = 0
-	for i, bar in pairs(bars) do n = n + 1 end
-	return n
-end
-
-local function OnMouseWheel(bar, direction)
-	if direction == 1 and Skada.bargroup:GetBarOffset() > 0 then
-		Skada.bargroup:SetBarOffset(Skada.bargroup:GetBarOffset() - 1)
-	elseif direction == -1 and ((getNumberOfBars() - Skada.bargroup:GetMaxBars() - Skada.bargroup:GetBarOffset()) > 1) then
-		Skada.bargroup:SetBarOffset(Skada.bargroup:GetBarOffset() + 1)
-	end
 end
 
 function Skada:CreateBar(name, label, value, maxvalue, icon, o)

@@ -115,6 +115,9 @@ L["Damage: Personal DPS"] = "Damage: Personal DPS"
 L["Damage: Raid DPS"] = "Damage: Raid DPS"
 L["Threat: Personal Threat"] = "Threat: Personal Threat"
 
+L["Data segments to keep"] = "Data segments to keep"
+L["The number of fight segments to keep. Persistent segments are not included in this."] = "The number of fight segments to keep. Persistent segments are not included in this."
+
 -- SkadaDebuffs
 L["Debuff uptimes"] = true
 L["'s Debuffs"] = true

@@ -21,6 +21,7 @@ Skada.defaults = {
 		icon = {},
 		modeincombat="",
 		numberformat=1,
+		setstokeep = 10,
 		onlykeepbosses=false,
 		window = {shown = true, enablebackground = false, margin=0, height=150, texture="None", bordertexture="None", borderthickness=0, color = {r=0,g=0,b=0.5,a=0.5}},
 		returnaftercombat=false,
@@ -539,6 +540,18 @@ Skada.options = {
 											if feed ~= "" then Skada:SetFeed(Skada:GetFeeds()[feed]) end
 										end,
 								order=26,
+							},
+
+							setstokeep = {
+								type="range",
+								name=L["Data segments to keep"],
+								desc=L["The number of fight segments to keep. Persistent segments are not included in this."],
+								min=0,
+								max=30,
+								step=1,
+								get=function() return Skada.db.profile.setstokeep end,
+								set=function(self, val) Skada.db.profile.setstokeep = val end,
+								order=27,
 							},
 							
 						}
