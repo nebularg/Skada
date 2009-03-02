@@ -410,22 +410,23 @@ function Skada:Reset()
 	self:RemoveAllBars()
 	
 	if current ~= nil then
+		wipe(current)
 		current = createSet(L["Current"])
 	end
 	if total ~= nil then
+		wipe(total)
 		total = createSet(L["Total"])
 		self.db.profile.total = total
 	end
 	
 	-- Delete sets that are not marked as persistent.
-	for i, set in ipairs(sets) do
-		if not sets[table.maxn(sets)].persistent then
-			table.remove(sets)
+	for i=table.maxn(sets), 1, -1 do
+		if not sets[i].keep then
+			wipe(table.remove(sets, i))
 		end
-		if i > table.maxn(sets) then break end
 	end
 	changed = true
-
+	self:UpdateBars()
 	self:Print(L["All data has been reset."])
 end
 
@@ -434,27 +435,17 @@ function Skada:DeleteSet(set)
 	if not set then set = selectedset end
 
 	if set == "current" then
+		wipe(current)
 		current = nil
 	elseif set == "total" then
+		wipe(total)
 		total = nil
 		self.db.profile.total = nil
 	else
 		if sets[set] then
-			table.remove(sets, set)
+			wipe(table.remove(sets, set))
 		end
 	end
-	changed = true
-	self:UpdateBars()
-end
-
--- Keep a set persistently (reset does not delete it).
-function Skada:KeepSet(set)
-	if not set then set = selectedset end
-	
-	if sets[set] then
-		table.remove(sets, set)
-	end
-	
 	changed = true
 	self:UpdateBars()
 end
@@ -505,14 +496,16 @@ function Skada:OpenMenu()
 		        info.func = function() Skada:DeleteSet() end
 		        info.notCheckable = 1
 		        UIDropDownMenu_AddButton(info, level)
-		        
-		        wipe(info)
-		        info.text = "Keep segment"
-		        info.func = function() Skada:KeepSet() end
-		        info.notCheckable = 1
-		        UIDropDownMenu_AddButton(info, level)
 		    end
 	        
+	        wipe(info)
+	        info.text = "Keep segment"
+	        info.func = function() Skada:KeepSet() end
+	        info.notCheckable = 1
+	        info.hasArrow = 1
+	        info.value = "keep"
+	        UIDropDownMenu_AddButton(info, level)
+
 	        -- Add a blank separator
 	        wipe(info)
 	        info.disabled = 1
@@ -545,6 +538,19 @@ function Skada:OpenMenu()
 		            info.text = module.name
 		            info.func = function() Skada:DisplayMode(module) end
 			        info.notCheckable = 1
+		            UIDropDownMenu_AddButton(info, level)
+		        end
+		    elseif UIDROPDOWNMENU_MENU_VALUE == "keep" then
+		        for i, set in ipairs(sets) do
+			        wipe(info)
+		            info.text = set.name..": "..date("%H:%M",set.starttime).." - "..date("%H:%M",set.endtime)
+		            info.func = function() 
+		            				set.keep = not set.keep
+		            				Skada:RemoveAllBars()
+		            				changed = true
+		            				Skada:UpdateBars()
+		            			end
+		            info.checked = set.keep
 		            UIDropDownMenu_AddButton(info, level)
 		        end
 		    elseif UIDROPDOWNMENU_MENU_VALUE == "report" then
@@ -848,10 +854,16 @@ function Skada:Tick()
 		-- Reset current set.
 		current = nil
 		
-		-- Trim segments.
+		-- Find out number of non-persistent sets.
+		local numsets = 0
+		for i, set in ipairs(sets) do if not set.keep then numsets = numsets + 1 end end
+		
+		-- Trim segments; don't touch persistent sets.
 		for i=table.maxn(sets), 1, -1 do
-			if table.maxn(sets) > self.db.profile.setstokeep and not sets[i].persistent then
-				table.remove(sets, i)
+			if numsets > self.db.profile.setstokeep and not sets[i].keep then
+				local t = table.remove(sets, i)
+				wipe(t)
+				numsets = numsets - 1
 			end
 		end
 		
@@ -1093,7 +1105,8 @@ function Skada:UpdateBars()
 			local bar = self.bargroup:GetBar(mode.name)
 			if not bar then
 				local bar = self:CreateBar(mode.name, mode.name, 1, 1, nil, false)
-				bar:SetColorAt(0,self.db.profile.barcolor.r,self.db.profile.barcolor.g,self.db.profile.barcolor.b, self.db.profile.barcolor.a)
+				local c = self:GetDefaultBarColor()
+				bar:SetColorAt(0,c.r,c.g,c.b, c.a)
 				bar:EnableMouse(true)
 				bar:SetScript("OnMouseDown", function(bar, button) if button == "LeftButton" then Skada:DisplayMode(mode) elseif button == "RightButton" then Skada:RightClick() end end)
 			end
@@ -1104,7 +1117,8 @@ function Skada:UpdateBars()
 		local bar = self:GetBar("total")
 		if not bar then
 			local bar = self:CreateBar("total", L["Total"], 1, 1, nil, false)
-			bar:SetColorAt(0,self.db.profile.barcolor.r,self.db.profile.barcolor.g,self.db.profile.barcolor.b, self.db.profile.barcolor.a)
+			local c = self:GetDefaultBarColor()
+			bar:SetColorAt(0,c.r,c.g,c.b, c.a)
 			bar:EnableMouse(true)
 			bar:SetScript("OnMouseDown", function(bar, button) if button == "LeftButton" then Skada:DisplayModes("total") elseif button == "RightButton" then Skada:RightClick() end end)
 		end
@@ -1112,7 +1126,8 @@ function Skada:UpdateBars()
 		local bar = self:GetBar("current")
 		if not bar then
 			local bar = self:CreateBar("current", L["Current"], 1, 1, nil, false)
-			bar:SetColorAt(0,self.db.profile.barcolor.r,self.db.profile.barcolor.g,self.db.profile.barcolor.b, self.db.profile.barcolor.a)
+			local c = self:GetDefaultBarColor()
+			bar:SetColorAt(0,c.r,c.g,c.b, c.a)
 			bar:EnableMouse(true)
 			bar:SetScript("OnMouseDown", function(bar, button) if button == "LeftButton" then Skada:DisplayModes("current") elseif button == "RightButton" then Skada:RightClick() end end)
 		end
@@ -1123,8 +1138,12 @@ function Skada:UpdateBars()
 			if not bar then
 				local bar = self:CreateBar(tostring(set.starttime), set.name, 1, 1, nil, false)
 				bar:SetTimerLabel(date("%H:%M",set.starttime).." - "..date("%H:%M",set.endtime))
-				bar:SetColorAt(0,self.db.profile.barcolor.r,self.db.profile.barcolor.g,self.db.profile.barcolor.b, self.db.profile.barcolor.a)
+				local c = self:GetDefaultBarColor()
+				bar:SetColorAt(0,c.r,c.g,c.b, c.a)
 				bar:EnableMouse(true)
+				if set.keep then
+					bar:SetFont(nil,nil,"OUTLINE")
+				end
 				bar:SetScript("OnMouseDown", function(bar, button) if button == "LeftButton" then Skada:DisplayModes(set.starttime) elseif button == "RightButton" then Skada:RightClick() end end)
 			end
 			
@@ -1278,15 +1297,18 @@ function Skada:AddMode(mode)
 	end
 	
 	-- Sort modes.
-	table.sort(modes, function(a, b) return a.name < b.name end)
+	table.sort(modes, function(a, b) return a.name > b.name end)
+	
+	-- Remove all bars and start over to get ordering right.
+	-- Yes, this all sucks - the problem with this and the above is that I don't know when
+	-- all modules are loaded. :/
+	self:RemoveAllBars()
+	changed = true
 end
 
 -- Unregister a mode.
 function Skada:RemoveMode(mode)
 	table.remove(modes, mode)
-	
-	-- Remove feeds.
-	
 end
 
 function Skada:GetFeeds()
@@ -1313,8 +1335,14 @@ Bars
 
 --]]
 
+local usealt = false
 function Skada:GetDefaultBarColor()
-	return self.db.profile.barcolor
+	usealt = not usealt
+	if usealt == true then
+		return self.db.profile.baraltcolor
+	else
+		return self.db.profile.barcolor
+	end
 end
 
 function Skada:GetBarGroup()

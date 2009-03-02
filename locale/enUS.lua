@@ -118,6 +118,9 @@ L["Threat: Personal Threat"] = "Threat: Personal Threat"
 L["Data segments to keep"] = "Data segments to keep"
 L["The number of fight segments to keep. Persistent segments are not included in this."] = "The number of fight segments to keep. Persistent segments are not included in this."
 
+L["Alternate color"] = "Alternate color"
+L["Choose the alternate color of the bars."] = "Choose the alternate color of the bars."
+
 -- SkadaDebuffs
 L["Debuff uptimes"] = true
 L["'s Debuffs"] = true

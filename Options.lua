@@ -14,6 +14,7 @@ Skada.defaults = {
 		barwidth=180,
 		barorientation=1,
 		barcolor = {r = 0.3, g = 0.3, b = 0.8, a=1},
+		baraltcolor = {r = 0.45, g = 0.45, b = 0.8, a = 1},
 		barslocked=false,
 		title = {margin=0, texture="Round", bordertexture="None", borderthickness=2, color = {r=0,g=0,b=0,a=0.6}},
 		reversegrowth=false,
@@ -139,22 +140,6 @@ Skada.options = {
 								order=14,
 							},
 																	
-							color = {
-								type="color",
-								name=L["Bar color"],
-								desc=L["Choose the default color of the bars."],
-								hasAlpha=true,
-								get=function(i) 
-										local c = Skada.db.profile.barcolor
-										return c.r, c.g, c.b, c.a
-									end,
-								set=function(i, r,g,b,a) 
-										Skada.db.profile.barcolor = {["r"] = r, ["g"] = g, ["b"] = b, ["a"] = a}
-										Skada:ApplySettings()
-									end,
-								order=15,
-							},
-		
 							barmax = {
 								type="range",
 								name=L["Max bars"],
@@ -167,7 +152,7 @@ Skada.options = {
 											Skada.db.profile.barmax = max
 						         			Skada:ApplySettings()
 										end,
-								order=16,
+								order=15,
 							},
 		
 							barorientation = {
@@ -206,6 +191,39 @@ Skada.options = {
 						         			Skada:ApplySettings()
 							        	end,
 							},
+							
+							color = {
+								type="color",
+								name=L["Bar color"],
+								desc=L["Choose the default color of the bars."],
+								hasAlpha=true,
+								get=function(i) 
+										local c = Skada.db.profile.barcolor
+										return c.r, c.g, c.b, c.a
+									end,
+								set=function(i, r,g,b,a) 
+										Skada.db.profile.barcolor = {["r"] = r, ["g"] = g, ["b"] = b, ["a"] = a}
+										Skada:ApplySettings()
+									end,
+								order=20,
+							},
+
+							altcolor = {
+								type="color",
+								name=L["Alternate color"],
+								desc=L["Choose the alternate color of the bars."],
+								hasAlpha=true,
+								get=function(i) 
+										local c = Skada.db.profile.baraltcolor
+										return c.r, c.g, c.b, c.a
+									end,
+								set=function(i, r,g,b,a) 
+										Skada.db.profile.baraltcolor = {["r"] = r, ["g"] = g, ["b"] = b, ["a"] = a}
+										Skada:ApplySettings()
+									end,
+								order=21,
+							},
+							
 						}
 	        		},
 					
@@ -396,7 +414,7 @@ Skada.options = {
 										Skada:ApplySettings()
 									end,
 								order=6,
-							},							
+							},
 														
 						}
 	        		},

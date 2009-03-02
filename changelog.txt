@@ -1,6 +1,9 @@
 1.0-10
 * Added a "Delete segment" option to the menu.
+* Added an option to keep specific fight segments (from menu).
+* Added an alternating default color, by default a lighter shade of blue.
 * Fixed mousewheel scrolling not working on background frame.
+* Made the number of segments kept configurable.
 
 1.0-9:
 * Added a death log to deaths mode; shows the last heals and damage on the player.
