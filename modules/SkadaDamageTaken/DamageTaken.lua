@@ -61,7 +61,7 @@ local dmg = {}
 
 function mod:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
 
-	if Skada:IsDataCollectionActive() and dstName and Skada:UnitIsInteresting(dstName) then
+	if Skada:IsDataCollectionActive() and dstName and Skada:UnitIsInterestingNoPets(dstName) then
 	
 		local current = Skada:GetCurrentSet()
 		local total = Skada:GetTotalSet()
@@ -145,7 +145,6 @@ function playermod:Update(set)
 	-- View spells for this player.
 		
 	local player = Skada:get_selected_player(set, self.playerid)
-	local color = Skada:GetDefaultBarColor()
 	
 	if player then
 		for spellname, spell in pairs(player.damagetakenspells) do
@@ -157,6 +156,7 @@ function playermod:Update(set)
 			else
 				local icon = select(3, GetSpellInfo(spell.id))
 				bar = Skada:CreateBar(tostring(spellname), spell.name, spell.damage, player.damagetaken, icon, false)
+				local color = Skada:GetDefaultBarColor()
 				bar:SetColorAt(0, color.r, color.g, color.b, color.a)
 				bar:ShowTimerLabel()
 				bar:EnableMouse(true)
