@@ -140,6 +140,10 @@ function mod:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID, s
 
 end
 
+local function sort_by_ts(a,b)
+	return a.ts > b.ts
+end
+
 -- Death meter.
 function mod:Update(set)
 
@@ -161,7 +165,12 @@ function mod:Update(set)
 				bar:SetMaxValue(maxdeaths)
 				bar:SetValue(player.deaths)
 			else
-				bar = Skada:CreateBar(tostring(player.id), player.name, player.deaths, maxdeaths, nil, false)
+				local label = player.name
+				if player.deaths > 1 then
+					label = label.." ("..player.deaths..")"
+				end
+				bar = Skada:CreateBar(tostring(player.id), label, player.deaths, maxdeaths, nil, false)
+				bar.ts = player.deathts
 				bar:EnableMouse()
 				bar:SetScript("OnMouseDown", function(bar, button)
 												if button == "LeftButton" then
@@ -172,25 +181,20 @@ function mod:Update(set)
 				local color = Skada.classcolors[player.class] or Skada:GetDefaultBarColor()
 				bar:SetColorAt(0, color.r, color.g, color.b, color.a or 1)
 			end
-			bar:SetTimerLabel(tostring(player.deaths))
+			bar:SetTimerLabel(date("%H:%M:%S", player.deathts))
 		end
 	end
-		
+	
 	-- Sort the possibly changed bars.
+	Skada:SetSortFunction(sort_by_deathts)
 	Skada:SortBars()
-end
-
-local function sort_by_ts(a,b)
-	return a.ts > b.ts
+	Skada:SetSortFunction(nil)
 end
 
 -- Death log.
 function deathlog:Update(set)
 	local player = Skada:get_player(set, self.playerid)
 	
-	-- Reset our sort function.
-	Skada:SetSortFunction(nil)
-
 	-- Find the max amount
 	local maxhit = 0
 	for i, log in ipairs(player.deathlog) do
@@ -229,4 +233,6 @@ function deathlog:Update(set)
 	-- Use our special sort function and sort.
 	Skada:SetSortFunction(sort_by_ts)
 	Skada:SortBars()
+	Skada:SetSortFunction(nil)
+	
 end
