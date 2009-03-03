@@ -20,6 +20,7 @@ function mod:SetComplete(set)
 	-- Clean; remove logs from all who did not die.
 	for i, player in ipairs(set.players) do
 		if player.deaths == 0 then
+			wipe(player.deathlog)
 			player.deathlog = nil
 		end
 	end
@@ -33,6 +34,7 @@ end
 function mod:AddPlayerAttributes(player)
 	if not player.deaths then
 		player.deaths = 0
+		player.deathts = 0
 		player.deathlog = {}
 	end
 end
@@ -47,8 +49,7 @@ end
 function mod:log_resurrect(set, playerid, playername)
 	if set then
 		local player = Skada:get_player(set, playerid, playername)
-		
-		player.deathlog = {}
+		wipe(player.deathlog)
 	end
 end
 

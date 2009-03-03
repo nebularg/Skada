@@ -161,7 +161,6 @@ function playermod:Update(set)
 	-- View spells for this player.
 		
 	local player = Skada:get_selected_player(set, self.playerid)
-	local color = Skada:GetDefaultBarColor()
 	
 	if player then
 		for spellname, spell in pairs(player.healingspells) do
@@ -174,6 +173,7 @@ function playermod:Update(set)
 				bar:SetValue(spell.healing)
 			else
 				local icon = select(3, GetSpellInfo(spell.id))
+				local color = Skada:GetDefaultBarColor()
 			
 				bar = Skada:GetBarGroup():NewCounterBar(spellname, spell.name, spell.healing, player.healing, icon, false)
 				bar:SetColorAt(0, color.r, color.g, color.b, color.a)
