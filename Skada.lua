@@ -45,6 +45,9 @@ local selectedfeed = nil
 -- A list of data feeds available. Modules add to it.
 local feeds = {}
 
+-- Determines if the GetDefaultColor functions returns the alternate color.
+local usealt = true
+
 function Skada:OnInitialize()
 	-- Register some SharedMedia goodies.
 	media:Register("font", "Adventure",				[[Interface\Addons\Skada\fonts\Adventure.ttf]])
@@ -1335,7 +1338,6 @@ Bars
 
 --]]
 
-local usealt = false
 function Skada:GetDefaultBarColor()
 	usealt = not usealt
 	if usealt == true then
@@ -1377,6 +1379,8 @@ function Skada:CreateBar(name, label, value, maxvalue, icon, o)
 end
 
 function Skada:RemoveAllBars()
+	usealt = true
+	
 	-- Reset sort function.
 	self.bargroup:SetSortFunction(nil)
 	
