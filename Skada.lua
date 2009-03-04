@@ -5,7 +5,7 @@ local icon = LibStub("LibDBIcon-1.0")
 local win = LibStub("LibWindow-1.1")
 local media = LibStub("LibSharedMedia-3.0")
 
-local dataobj = ldb:NewDataObject("Skada", {type = "data source", icon = "Interface\\Icons\\Spell_Lightning_LightningBolt01", text = ""})
+local dataobj = ldb:NewDataObject("Skada", {label = "Skada", type = "data source", icon = "Interface\\Icons\\Spell_Lightning_LightningBolt01", text = "n/a"})
 
 -- All saved sets
 local sets = {}
@@ -1079,12 +1079,11 @@ end
 function Skada:UpdateBars()
 	-- Update data feed.
 	-- This is done even if our set has not changed, since for example DPS changes even though the data does not.
+	-- Does not update feed text if nil.
 	if selectedfeed ~= nil then
 		local feedtext = selectedfeed()
 		if feedtext then
 			dataobj.text = feedtext
-		else
-			dataobj.text = ""
 		end
 	end
 	
@@ -1115,6 +1114,7 @@ function Skada:UpdateBars()
 			end
 		end
 		
+		self:SortBars(function(a,b) return a.name < b.name end)
 	else
 		-- View available sets.
 		local bar = self:GetBar("total")
@@ -1355,8 +1355,15 @@ function Skada:SetSortFunction(func)
 	self.bargroup:SetSortFunction(func)
 end
 
-function Skada:SortBars()
-	self.bargroup:SortBars()
+function Skada:SortBars(func)
+	if func then
+		local oldfunc = self.bargroup:GetSortFunction()
+		self:SetSortFunction(func)
+		self.bargroup:SortBars()
+		self:SetSortFunction(oldfunc)
+	else
+		self.bargroup:SortBars()
+	end
 end
 
 function Skada:GetBars()

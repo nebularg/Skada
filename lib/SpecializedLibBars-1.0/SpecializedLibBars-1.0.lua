@@ -816,6 +816,10 @@ function barListPrototype:SetSortFunction(func)
 	self.sortFunc = func
 end
 
+function barListPrototype:GetSortFunction(func)
+	return self.sortFunc
+end
+
 -- MODIFIED
 function barListPrototype:SetBarOffset(offset)
 	self.offset = offset
