@@ -397,7 +397,7 @@ function Skada:ToggleWindow()
 end
 
 local function createSet(setname)
-	local set = {players = {}, name = setname, starttime = time(), ["time"] = 0}
+	local set = {players = {}, name = setname, starttime = time(), ["time"] = 0, last_action = time()}
 
 	-- Tell each mode to apply its needed attributes.
 	for i, mode in ipairs(modes) do
@@ -820,7 +820,7 @@ end
 -- Each second, if player is not in combat and is not dead and we have an active set (current), close up shop.
 -- We can not simply rely on PLAYER_REGEN_ENABLED since it is fired if we die and the fight continues.
 function Skada:Tick()
-	if current and not InCombatLockdown() and not UnitIsDead("player") then
+	if current and not InCombatLockdown() and not UnitIsDead("player") and (time() - set.last_action > 3) then
 	
 		-- Save current set unless this a trivial set, or if we have the Only keep boss fights options on, and no boss in fight.
 		if not self.db.profile.onlykeepbosses or current.gotboss then
@@ -892,44 +892,48 @@ end
 function Skada:PLAYER_REGEN_DISABLED()
 	-- Start a new set if we are not in one already.
 	if not current then
-		-- Remove old bars.
-		self:RemoveAllBars()
-		
-		-- Create a new current set.
-		current = createSet(L["Current"])
-
-		-- Also start the total set if it is nil.
-		if total == nil then
-			total = createSet(L["Total"])
-			self.db.profile.total = total
-		end
-		
-		-- Auto-switch set/mode if configured.
-		if self.db.profile.modeincombat ~= "" then
-			-- First, get the mode. The mode may not actually be available.
-			local mymode = find_mode(self.db.profile.modeincombat)
-			
-			-- If the mode exists, switch to current set and this mode. Save current set/mode so we can return after combat if configured.
-			if mymode ~= nil then
---				self:Print("Switching to "..mymode.name.." mode.")
-				
-				if self.db.profile.returnaftercombat then
-					if selectedset then
-						restore_set = selectedset
-					end
-					if selectedmode then
-						restore_mode = selectedmode.name
-					end
-				end
-				
-				selectedset = "current"
-				self:DisplayMode(mymode)
-			end
-		end
-		
-		-- Force immediate update.
-		self:UpdateBars()
+		self:StartCombart()
 	end
+end
+
+function Skada:StartCombat()
+	-- Remove old bars.
+	self:RemoveAllBars()
+	
+	-- Create a new current set.
+	current = createSet(L["Current"])
+
+	-- Also start the total set if it is nil.
+	if total == nil then
+		total = createSet(L["Total"])
+		self.db.profile.total = total
+	end
+	
+	-- Auto-switch set/mode if configured.
+	if self.db.profile.modeincombat ~= "" then
+		-- First, get the mode. The mode may not actually be available.
+		local mymode = find_mode(self.db.profile.modeincombat)
+		
+		-- If the mode exists, switch to current set and this mode. Save current set/mode so we can return after combat if configured.
+		if mymode ~= nil then
+--				self:Print("Switching to "..mymode.name.." mode.")
+			
+			if self.db.profile.returnaftercombat then
+				if selectedset then
+					restore_set = selectedset
+				end
+				if selectedmode then
+					restore_mode = selectedmode.name
+				end
+			end
+			
+			selectedset = "current"
+			self:DisplayMode(mymode)
+		end
+	end
+	
+	-- Force immediate update.
+	self:UpdateBars()
 end
 
 -- Attempts to restore a view (set and mode).
@@ -1002,6 +1006,7 @@ function Skada:get_player(set, playerid, playername, do_not_create)
 	
 	-- Mark now as the last time player did something worthwhile.
 	player.last = time()
+	set.last_action = time()
 	return player
 end
 
@@ -1014,6 +1019,12 @@ function Skada:UNIT_TARGET(event, unitId)
 end
 
 function Skada:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
+	-- Detect combat start.
+	-- Not happy about this, really. Why can't there be a UNIT_ENTERED_COMBAT?
+	if not current and srcName and dstName and Skada:UnitIsInteresting(srcName) and (eventtype == 'SPELL_DAMAGE' or eventtype == 'SPELL_PERIODIC_DAMAGE' or eventtype == 'SPELL_BUILDING_DAMAGE' or eventtype == 'RANGE_DAMAGE' or eventtype == "SWING_DAMAGE") then
+		self:StartCombat()
+	end
+
 	-- Pet summons.
 	-- Pet scheme: save the GUID in a table along with the GUID of the owner.
 	-- Note to self: this needs 1) to be made self-cleaning so it can't grow too much, and 2) saved persistently.
