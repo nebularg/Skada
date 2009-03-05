@@ -33,6 +33,7 @@ Skada.defaults = {
 		feed = "",
 		sets = {},
 		total = nil,
+		modules = {},	-- Place module config here if needed.
 	}
 }
 

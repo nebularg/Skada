@@ -29,6 +29,7 @@ function mod:AddPlayerAttributes(player)
 	if not player.healing then
 		player.healing = 0
 		player.healingspells = {}
+		player.overhealing = 0
 	end
 end
 
@@ -36,6 +37,7 @@ end
 function mod:AddSetAttributes(set)
 	if not set.healing then
 		set.healing = 0
+		set.overhealing = 0
 	end
 end
 
@@ -161,6 +163,12 @@ function playermod:Update(set)
 	-- View spells for this player.
 		
 	local player = Skada:get_selected_player(set, self.playerid)
+	local maxvalue = 0
+	for spellname, spell in pairs(player.healingspells) do
+		if spell.healing > maxvalue then
+			maxvalue = spell.healing
+		end
+	end
 	
 	if player then
 		for spellname, spell in pairs(player.healingspells) do
@@ -169,13 +177,13 @@ function playermod:Update(set)
 			--self:Print("max: "..tostring(player.damage))
 			--self:Print(spell.name..": "..tostring(spell.damage))
 			if bar then
-				bar:SetMaxValue(player.healing)
+				bar:SetMaxValue(maxvalue)
 				bar:SetValue(spell.healing)
 			else
 				local icon = select(3, GetSpellInfo(spell.id))
 				local color = Skada:GetDefaultBarColor()
 			
-				bar = Skada:GetBarGroup():NewCounterBar(spellname, spell.name, spell.healing, player.healing, icon, false)
+				bar = Skada:GetBarGroup():NewCounterBar(spellname, spell.name, spell.healing, maxvalue, icon, false)
 				bar:SetColorAt(0, color.r, color.g, color.b, color.a)
 				bar:ShowTimerLabel()
 				bar:EnableMouse(true)
@@ -190,6 +198,57 @@ function playermod:Update(set)
 			end
 			bar:SetTimerLabel(Skada:FormatNumber(spell.healing)..(" (%02.1f%%)"):format(spell.healing / player.healing * 100))
 			
+		end
+	end
+	
+	-- Sort the possibly changed bars.
+	Skada:SortBars()
+end
+
+
+-- Overhealing
+local mod = Skada:NewModule("OverhealingMode")
+
+mod.name = L["Overhealing"]
+
+function mod:OnEnable()
+	Skada:AddMode(self)
+end
+
+function mod:OnDisable()
+	Skada:RemoveMode(self)
+end
+
+function mod:Update(set)
+	-- Calculate the highest damage.
+	-- How to get rid of this iteration?
+	local maxoverhealing = 0
+	for i, player in ipairs(set.players) do
+		if player.overhealing > maxoverhealing then
+			maxoverhealing = player.overhealing
+		end
+	end
+	
+--	Skada:Print("maxoverhealing: "..tostring(maxoverhealing))
+	-- For each player in the set, see if we have a bar already.
+	-- If so, update values, else create bar.
+	for i, player in ipairs(set.players) do
+		if player.overhealing > 0 then
+			local bar = Skada:GetBar(tostring(player.id))
+			if bar then
+				bar:SetMaxValue(maxoverhealing)
+				bar:SetValue(player.overhealing)
+	--			Skada:Print("updated "..player.name.." to "..tostring(player.overhealing))
+			else
+				bar = Skada:CreateBar(tostring(player.id), player.name, player.overhealing, maxoverhealing, nil, false)
+				bar:EnableMouse()
+				bar:SetScript("OnMouseDown", function(bar, button) if button == "RightButton" then Skada:RightClick() end end)
+				local color = Skada.classcolors[player.class] or Skada:GetDefaultBarColor()
+				bar:SetColorAt(0, color.r, color.g, color.b, color.a or 1)
+				
+	--			Skada:Print("created "..player.name.." at "..tostring(player.overhealing))
+			end
+			bar:SetTimerLabel(Skada:FormatNumber(player.overhealing)..(" (%02.1f%%)"):format(player.overhealing / set.overhealing * 100))
 		end
 	end
 	

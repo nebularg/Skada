@@ -1,5 +1,10 @@
-1.0-11
+1.0-12
+* Added threat warnings.
+* Damage and healing spell lists are now scaled relative to the highest hit/heal instead of the total damage/healing.
+* Fixed a bug where enabling a module with old data could produce errors.
 
+1.0-11
+* LDB data feed now doesn't reset value after combat.
 
 1.0-10
 * Added a "Delete segment" option to the menu.

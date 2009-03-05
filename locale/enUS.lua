@@ -121,6 +121,19 @@ L["The number of fight segments to keep. Persistent segments are not included in
 L["Alternate color"] = "Alternate color"
 L["Choose the alternate color of the bars."] = "Choose the alternate color of the bars."
 
+L["Threat warning"] = "Threat warning"
+L["Flash screen"] = "Flash screen"
+L["This will cause the screen to flash as a threat warning."] = "This will cause the screen to flash as a threat warning."
+L["Shake screen"] = "Shake screen"
+L["This will cause the screen to shake as a threat warning."] = "This will cause the screen to shake as a threat warning."
+L["Play sound"] = "Play sound"
+L["This will play a sound as a threat warning."] = "This will play a sound as a threat warning."
+L["Threat sound"] = "Threat sound"
+L["The sound that will be played when your threat percentage reaches a certain point."] = "The sound that will be played when your threat percentage reaches a certain point."
+L["Threat threshold"] = "Threat threshold"
+L["When your threat reaches this level, relative to tank, warnings are shown."] = "When your threat reaches this level, relative to tank, warnings are shown."
+
+
 -- SkadaDebuffs
 L["Debuff uptimes"] = true
 L["'s Debuffs"] = true

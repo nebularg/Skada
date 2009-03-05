@@ -1281,6 +1281,19 @@ end
 
 -- Register a mode.
 function Skada:AddMode(mode)
+	-- Ask mode to verify our sets.
+	-- Needed in case we enable a mode and we have old data.
+	for i, set in ipairs(sets) do
+		if mode.AddSetAttributes ~= nil then
+			mode:AddSetAttributes(set)
+		end
+		for j, player in ipairs(set.players) do
+			if mode.AddPlayerAttributes ~= nil then
+				mode:AddPlayerAttributes(player)
+			end
+		end
+	end
+
 	table.insert(modes, mode)
 	
 	-- Set this mode as the active mode if it matches the saved one.

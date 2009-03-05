@@ -27,3 +27,5 @@ locale\deDE.lua
 
 Skada.lua
 Options.lua
+
+modules.xml
