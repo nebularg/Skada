@@ -24,6 +24,10 @@ function mod:AddToTooltip(set, tooltip)
  	GameTooltip:AddDoubleLine(L["HPS:"], ("%02.1f"):format(raidhps), 1,1,1)
 end
 
+function mod:GetSetSummary(set)
+	return Skada:FormatNumber(set.healing)
+end
+
 -- Called by Skada when a new player is added to a set.
 function mod:AddPlayerAttributes(player)
 	if not player.healing then

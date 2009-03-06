@@ -66,6 +66,10 @@ function mod:AddToTooltip(set, tooltip)
  	GameTooltip:AddDoubleLine(L["DPS"], ("%02.1f"):format(getRaidDPS(set)), 1,1,1)
 end
 
+function mod:GetSetSummary(set)
+	return Skada:FormatNumber(set.damage)
+end
+
 -- Called by Skada when a new player is added to a set.
 function mod:AddPlayerAttributes(player)
 	if not player.damage then
@@ -398,6 +402,11 @@ end
 
 -- DPS-only view
 -- Adds a "dps" field to all players; bit lame, but hey.
+
+function mod:GetSetSummary(set)
+	return Skada:FormatNumber(getRaidDPS(set))
+end
+
 function dpsmod:Update(set)
 	-- Calculate the highest damage.
 	-- How to get rid of this iteration?

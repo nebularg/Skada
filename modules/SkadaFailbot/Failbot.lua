@@ -20,6 +20,10 @@ function mod:AddToTooltip(set, tooltip)
  	GameTooltip:AddDoubleLine(L["Fails:"], set.fails, 1,1,1)
 end
 
+function mod:GetSetSummary(set)
+	return set.fails
+end
+
 -- Called by Skada when a new player is added to a set.
 function mod:AddPlayerAttributes(player)
 	if not player.fails then

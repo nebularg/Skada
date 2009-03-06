@@ -30,6 +30,10 @@ function mod:AddToTooltip(set, tooltip)
  	GameTooltip:AddDoubleLine(L["Deaths:"], set.deaths, 1,1,1)
 end
 
+function mod:GetSetSummary(set)
+	return set.deaths
+end
+
 -- Called by Skada when a new player is added to a set.
 function mod:AddPlayerAttributes(player)
 	if not player.deaths then

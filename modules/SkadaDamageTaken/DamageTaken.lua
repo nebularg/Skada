@@ -30,6 +30,10 @@ function mod:AddSetAttributes(set)
 	end
 end
 
+function mod:GetSetSummary(set)
+	return Skada:FormatNumber(set.damagetaken)
+end
+
 function mod:log_damage_taken(set, dmg)
 	if set then
 		-- Get the player.

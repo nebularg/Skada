@@ -1114,6 +1114,8 @@ function Skada:UpdateBars()
 		end
 		
 	elseif selectedset then
+		local set = self:get_selected_set()
+		
 		-- View available modes.
 		for i, mode in ipairs(modes) do
 			local bar = self.bargroup:GetBar(mode.name)
@@ -1123,6 +1125,9 @@ function Skada:UpdateBars()
 				bar:SetColorAt(0,c.r,c.g,c.b, c.a)
 				bar:EnableMouse(true)
 				bar:SetScript("OnMouseDown", function(bar, button) if button == "LeftButton" then Skada:DisplayMode(mode) elseif button == "RightButton" then Skada:RightClick() end end)
+				if mode.GetSetSummary ~= nil then
+					bar:SetTimerLabel(mode:GetSetSummary(set))
+				end
 			end
 		end
 		
