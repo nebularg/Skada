@@ -435,18 +435,11 @@ end
 
 -- Delete a set.
 function Skada:DeleteSet(set)
-	if not set then set = selectedset end
+	if not set then return end
 
-	if set == "current" then
-		wipe(current)
-		current = nil
-	elseif set == "total" then
-		wipe(total)
-		total = nil
-		self.db.profile.total = nil
-	else
-		if sets[set] then
-			wipe(table.remove(sets, set))
+	for i, s in ipairs(sets) do
+		if s == set then
+			wipe(table.remove(sets, i))
 		end
 	end
 	changed = true
@@ -493,13 +486,13 @@ function Skada:OpenMenu()
 	        info.notCheckable = 1
 	        UIDropDownMenu_AddButton(info, level)
 	        
-	        if selectedset then
-		        wipe(info)
-		        info.text = "Delete segment"
-		        info.func = function() Skada:DeleteSet() end
-		        info.notCheckable = 1
-		        UIDropDownMenu_AddButton(info, level)
-		    end
+	        wipe(info)
+	        info.text = "Delete segment"
+	        info.func = function() Skada:DeleteSet() end
+	        info.hasArrow = 1
+	        info.notCheckable = 1
+	        info.value = "delete"
+	        UIDropDownMenu_AddButton(info, level)
 	        
 	        wipe(info)
 	        info.text = "Keep segment"
@@ -540,6 +533,14 @@ function Skada:OpenMenu()
 			        wipe(info)
 		            info.text = module.name
 		            info.func = function() Skada:DisplayMode(module) end
+			        info.notCheckable = 1
+		            UIDropDownMenu_AddButton(info, level)
+		        end
+		    elseif UIDROPDOWNMENU_MENU_VALUE == "delete" then
+		        for i, set in ipairs(sets) do
+			        wipe(info)
+		            info.text = set.name..": "..date("%H:%M",set.starttime).." - "..date("%H:%M",set.endtime)
+		            info.func = function() Skada:DeleteSet(set) end
 			        info.notCheckable = 1
 		            UIDropDownMenu_AddButton(info, level)
 		        end
