@@ -821,7 +821,7 @@ end
 -- Each second, if player is not in combat and is not dead and we have an active set (current), close up shop.
 -- We can not simply rely on PLAYER_REGEN_ENABLED since it is fired if we die and the fight continues.
 function Skada:Tick()
-	if current and not InCombatLockdown() and not UnitIsDead("player") and (time() - set.last_action > 3) then
+	if current and not InCombatLockdown() and not UnitIsDead("player") and (time() - current.last_action > 3) then
 	
 		-- Save current set unless this a trivial set, or if we have the Only keep boss fights options on, and no boss in fight.
 		if not self.db.profile.onlykeepbosses or current.gotboss then
@@ -893,7 +893,7 @@ end
 function Skada:PLAYER_REGEN_DISABLED()
 	-- Start a new set if we are not in one already.
 	if not current then
-		self:StartCombart()
+		self:StartCombat()
 	end
 end
 
@@ -973,18 +973,24 @@ function Skada:RestoreView(theset, themode)
 	end
 end
 
--- Returns a player from the current.
-function Skada:get_player(set, playerid, playername, do_not_create)
-	-- Add player to set if it does not exist.
+-- Returns a player from the current. Safe to use to simply 
+function Skada:find_player(set, playerid)
 	local player = nil
 	for i, p in ipairs(set.players) do
 		if p.id == playerid then
 			player = p
 		end
 	end
+end
 
-	if not player and do_not_create then
-		return
+-- Returns or creates a player in the current.
+function Skada:get_player(set, playerid, playername)
+	-- Add player to set if it does not exist.
+	local player = nil
+	for i, p in ipairs(set.players) do
+		if p.id == playerid then
+			player = p
+		end
 	end
 	
 	if not player then
@@ -1120,15 +1126,16 @@ function Skada:UpdateBars()
 		for i, mode in ipairs(modes) do
 			local bar = self.bargroup:GetBar(mode.name)
 			if not bar then
-				local bar = self:CreateBar(mode.name, mode.name, 1, 1, nil, false)
+				bar = self:CreateBar(mode.name, mode.name, 1, 1, nil, false)
 				local c = self:GetDefaultBarColor()
 				bar:SetColorAt(0,c.r,c.g,c.b, c.a)
 				bar:EnableMouse(true)
 				bar:SetScript("OnMouseDown", function(bar, button) if button == "LeftButton" then Skada:DisplayMode(mode) elseif button == "RightButton" then Skada:RightClick() end end)
-				if mode.GetSetSummary ~= nil then
-					bar:SetTimerLabel(mode:GetSetSummary(set))
-				end
 			end
+			if set and mode.GetSetSummary ~= nil then
+				bar:SetTimerLabel(mode:GetSetSummary(set))
+			end
+
 		end
 		
 		self:SortBars(function(a,b) return a.name < b.name end)
