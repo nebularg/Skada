@@ -32,7 +32,7 @@ function mod:OnEnable()
 	Skada:AddFeed(L["Damage: Personal DPS"], function()
 								local current = Skada:GetCurrentSet()
 								if current then
-									local player = Skada:get_player(current, UnitGUID("player"), UnitName("player"), true)
+									local player = Skada:find_player(current, UnitGUID("player"))
 									if player then
 										return ("%02.1f"):format(getDPS(current, player)).." "..L["DPS"]
 									end
@@ -127,13 +127,13 @@ function mod:log_damage(set, dmg)
 				spell.absorbed = spell.absorbed + dmg.absorbed
 			end
 			if dmg.critical then
-				spell.critical = spell.critical + dmg.critical
+				spell.critical = spell.critical + 1
 			elseif dmg.missed then
 				spell.missed = spell.missed + 1
 			elseif dmg.glancing then
-				spell.glancing = spell.glancing + dmg.glancing
+				spell.glancing = spell.glancing + 1
 			elseif dmg.crushing then
-				spell.crushing = spell.crushing + dmg.crushing
+				spell.crushing = spell.crushing + 1
 			else
 				spell.hit = spell.hit + 1
 			end
@@ -154,7 +154,7 @@ function mod:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID, s
 		if eventtype == 'SPELL_DAMAGE' or eventtype == 'SPELL_PERIODIC_DAMAGE' or eventtype == 'SPELL_BUILDING_DAMAGE' or eventtype == 'RANGE_DAMAGE' then
 			if not UnitIsUnit(srcName, dstName) then
 				local spellId, spellName, spellSchool, samount, soverkill, sschool, sresisted, sblocked, sabsorbed, scritical, sglancing, scrushing = ...
-
+				
 				dmg.playerid = srcGUID
 				dmg.playername = srcName
 				dmg.spellid = spellId
@@ -403,7 +403,7 @@ end
 -- DPS-only view
 -- Adds a "dps" field to all players; bit lame, but hey.
 
-function mod:GetSetSummary(set)
+function dpsmod:GetSetSummary(set)
 	return Skada:FormatNumber(getRaidDPS(set))
 end
 

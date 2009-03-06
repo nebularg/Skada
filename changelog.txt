@@ -2,6 +2,8 @@
 * Added threat warnings.
 * Damage and healing spell lists are now scaled relative to the highest hit/heal instead of the total damage/healing.
 * Fixed a bug where enabling a module with old data could produce errors.
+* Improved combat start and end detection. Should bring it more in line with other damage meters.
+* "Delete segment" now shows a list of all segments.
 
 1.0-11
 * LDB data feed now doesn't reset value after combat.

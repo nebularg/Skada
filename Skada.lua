@@ -442,6 +442,7 @@ function Skada:DeleteSet(set)
 			wipe(table.remove(sets, i))
 		end
 	end
+	self:RemoveAllBars()
 	changed = true
 	self:UpdateBars()
 end
