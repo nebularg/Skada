@@ -10,7 +10,6 @@
         <Include file="lib\AceEvent-3.0\AceEvent-3.0.xml"/>
 		<Include file="lib\AceGUI-3.0\AceGUI-3.0.xml"/>
 		<Include file="lib\AceConfig-3.0\AceConfig-3.0.xml"/>
-		<Include file="lib\SpecializedLibBars-1.0\lib.xml"/>
 		<Include file="lib\LibSharedMedia-3.0\lib.xml"/>
 		<Include file="lib\LibDataBroker-1.1\LibDataBroker-1.1.lua"/>
 		<Include file="lib\LibDBIcon-1.0\LibDBIcon-1.0.lua"/>

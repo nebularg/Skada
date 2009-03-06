@@ -19,6 +19,8 @@
 embeds.xml
 #@end-no-lib-strip@
 
+lib\SpecializedLibBars-1.0\SpecializedLibBars-1.0.lua
+
 locale\enUS.lua
 locale\koKR.lua
 locale\zhCN.lua
