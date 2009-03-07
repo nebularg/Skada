@@ -1553,6 +1553,7 @@ function barPrototype:SetTextureValue(amt, dist)
 	dist = max(0.0001, dist - (self.showIcon and self.thickness or 0))
 	local t, o = self.texture, self.orientation
 	t:SetValue(amt * dist)
+
 	if o == 1 then
 		t:SetTexCoord(0, amt, 0, 1)
 	elseif o == 2 then

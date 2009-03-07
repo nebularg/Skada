@@ -133,6 +133,7 @@ L["The sound that will be played when your threat percentage reaches a certain p
 L["Threat threshold"] = "Threat threshold"
 L["When your threat reaches this level, relative to tank, warnings are shown."] = "When your threat reaches this level, relative to tank, warnings are shown."
 
+L["Enables the title bar."] = "Enables the title bar."
 
 -- SkadaDebuffs
 L["Debuff uptimes"] = true

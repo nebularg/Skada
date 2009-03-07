@@ -24,7 +24,7 @@ Skada.defaults = {
 		numberformat=1,
 		setstokeep = 10,
 		onlykeepbosses=false,
-		window = {shown = true, enablebackground = false, margin=0, height=150, texture="None", bordertexture="None", borderthickness=0, color = {r=0,g=0,b=0.5,a=0.5}},
+		window = {shown = true, enabletitle = true, enablebackground = false, margin=0, height=150, texture="None", bordertexture="None", borderthickness=0, color = {r=0,g=0,b=0.5,a=0.5}},
 		returnaftercombat=false,
 		mmbutton=true,
 		hidesolo=false,
@@ -233,6 +233,19 @@ Skada.options = {
 	        			name = L["Title bar"],
 	        			order=2,
 						args = {
+							
+							enable = {
+							        type="toggle",
+							        name=L["Enable"],
+							        desc=L["Enables the title bar."],
+							        order=0,
+							        get=function() return Skada.db.profile.window.enabletitle end,
+							        set=function() 
+							        		Skada.db.profile.window.enabletitle = not Skada.db.profile.window.enabletitle
+						         			Skada:ApplySettings()
+							        	end,
+							},
+							
 						    texture = {
 						         type = 'select',
 						         dialogControl = 'LSM30_Statusbar',

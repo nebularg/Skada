@@ -713,17 +713,18 @@ local windowbackdrop = {}
 -- Applies settings to things like the bar window.
 function Skada:ApplySettings()
 	local g = self.bargroup
-	g:ReverseGrowth(self.db.profile.reversegrowth)
-	g:SetOrientation(self.db.profile.barorientation)
-	g:SetHeight(self.db.profile.barheight)
-	g:SetWidth(self.db.profile.barwidth)
-	g:SetTexture(media:Fetch('statusbar', self.db.profile.bartexture))
-	g:SetFont(media:Fetch('font', self.db.profile.barfont), self.db.profile.barfontsize)
-	g:SetSpacing(self.db.profile.barspacing)
+	local p = self.db.profile
+	g:ReverseGrowth(p.reversegrowth)
+	g:SetOrientation(p.barorientation)
+	g:SetHeight(p.barheight)
+	g:SetWidth(p.barwidth)
+	g:SetTexture(media:Fetch('statusbar', p.bartexture))
+	g:SetFont(media:Fetch('font', p.barfont), p.barfontsize)
+	g:SetSpacing(p.barspacing)
 	g:UnsetAllColors()
-	g:SetColorAt(0,self.db.profile.barcolor.r,self.db.profile.barcolor.g,self.db.profile.barcolor.b, self.db.profile.barcolor.a)
-	g:SetMaxBars(self.db.profile.barmax)
-	if self.db.profile.barslocked then
+	g:SetColorAt(0,p.barcolor.r,p.barcolor.g,p.barcolor.b, p.barcolor.a)
+	g:SetMaxBars(p.barmax)
+	if p.barslocked then
 		g:Lock()
 	else
 		g:Unlock()
@@ -731,23 +732,29 @@ function Skada:ApplySettings()
 	g:SortBars()
 
 	-- Header
-	local inset = self.db.profile.title.margin
-	titlebackdrop.bgFile = media:Fetch("statusbar", self.db.profile.title.texture)
-	if self.db.profile.title.borderthickness > 0 then
-		titlebackdrop.edgeFile = media:Fetch("border", self.db.profile.title.bordertexture)
+	local inset = p.title.margin
+	titlebackdrop.bgFile = media:Fetch("statusbar", p.title.texture)
+	if p.title.borderthickness > 0 then
+		titlebackdrop.edgeFile = media:Fetch("border", p.title.bordertexture)
 	else
 		titlebackdrop.edgeFile = nil
 	end
 	titlebackdrop.tile = false
 	titlebackdrop.tileSize = 0
-	titlebackdrop.edgeSize = self.db.profile.title.borderthickness
+	titlebackdrop.edgeSize = p.title.borderthickness
 	titlebackdrop.insets = {left = inset, right = inset, top = inset, bottom = inset}
 	g.button:SetBackdrop(titlebackdrop)
-	local color = self.db.profile.title.color
+	local color = p.title.color
 	g.button:SetBackdropColor(color.r, color.g, color.b, color.a or 1)
 	
+	if p.window.enabletitle then
+		g:ShowAnchor()
+	else
+		g:HideAnchor()
+	end
+	
 	-- Window
-	if self.db.profile.window.enablebackground then
+	if p.window.enablebackground then
 		if g.bgframe == nil then
 			g.bgframe = CreateFrame("Frame", nil, self.bargroup)
 			g.bgframe:SetFrameStrata("BACKGROUND")
@@ -757,38 +764,38 @@ function Skada:ApplySettings()
 			g.bgframe:SetScript("OnMouseWheel", OnMouseWheel)
 		end
 
-		local inset = self.db.profile.window.margin
-		windowbackdrop.bgFile = media:Fetch("statusbar", self.db.profile.window.texture)
-		if self.db.profile.window.borderthickness > 0 then
-			windowbackdrop.edgeFile = media:Fetch("border", self.db.profile.window.bordertexture)
+		local inset = p.window.margin
+		windowbackdrop.bgFile = media:Fetch("statusbar", p.window.texture)
+		if p.window.borderthickness > 0 then
+			windowbackdrop.edgeFile = media:Fetch("border", p.window.bordertexture)
 		else
 			windowbackdrop.edgeFile = nil
 		end
 		windowbackdrop.tile = false
 		windowbackdrop.tileSize = 0
-		windowbackdrop.edgeSize = self.db.profile.window.borderthickness
+		windowbackdrop.edgeSize = p.window.borderthickness
 		windowbackdrop.insets = {left = inset, right = inset, top = inset, bottom = inset}
 		g.bgframe:SetBackdrop(windowbackdrop)
-		local color = self.db.profile.window.color
+		local color = p.window.color
 		g.bgframe:SetBackdropColor(color.r, color.g, color.b, color.a or 1)
-		g.bgframe:SetWidth(g:GetWidth() + (self.db.profile.window.borderthickness * 2))
-		g.bgframe:SetHeight(self.db.profile.window.height)
+		g.bgframe:SetWidth(g:GetWidth() + (p.window.borderthickness * 2))
+		g.bgframe:SetHeight(p.window.height)
 
 		g.bgframe:ClearAllPoints()
-		if self.db.profile.reversegrowth then
-			g.bgframe:SetPoint("LEFT", g.button, "LEFT", -self.db.profile.window.borderthickness, 0)
-			g.bgframe:SetPoint("RIGHT", g.button, "RIGHT", self.db.profile.window.borderthickness, 0)
+		if p.reversegrowth then
+			g.bgframe:SetPoint("LEFT", g.button, "LEFT", -p.window.borderthickness, 0)
+			g.bgframe:SetPoint("RIGHT", g.button, "RIGHT", p.window.borderthickness, 0)
 			g.bgframe:SetPoint("BOTTOM", g.button, "TOP", 0, 0)
 		else
-			g.bgframe:SetPoint("LEFT", g.button, "LEFT", -self.db.profile.window.borderthickness, 0)
-			g.bgframe:SetPoint("RIGHT", g.button, "RIGHT", self.db.profile.window.borderthickness, 0)
+			g.bgframe:SetPoint("LEFT", g.button, "LEFT", -p.window.borderthickness, 0)
+			g.bgframe:SetPoint("RIGHT", g.button, "RIGHT", p.window.borderthickness, 0)
 			g.bgframe:SetPoint("TOP", g.button, "BOTTOM", 0, 0)
 		end
 		g.bgframe:Show()
 		
 		-- Calculate max number of bars to show if our height is not dynamic.
-		if self.db.profile.window.height > 0 then
-			local maxbars = math.floor(self.db.profile.window.height / math.max(1, self.db.profile.barheight + self.db.profile.barspacing))
+		if p.window.height > 0 then
+			local maxbars = math.floor(p.window.height / math.max(1, p.barheight + p.barspacing))
 			g:SetMaxBars(maxbars)
 		else
 			-- Adjust background height according to current bars.
@@ -818,11 +825,30 @@ local function setPlayerActiveTimes(set)
 	end
 end
 
+local function IsRaidInCombat()
+	if GetNumRaidMembers() > 0 then
+		-- We are in a raid.
+		for i = 1, GetNumRaidMembers(), 1 do
+			if UnitExists("raid"..i) and UnitAffectingCombat("raid"..i) then
+				return true
+			end
+		end
+	elseif GetNumPartyMembers() > 0 then
+		-- In party.
+		for i = 1, GetNumPartyMembers(), 1 do
+			if UnitExists("party"..i) and UnitAffectingCombat("party"..i) then
+				return true
+			end
+		end
+	end
+end
+
 -- Our scheme for segmenting fights:
--- Each second, if player is not in combat and is not dead and we have an active set (current), close up shop.
+-- Each second, if player is not in combat and is not dead and we have an active set (current), 
+-- check if anyone in raid is in combat; if so, close up shop.
 -- We can not simply rely on PLAYER_REGEN_ENABLED since it is fired if we die and the fight continues.
 function Skada:Tick()
-	if current and not InCombatLockdown() and not UnitIsDead("player") and (time() - current.last_action > 3) then
+	if current and not InCombatLockdown() and not UnitIsDead("player") and not IsRaidInCombat() then
 	
 		-- Save current set unless this a trivial set, or if we have the Only keep boss fights options on, and no boss in fight.
 		if not self.db.profile.onlykeepbosses or current.gotboss then

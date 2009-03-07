@@ -152,7 +152,7 @@ function mod:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID, s
 
 		-- Spell damage.
 		if eventtype == 'SPELL_DAMAGE' or eventtype == 'SPELL_PERIODIC_DAMAGE' or eventtype == 'SPELL_BUILDING_DAMAGE' or eventtype == 'RANGE_DAMAGE' then
-			if not UnitIsUnit(srcName, dstName) then
+			if srcGUID ~= dstGUID then
 				local spellId, spellName, spellSchool, samount, soverkill, sschool, sresisted, sblocked, sabsorbed, scritical, sglancing, scrushing = ...
 				
 				dmg.playerid = srcGUID
@@ -175,7 +175,7 @@ function mod:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID, s
 			end
 		elseif eventtype == 'SWING_DAMAGE' then
 			-- White melee.
-			if not UnitIsUnit(srcName, dstName) then
+			if srcGUID ~= dstGUID then
 				local samount, soverkill, sschool, sresisted, sblocked, sabsorbed, scritical, sglancing, scrushing = ...
 				
 				dmg.playerid = srcGUID

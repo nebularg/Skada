@@ -1,5 +1,7 @@
 1.0-12
 * Added threat warnings.
+* Added an option to enable/disable title bar.
+* Mode list now shows summary values for each mode (280k for Damage, etc).
 * Damage and healing spell lists are now scaled relative to the highest hit/heal instead of the total damage/healing.
 * Fixed a bug where enabling a module with old data could produce errors.
 * Improved combat start and end detection. Should bring it more in line with other damage meters.
