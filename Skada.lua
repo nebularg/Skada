@@ -969,6 +969,7 @@ function Skada:StartCombat()
 	end
 	
 	-- Force immediate update.
+	changed = true
 	self:UpdateBars()
 end
 
