@@ -4,6 +4,8 @@
 <Script file="modules\SkadaThreat\Threat.lua"/>
 <Script file="modules\SkadaDamage\Damage.lua"/>
 <Script file="modules\SkadaHealing\Healing.lua"/>
+<Script file="modules\SkadaHealing\Overhealing.lua"/>
+<Script file="modules\SkadaHealing\TotalHealing.lua"/>
 <Script file="modules\SkadaDamageTaken\DamageTaken.lua"/>
 <Script file="modules\SkadaDeaths\Deaths.lua"/>
 <Script file="modules\SkadaFailbot\LibFail-1.0\LibFail-1.0.lua"/>

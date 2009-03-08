@@ -393,6 +393,7 @@ function Skada:ToggleWindow()
 	else
 		self.db.profile.window.shown = true
 		self.bargroup:Show()
+		self.bargroup:SortBars()
 	end
 end
 
@@ -667,15 +668,6 @@ end
 function Skada:ReloadSettings()
 	total = self.db.profile.total
 	sets = self.db.profile.sets
-
-	if self.db.profile.window.shown then
-		-- Don't show window if we are solo and we have enabled the "Hide when solo" option.
-		if not (self.db.profile.hidesolo and GetNumRaidMembers() == 0 and GetNumPartyMembers() == 0) then
-			self.bargroup:Show()
-		end
-	else
-		self.bargroup:Hide()
-	end
 	
 	-- Restore window position.
 	win.RegisterConfig(self.bargroup, self.db.profile)
@@ -702,7 +694,7 @@ end
 local function OnMouseWheel(frame, direction)
 	if direction == 1 and Skada.bargroup:GetBarOffset() > 0 then
 		Skada.bargroup:SetBarOffset(Skada.bargroup:GetBarOffset() - 1)
-	elseif direction == -1 and ((getNumberOfBars() - Skada.bargroup:GetMaxBars() - Skada.bargroup:GetBarOffset()) > 1) then
+	elseif direction == -1 and ((getNumberOfBars() - Skada.bargroup:GetMaxBars() - Skada.bargroup:GetBarOffset()) > 0) then
 		Skada.bargroup:SetBarOffset(Skada.bargroup:GetBarOffset() + 1)
 	end
 end
@@ -806,7 +798,21 @@ function Skada:ApplySettings()
 		g.bgframe:Hide()
 	end
 	
-	self.bargroup:SortBars()
+	if self.db.profile.window.shown then
+		-- Don't show window if we are solo and we have enabled the "Hide when solo" option.
+		if not (self.db.profile.hidesolo and GetNumRaidMembers() == 0 and GetNumPartyMembers() == 0) then
+			self.bargroup:Show()
+		else
+			self.bargroup:Hide()
+		end
+	else
+		self.bargroup:Hide()
+	end
+
+	g:SortBars()
+	
+	changed = true
+	self:UpdateBars()
 end
 
 -- Set a data feed as selectedfeed.
@@ -851,8 +857,9 @@ function Skada:Tick()
 	if current and not InCombatLockdown() and not UnitIsDead("player") and not IsRaidInCombat() then
 	
 		-- Save current set unless this a trivial set, or if we have the Only keep boss fights options on, and no boss in fight.
+		-- A set is trivial if we have no mob name saved, or if total time for set is not more than 5 seconds.
 		if not self.db.profile.onlykeepbosses or current.gotboss then
-			if current.mobname ~= nil then
+			if current.mobname ~= nil and time() - current.starttime > 5 then
 				-- End current set.
 				current.endtime = time()
 				current.time = current.endtime - current.starttime
@@ -1040,13 +1047,13 @@ function Skada:get_player(set, playerid, playername)
 	
 	-- Mark now as the last time player did something worthwhile.
 	player.last = time()
-	set.last_action = time()
+	changed = true
 	return player
 end
 
 -- Save boss name and mark set as having a boss.
 function Skada:UNIT_TARGET(event, unitId)
-	if current and unitId and (UnitClassification(unitId.."target") == "worldboss" or UnitClassification(unitId.."target") == "boss") and not current.gotboss then
+	if current and unitId and not UnitIsDead("target") and (UnitClassification(unitId.."target") == "worldboss" or UnitClassification(unitId.."target") == "boss") and not current.gotboss then
 		current.gotboss = true
 		current.mobname = UnitName(unitId.."target")
 	end
@@ -1076,9 +1083,9 @@ function Skada:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID,
 	end
 	
 	-- If we are active, and something happens to or by an interesting unit, mark as changed so we update our window.
-	if current and srcName and (self:UnitIsInteresting(srcName) or self:UnitIsInteresting(dstName)) then
-		changed = true
-	end
+	--if current and srcName and (self:UnitIsInteresting(srcName) or self:UnitIsInteresting(dstName)) then
+	--	changed = true
+	--end
 end
 
 --
@@ -1153,7 +1160,7 @@ function Skada:UpdateBars()
 		for i, mode in ipairs(modes) do
 			local bar = self.bargroup:GetBar(mode.name)
 			if not bar then
-				bar = self:CreateBar(mode.name, mode.name, 1, 1, nil, false)
+				bar = self:CreateBar(mode.name, mode.name, 1, 1)
 				local c = self:GetDefaultBarColor()
 				bar:SetColorAt(0,c.r,c.g,c.b, c.a)
 				bar:EnableMouse(true)
@@ -1165,12 +1172,12 @@ function Skada:UpdateBars()
 
 		end
 		
-		self:SortBars(function(a,b) return a.name < b.name end)
+		self:SortBars()
 	else
 		-- View available sets.
 		local bar = self:GetBar("total")
 		if not bar then
-			local bar = self:CreateBar("total", L["Total"], 1, 1, nil, false)
+			local bar = self:CreateBar("total", L["Total"], 1, 1)
 			local c = self:GetDefaultBarColor()
 			bar:SetColorAt(0,c.r,c.g,c.b, c.a)
 			bar:EnableMouse(true)
@@ -1179,7 +1186,7 @@ function Skada:UpdateBars()
 
 		local bar = self:GetBar("current")
 		if not bar then
-			local bar = self:CreateBar("current", L["Current"], 1, 1, nil, false)
+			local bar = self:CreateBar("current", L["Current"], 1, 1)
 			local c = self:GetDefaultBarColor()
 			bar:SetColorAt(0,c.r,c.g,c.b, c.a)
 			bar:EnableMouse(true)
@@ -1190,7 +1197,7 @@ function Skada:UpdateBars()
 		
 			local bar = self:GetBar(tostring(set.starttime))
 			if not bar then
-				local bar = self:CreateBar(tostring(set.starttime), set.name, 1, 1, nil, false)
+				local bar = self:CreateBar(tostring(set.starttime), set.name, 1, 1)
 				bar:SetTimerLabel(date("%H:%M",set.starttime).." - "..date("%H:%M",set.endtime))
 				local c = self:GetDefaultBarColor()
 				bar:SetColorAt(0,c.r,c.g,c.b, c.a)
@@ -1254,6 +1261,7 @@ function Skada:DisplayModes(settime)
 	selectedmode = nil
 
 	self.bargroup.button:SetText(L["Skada: Modes"])
+	self:SetSortFunction(function(a,b) return a.name < b.name end)
 
 	-- Find the selected set
 	if settime == "current" or settime == "total" then
@@ -1401,6 +1409,14 @@ end
 Bars
 
 --]]
+
+function Skada:GetDefaultBarColorOne()
+	return self.db.profile.barcolor
+end
+
+function Skada:GetDefaultBarColorTwo()
+	return self.db.profile.baraltcolor
+end
 
 function Skada:GetDefaultBarColor()
 	usealt = not usealt

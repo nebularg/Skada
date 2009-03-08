@@ -1011,7 +1011,10 @@ do
 		self.icon = self.icon or self:CreateTexture(nil, "OVERLAY")
 		self.icon:SetPoint("LEFT", self, "LEFT", 0, 0)
 		self:SetIcon(icon or DEFAULT_ICON)
-		self:ShowIcon()
+		-- MODIFIED
+		if icon then
+			self:ShowIcon()
+		end
 	
 		self.label = self.label or self:CreateFontString(nil, "OVERLAY", "ChatFontNormal")
 		self.label:SetText(text)

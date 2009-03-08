@@ -7,3 +7,4 @@
 
 Healing.lua
 Overhealing.lua
+TotalHealing.lua

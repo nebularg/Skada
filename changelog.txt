@@ -1,3 +1,11 @@
+1.0-13
+* Fixed spell misses not being recorded.
+* Added a Total healing mode.
+* Added more mode summary values.
+* Fixed scrolling issue where you could not scroll down to the last bar.
+* Fixed bar lengths often being off by some pixels.
+* Fixed title bar being hidden sometimes after toggling window.
+
 1.0-12
 * Added threat warnings.
 * Added an option to enable/disable title bar.

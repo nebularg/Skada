@@ -197,48 +197,50 @@ function mod:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID, s
 				self:log_damage(total, dmg)
 			end
 		elseif eventtype == 'SWING_MISSED' then
-			-- Melee misses
-
-			dmg.playerid = srcGUID
-			dmg.playername = srcName
-			dmg.spellid = 6603
-			dmg.spellname = L["Attack"]
-			dmg.amount = 0
-			dmg.overkill = 0
-			dmg.resisted = 0
-			dmg.blocked = 0
-			dmg.absorbed = 0
-			dmg.critical = 0
-			dmg.glancing = 0
-			dmg.crushing = 0
-			dmg.missed = 1
-			
-			Skada:FixPets(dmg)
-			self:log_damage(current, dmg)
-			self:log_damage(total, dmg)
-					
-		elseif eventtype == 'SPELL_DAMAGE_MISSED' or eventtype == 'SPELL_PERIODIC_MISSED' or eventtype == 'RANGE_MISSED' then
+			if srcGUID ~= dstGUID then
+				-- Melee misses
+	
+				dmg.playerid = srcGUID
+				dmg.playername = srcName
+				dmg.spellid = 6603
+				dmg.spellname = L["Attack"]
+				dmg.amount = 0
+				dmg.overkill = 0
+				dmg.resisted = 0
+				dmg.blocked = 0
+				dmg.absorbed = 0
+				dmg.critical = 0
+				dmg.glancing = 0
+				dmg.crushing = 0
+				dmg.missed = select(1, ...)
+				
+				Skada:FixPets(dmg)
+				self:log_damage(current, dmg)
+				self:log_damage(total, dmg)
+			end
+		elseif eventtype == 'SPELL_MISSED' or eventtype == 'SPELL_PERIODIC_MISSED' or eventtype == 'RANGE_MISSED' or eventtype == 'SPELL_BUILDING_MISSED' then
 			-- Misses
-			local spellId, spellName, spellSchool, missType, samount = ...
-
-			dmg.playerid = srcGUID
-			dmg.playername = srcName
-			dmg.spellid = spellId
-			dmg.spellname = spellName
-			dmg.amount = 0
-			dmg.overkill = 0
-			dmg.resisted = 0
-			dmg.blocked = 0
-			dmg.absorbed = 0
-			dmg.critical = 0
-			dmg.glancing = 0
-			dmg.crushing = 0
-			dmg.missed = 1
-			
-			Skada:FixPets(dmg)
-			self:log_damage(current, dmg)
-			self:log_damage(total, dmg)
-		
+			if srcGUID ~= dstGUID then
+				local spellId, spellName, spellSchool, missType, samount = ...
+	
+				dmg.playerid = srcGUID
+				dmg.playername = srcName
+				dmg.spellid = spellId
+				dmg.spellname = spellName
+				dmg.amount = 0
+				dmg.overkill = 0
+				dmg.resisted = 0
+				dmg.blocked = 0
+				dmg.absorbed = 0
+				dmg.critical = 0
+				dmg.glancing = 0
+				dmg.crushing = 0
+				dmg.missed = select(1, ...)
+				
+				Skada:FixPets(dmg)
+				self:log_damage(current, dmg)
+				self:log_damage(total, dmg)
+			end
 		end
 	end
 

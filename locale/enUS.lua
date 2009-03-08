@@ -135,6 +135,8 @@ L["When your threat reaches this level, relative to tank, warnings are shown."] 
 
 L["Enables the title bar."] = "Enables the title bar."
 
+L["Total healing"] = "Total healing"
+
 -- SkadaDebuffs
 L["Debuff uptimes"] = true
 L["'s Debuffs"] = true

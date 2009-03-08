@@ -543,7 +543,10 @@ Skada.options = {
 							        desc=L["Hides Skada's window when not in a party or raid."],
 							        order=24,
 							        get=function() return Skada.db.profile.hidesolo end,
-							        set=function() Skada.db.profile.hidesolo = not Skada.db.profile.hidesolo end,
+							        set=function()
+							        			Skada.db.profile.hidesolo = not Skada.db.profile.hidesolo
+							        			Skada:ApplySettings()
+							        		end,
 							},
 
 							numberformat = {

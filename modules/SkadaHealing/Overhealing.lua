@@ -26,6 +26,10 @@ function mod:AddSetAttributes(set)
 	end
 end
 
+function mod:GetSetSummary(set)
+	return Skada:FormatNumber(set.overhealing)
+end
+
 function mod:Update(set)
 	-- Calculate the highest damage.
 	-- How to get rid of this iteration?

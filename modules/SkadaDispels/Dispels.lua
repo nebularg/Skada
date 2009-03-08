@@ -32,6 +32,10 @@ function mod:AddSetAttributes(set)
 	end
 end
 
+function mod:GetSetSummary(set)
+	return set.dispels
+end
+
 function mod:log_dispell(set, dispell)
 	if set then
 		local player = Skada:get_player(set, dispell.playerid, dispell.playername)
