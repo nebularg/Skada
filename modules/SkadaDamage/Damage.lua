@@ -128,7 +128,7 @@ function mod:log_damage(set, dmg)
 			end
 			if dmg.critical then
 				spell.critical = spell.critical + 1
-			elseif dmg.missed then
+			elseif dmg.missed ~= nil then
 				spell.missed = spell.missed + 1
 			elseif dmg.glancing then
 				spell.glancing = spell.glancing + 1
@@ -199,20 +199,20 @@ function mod:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID, s
 		elseif eventtype == 'SWING_MISSED' then
 			if srcGUID ~= dstGUID then
 				-- Melee misses
-	
+
 				dmg.playerid = srcGUID
 				dmg.playername = srcName
 				dmg.spellid = 6603
 				dmg.spellname = L["Attack"]
 				dmg.amount = 0
 				dmg.overkill = 0
-				dmg.resisted = 0
-				dmg.blocked = 0
-				dmg.absorbed = 0
-				dmg.critical = 0
-				dmg.glancing = 0
-				dmg.crushing = 0
-				dmg.missed = select(1, ...)
+				dmg.resisted = nil
+				dmg.blocked = nil
+				dmg.absorbed = nil
+				dmg.critical = nil
+				dmg.glancing = nil
+				dmg.crushing = nil
+				dmg.missed = 1
 				
 				Skada:FixPets(dmg)
 				self:log_damage(current, dmg)
@@ -222,20 +222,19 @@ function mod:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID, s
 			-- Misses
 			if srcGUID ~= dstGUID then
 				local spellId, spellName, spellSchool, missType, samount = ...
-	
 				dmg.playerid = srcGUID
 				dmg.playername = srcName
 				dmg.spellid = spellId
 				dmg.spellname = spellName
 				dmg.amount = 0
 				dmg.overkill = 0
-				dmg.resisted = 0
-				dmg.blocked = 0
-				dmg.absorbed = 0
-				dmg.critical = 0
-				dmg.glancing = 0
-				dmg.crushing = 0
-				dmg.missed = missType
+				dmg.resisted = nil
+				dmg.blocked = nil
+				dmg.absorbed = nil
+				dmg.critical = nil
+				dmg.glancing = nil
+				dmg.crushing = nil
+				dmg.missed = 1
 				
 				Skada:FixPets(dmg)
 				self:log_damage(current, dmg)
