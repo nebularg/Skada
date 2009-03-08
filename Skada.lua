@@ -1014,7 +1014,7 @@ function Skada:find_player(set, playerid)
 	local player = nil
 	for i, p in ipairs(set.players) do
 		if p.id == playerid then
-			return player
+			return p
 		end
 	end
 end

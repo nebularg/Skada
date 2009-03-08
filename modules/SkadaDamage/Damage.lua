@@ -235,7 +235,7 @@ function mod:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID, s
 				dmg.critical = 0
 				dmg.glancing = 0
 				dmg.crushing = 0
-				dmg.missed = select(1, ...)
+				dmg.missed = missType
 				
 				Skada:FixPets(dmg)
 				self:log_damage(current, dmg)
