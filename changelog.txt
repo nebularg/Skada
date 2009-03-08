@@ -1,9 +1,10 @@
 1.0-14
+* Added an Interrupts mode.
+* Fixed DK pets and similar minions not being counted.
 * Fixed active set not being restored on logging in.
 * Fixed Total Healing mode not being actually present...
 * Fixed personal DPS feed again.
 * Fixed spell misses again.
-* Added an Interrupts mode.
 
 1.0-13
 * Fixed spell misses not being recorded.

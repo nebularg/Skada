@@ -145,7 +145,7 @@ local dmg = {}
 
 function mod:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
 	-- This line will determine if the src player is being tracked.
-	if Skada:IsDataCollectionActive() and srcName and Skada:UnitIsInteresting(srcName) then
+	if Skada:IsDataCollectionActive() and srcName and Skada:UnitIsInteresting(srcName, srcGUID) then
 	
 		local current = Skada:GetCurrentSet()
 		local total = Skada:GetTotalSet()

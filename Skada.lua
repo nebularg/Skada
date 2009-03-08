@@ -414,6 +414,9 @@ end
 function Skada:Reset()
 	self:RemoveAllBars()
 	
+	pets = {}
+	self:CheckPets()
+	
 	if current ~= nil then
 		wipe(current)
 		current = createSet(L["Current"])
@@ -1535,8 +1538,8 @@ function Skada:GetTotalSet()
 end
 
 -- Returns true if we are interested in the unit. Does not include pets.
-function Skada:UnitIsInteresting(name)
-	return name and (UnitIsUnit("player",name) or UnitIsUnit("pet",name) or UnitPlayerOrPetInRaid(name) or UnitPlayerOrPetInParty(name))
+function Skada:UnitIsInteresting(name, id)
+	return name and (UnitIsUnit("player",name) or UnitIsUnit("pet",name) or UnitPlayerOrPetInRaid(name) or UnitPlayerOrPetInParty(name) or (id and pets[id] ~= nil))
 end
 
 -- Returns true if we are interested in the unit. Include pets.

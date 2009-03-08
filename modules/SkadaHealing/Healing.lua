@@ -83,7 +83,7 @@ end
 local heal = {}
 
 function mod:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
-	if Skada:IsDataCollectionActive() and srcName and (eventtype == 'SPELL_HEAL' or eventtype == 'SPELL_PERIODIC_HEAL') and Skada:UnitIsInteresting(srcName) then
+	if Skada:IsDataCollectionActive() and srcName and (eventtype == 'SPELL_HEAL' or eventtype == 'SPELL_PERIODIC_HEAL') and Skada:UnitIsInteresting(srcName, srcGUID) then
 	
 		local current = Skada:GetCurrentSet()
 		local total = Skada:GetTotalSet()
@@ -141,7 +141,7 @@ function mod:Update(set)
 				bar:SetScript("OnMouseDown", function(bar, button)
 												if button == "LeftButton" then
 													playermod.playerid = player.id
-													playermod.name = player.name.."'s Healing"
+													playermod.name = player.name..L["'s Healing"]
 													Skada:DisplayMode(playermod)
 												elseif button == "RightButton" then
 													Skada:RightClick()
