@@ -350,6 +350,7 @@ local function check_for_join_and_leave()
 		-- Show window if we have enabled the "Hide when solo" option.
 		if Skada.db.profile.hidesolo then
 			Skada.bargroup:Show()
+			Skada:SortBars()
 		end
 	end
 

@@ -5,6 +5,7 @@
 * Fixed scrolling issue where you could not scroll down to the last bar.
 * Fixed bar lengths often being off by some pixels.
 * Fixed title bar being hidden sometimes after toggling window.
+* Now discarding fight segments of 5 seconds or lower.
 
 1.0-12
 * Added threat warnings.
