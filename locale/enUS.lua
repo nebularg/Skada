@@ -190,6 +190,7 @@ L["Fails"] = true
 L["'s Fails"] = true
 
 -- SkadaHealing
+L["HPS"] = "HPS"
 L["Healing"] = true
 L["'s Healing"] = true
 L["Overhealing"] = true
