@@ -471,26 +471,26 @@ function Skada:OpenMenu()
 	    if level == 1 then
 	        -- Create the title of the menu
 	        info.isTitle = 1
-	        info.text = "Skada Menu"
+	        info.text = L["Skada Menu"]
 	        info.notCheckable = 1
 	        UIDropDownMenu_AddButton(info, level)
 	        
 	        wipe(info)
-	        info.text = "Switch to mode"
+	        info.text = L["Switch to mode"]
 	        info.hasArrow = 1
 	        info.value = "show"
 	        info.notCheckable = 1
 	        UIDropDownMenu_AddButton(info, level)
 
 	        wipe(info)
-	        info.text = "Report"
+	        info.text = L["Report"]
 	        info.hasArrow = 1
 	        info.value = "report"
 	        info.notCheckable = 1
 	        UIDropDownMenu_AddButton(info, level)
 	        
 	        wipe(info)
-	        info.text = "Delete segment"
+	        info.text = L["Delete segment"]
 	        info.func = function() Skada:DeleteSet() end
 	        info.hasArrow = 1
 	        info.notCheckable = 1
@@ -498,7 +498,7 @@ function Skada:OpenMenu()
 	        UIDropDownMenu_AddButton(info, level)
 	        
 	        wipe(info)
-	        info.text = "Keep segment"
+	        info.text = L["Keep segment"]
 	        info.func = function() Skada:KeepSet() end
 	        info.notCheckable = 1
 	        info.hasArrow = 1
@@ -512,13 +512,13 @@ function Skada:OpenMenu()
 	        UIDropDownMenu_AddButton(info, level)
 	        
 	        wipe(info)
-	        info.text = "Toggle window"
+	        info.text = L["Toggle window"]
 	        info.func = function() Skada:ToggleWindow() end
 	        info.notCheckable = 1
 	        UIDropDownMenu_AddButton(info, level)
 
 	        wipe(info)
-	        info.text = "Configure"
+	        info.text = L["Configure"]
 	        info.func = function() Skada:OpenOptions() end
 	        info.notCheckable = 1
 	        UIDropDownMenu_AddButton(info, level)
@@ -562,28 +562,28 @@ function Skada:OpenMenu()
 		        end
 		    elseif UIDROPDOWNMENU_MENU_VALUE == "report" then
 		        wipe(info)
-		        info.text = "Mode"
+		        info.text = L["Mode"]
 		        info.hasArrow = 1
 		        info.value = "modes"
 		        info.notCheckable = 1
 		        UIDropDownMenu_AddButton(info, level)
 		        
 		        wipe(info)
-		        info.text = "Lines"
+		        info.text = L["Lines"]
 		        info.hasArrow = 1
 		        info.value = "number"
 		        info.notCheckable = 1
 		        UIDropDownMenu_AddButton(info, level)
 		        
 		        wipe(info)
-		        info.text = "Channel"
+		        info.text = L["Channel"]
 		        info.hasArrow = 1
 		        info.value = "channels"
 		        info.notCheckable = 1
 		        UIDropDownMenu_AddButton(info, level)
 		        
 		        wipe(info)
-		        info.text = "Send report"
+		        info.text = L["Send report"]
 		        info.func = function()
 		        				if report_mode ~= nil then
 		        					-- Reporting is done on current bars... so we have to switch to the selected mode.
@@ -601,7 +601,7 @@ function Skada:OpenMenu()
 				        				Skada:UpdateBars()
 									end
 								else
-									self:Print("No mode selected for report.")
+									self:Print(L["No mode selected for report."])
 								end
 		        			end
 		        info.notCheckable = 1
@@ -628,32 +628,32 @@ function Skada:OpenMenu()
 		    elseif UIDROPDOWNMENU_MENU_VALUE == "channels" then
 		        wipe(info)
 	            
-		        info.text = "Say"
+		        info.text = L["Say"]
 		        info.checked = (report_channel == "Say")
 		        info.func = function() report_channel = "Say" end
 		        UIDropDownMenu_AddButton(info, level)
         
-	            info.text = "Raid"
+	            info.text = L["Raid"]
 	            info.checked = (report_channel == "Raid")
 	            info.func = function() report_channel = "Raid" end
 	            UIDropDownMenu_AddButton(info, level)
 
-	            info.text = "Party"
+	            info.text = L["Party"]
 	            info.checked = (report_channel == "Party")
 	            info.func = function() report_channel = "Party" end
 	            UIDropDownMenu_AddButton(info, level)
 	            
-	            info.text = "Guild"
+	            info.text = L["Guild"]
 	            info.checked = (report_channel == "Guild")
 	            info.func = function() report_channel = "Guild" end
 	            UIDropDownMenu_AddButton(info, level)
 	            
-	            info.text = "Officer"
+	            info.text = L["Officer"]
 	            info.checked = (report_channel == "Officer")
 	            info.func = function() report_channel = "Officer" end
 	            UIDropDownMenu_AddButton(info, level)
 	            
-	            info.text = "Self"
+	            info.text = L["Self"]
 	            info.checked = (report_channel == "Self")
 	            info.func = function() report_channel = "Self" end
 	            UIDropDownMenu_AddButton(info, level)

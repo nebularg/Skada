@@ -17,7 +17,7 @@ function mod:OnDisable()
 end
 
 function mod:AddToTooltip(set, tooltip)
- 	GameTooltip:AddDoubleLine(L["Fails:"], set.fails, 1,1,1)
+ 	GameTooltip:AddDoubleLine(L["Fails"], set.fails, 1,1,1)
 end
 
 function mod:GetSetSummary(set)

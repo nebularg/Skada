@@ -27,7 +27,7 @@ function mod:SetComplete(set)
 end
 
 function mod:AddToTooltip(set, tooltip)
- 	GameTooltip:AddDoubleLine(L["Deaths:"], set.deaths, 1,1,1)
+ 	GameTooltip:AddDoubleLine(L["Deaths"], set.deaths, 1,1,1)
 end
 
 function mod:GetSetSummary(set)

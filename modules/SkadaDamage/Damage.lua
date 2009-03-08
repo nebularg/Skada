@@ -329,7 +329,7 @@ function playermod:Update(set)
 				bar:SetScript("OnMouseDown",function(bar, button)
 												if button == "LeftButton" then
 													spellmod.spellname = spellname
-													spellmod.name = player.name.."'s "..spell.name
+													spellmod.name = player.name..L["'s "]..spell.name
 													Skada:DisplayMode(spellmod)
 												elseif button == "RightButton" then
 													Skada:DisplayMode(mod)

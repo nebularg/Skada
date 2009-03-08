@@ -1,8 +1,9 @@
 ## Interface: 30000
 ## Title: Skada |r[|caaedc99fDispels|r]
-## Notes: Adds a Dispels mode and data collection to Skada.
+## Notes: Adds Dispels and Interrupts mode and data collection to Skada.
 ## Author: Zarnivoop
 ## Version: 1.0
 ## Dependencies: Skada
 
 Dispels.lua
+Interrupts.lua

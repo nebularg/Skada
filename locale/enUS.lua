@@ -136,6 +136,26 @@ L["When your threat reaches this level, relative to tank, warnings are shown."] 
 L["Enables the title bar."] = "Enables the title bar."
 
 L["Total healing"] = "Total healing"
+L["Interrupts"] = "Interrupts"
+
+L["Skada Menu"] = "Skada Menu"
+L["Switch to mode"] = "Switch to mode"
+L["Report"] = "Report"
+L["Toggle window"] = "Toggle window"
+L["Configure"] = "Configure"
+L["Delete segment"] = "Delete segment"
+L["Keep segment"] = "Keep segment"
+L["Mode"] = "Mode"
+L["Lines"] = "Lines"
+L["Channel"] = "Channel"
+L["Send report"] = "Send report"
+L["No mode selected for report."] = "No mode selected for report."
+L["Say"] = "Say"
+L["Raid"] = "Raid"
+L["Party"] = "Party"
+L["Guild"] = "Guild"
+L["Officer"] = "Officer"
+L["Self"] = "Self" 
 
 -- SkadaDebuffs
 L["Debuff uptimes"] = true
@@ -143,7 +163,6 @@ L["'s Debuffs"] = true
 
 -- SkadaDeaths
 L["Deaths"] = true
-L["Deaths:"] = true
 
 -- SkadaDamageTaken
 L["Damage taken"] = true
@@ -165,16 +184,13 @@ L["Absorbed"] = true
 
 -- SkadaDispels
 L["Dispels"] = true
-L["Dispels:"] = true
 
 -- SkadaFailbot
 L["Fails"] = true
-L["Fails:"] = true
 L["'s Fails"] = true
 
 -- SkadaHealing
 L["Healing"] = true
-L["HPS:"] = true
 L["'s Healing"] = true
 L["Overhealing"] = true
 

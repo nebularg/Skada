@@ -15,13 +15,14 @@ function mod:OnDisable()
 end
 
 function mod:AddToTooltip(set, tooltip)
- 	GameTooltip:AddDoubleLine(L["Dispels:"], set.dispells, 1,1,1)
+ 	GameTooltip:AddDoubleLine(L["Dispels"], set.dispells, 1,1,1)
 end
 
 -- Called by Skada when a new player is added to a set.
 function mod:AddPlayerAttributes(player)
 	if not player.dispells then
 		player.dispells = 0
+		player.interrupts = 0
 	end
 end
 
@@ -29,6 +30,7 @@ end
 function mod:AddSetAttributes(set)
 	if not set.dispells then
 		set.dispells = 0
+		set.interrupts = 0
 	end
 end
 
@@ -40,14 +42,24 @@ function mod:log_dispell(set, dispell)
 	if set then
 		local player = Skada:get_player(set, dispell.playerid, dispell.playername)
 		if player then
-			-- Add to player dispells
+			-- Add to player dispels.
 			player.dispells = player.dispells + 1
 			
-			-- Also add to set total damage.
+			-- Also add to set total dispels.
 			set.dispells = set.dispells + 1
-	
-			-- Mark set as changed.
-			set.changed = true
+		end
+	end
+end
+
+function mod:log_interrupt(set, interrupt)
+	if set then
+		local player = Skada:get_player(set, interrupt.playerid, interrupt.playername)
+		if player then
+			-- Add to player interrupts.
+			player.interrupts = player.interrupts + 1
+			
+			-- Also add to set total interrupts.
+			set.interrupts = set.interrupts + 1
 		end
 	end
 end
@@ -55,23 +67,41 @@ end
 local dispell = {}
 
 function mod:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
-	if Skada:IsDataCollectionActive() and srcName and eventtype == 'SPELL_DISPEL' and Skada:UnitIsInteresting(srcName) then
+	if Skada:IsDataCollectionActive() and srcName and Skada:UnitIsInteresting(srcName) then
 	
-		local current = Skada:GetCurrentSet()
-		local total = Skada:GetTotalSet()
-
-		-- Dispells
-		local spellId, spellName, spellSchool, sextraSpellId, sextraSpellName, sextraSchool, auraType = ...
-		
-		dispell.playerid = srcGUID
-		dispell.playername = srcName
-		dispell.spellid = spellId
-		dispell.spellname = spellName
-		dispell.extraspellid = sextraSpellId
-		dispell.extraspellname = sextraSpellName		
-		
-		self:log_dispell(current, dispell)
-		self:log_dispell(total, dispell)
+		if eventtype == 'SPELL_DISPEL' then
+			local current = Skada:GetCurrentSet()
+			local total = Skada:GetTotalSet()
+	
+			-- Dispells
+			local spellId, spellName, spellSchool, sextraSpellId, sextraSpellName, sextraSchool, auraType = ...
+			
+			dispell.playerid = srcGUID
+			dispell.playername = srcName
+			dispell.spellid = spellId
+			dispell.spellname = spellName
+			dispell.extraspellid = sextraSpellId
+			dispell.extraspellname = sextraSpellName		
+			
+			self:log_dispell(current, dispell)
+			self:log_dispell(total, dispell)
+		elseif eventtype == 'SPELL_INTERRUPT' then
+			local current = Skada:GetCurrentSet()
+			local total = Skada:GetTotalSet()
+	
+			-- Interrupts
+			local spellId, spellName, spellSchool, sextraSpellId, sextraSpellName, sextraSchool = ...
+			
+			dispell.playerid = srcGUID
+			dispell.playername = srcName
+			dispell.spellid = spellId
+			dispell.spellname = spellName
+			dispell.extraspellid = sextraSpellId
+			dispell.extraspellname = sextraSpellName		
+			
+			self:log_interrupt(current, dispell)
+			self:log_interrupt(total, dispell)
+		end
 	end
 
 end
