@@ -1265,6 +1265,9 @@ function Skada:DisplayModes(settime)
 	self.bargroup.button:SetText(L["Skada: Modes"])
 	self:SetSortFunction(function(a,b) return a.name < b.name end)
 
+	-- Save for posterity.
+	self.db.profile.set = settime
+
 	-- Find the selected set
 	if settime == "current" or settime == "total" then
 		selectedset = settime
@@ -1360,7 +1363,7 @@ function Skada:AddMode(mode)
 	-- Set this mode as the active mode if it matches the saved one.
 	-- Bit of a hack.
 	if mode.name == self.db.profile.mode then
-		self:RestoreView(selectedset, mode.name)
+		self:RestoreView(self.db.profile.set, mode.name)
 	end
 
 	-- Find if we now have our chosen feed.

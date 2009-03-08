@@ -192,7 +192,6 @@ function mod:Update(set)
 	-- Sort the possibly changed bars.
 	Skada:SetSortFunction(sort_by_deathts)
 	Skada:SortBars()
-	Skada:SetSortFunction(nil)
 end
 
 -- Death log.
@@ -237,6 +236,4 @@ function deathlog:Update(set)
 	-- Use our special sort function and sort.
 	Skada:SetSortFunction(sort_by_ts)
 	Skada:SortBars()
-	Skada:SetSortFunction(nil)
-	
 end

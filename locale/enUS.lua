@@ -157,6 +157,8 @@ L["Guild"] = "Guild"
 L["Officer"] = "Officer"
 L["Self"] = "Self" 
 
+L["'s Healing"] = "'s Healing"
+
 -- SkadaDebuffs
 L["Debuff uptimes"] = true
 L["'s Debuffs"] = true

@@ -35,7 +35,7 @@ function mod:AddSetAttributes(set)
 end
 
 function mod:GetSetSummary(set)
-	return set.dispels
+	return set.dispells
 end
 
 function mod:log_dispell(set, dispell)
