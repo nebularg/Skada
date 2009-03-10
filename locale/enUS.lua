@@ -159,6 +159,11 @@ L["Self"] = "Self"
 
 L["'s Healing"] = "'s Healing"
 
+L["Enemy damage done"] = "Enemy damage done"
+L["Enemy damage taken"] = "Enemy damage done"
+L["Damage on"] = "Damage on"
+L["Damage from"] = "Damage from"
+
 -- SkadaDebuffs
 L["Debuff uptimes"] = true
 L["'s Debuffs"] = true
