@@ -19,7 +19,7 @@ Skada.defaults = {
 		title = {margin=0, texture="Round", bordertexture="None", borderthickness=2, color = {r=0,g=0,b=0,a=0.6}},
 		reversegrowth=false,
 		reset={instance=1, join=1, leave=1},
-		icon = {},
+		icon = {hide = false, radius = 80, minimapPos = 195},
 		modeincombat="",
 		numberformat=1,
 		setstokeep = 10,
