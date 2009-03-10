@@ -1,5 +1,7 @@
 local L = LibStub("AceLocale-3.0"):GetLocale("Skada", false)
 
+local Skada = Skada
+
 local mod = Skada:NewModule("InterruptsMode")
 
 mod.name = L["Interrupts"]

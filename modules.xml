@@ -13,5 +13,6 @@
 <Script file="modules\SkadaDebuffs\Debuffs.lua"/>
 <Script file="modules\SkadaDispels\Dispels.lua"/>
 <Script file="modules\SkadaDispels\Interrupts.lua"/>
+<Script file="modules\SkadaMobs\Mobs.lua"/>
 <!--@end-debug@--> 
 </Ui>
