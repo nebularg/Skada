@@ -22,6 +22,8 @@ end
 function mod:AddPlayerAttributes(player)
 	if not player.dispells then
 		player.dispells = 0
+	end
+	if not player.interrupts then
 		player.interrupts = 0
 	end
 end
@@ -30,6 +32,8 @@ end
 function mod:AddSetAttributes(set)
 	if not set.dispells then
 		set.dispells = 0
+	end
+	if not set.interrupts then
 		set.interrupts = 0
 	end
 end
