@@ -26,7 +26,6 @@ Skada.defaults = {
 		onlykeepbosses=false,
 		window = {shown = true, enabletitle = true, enablebackground = false, margin=0, height=150, texture="None", bordertexture="None", borderthickness=0, color = {r=0,g=0,b=0.5,a=0.5}},
 		returnaftercombat=false,
-		mmbutton=true,
 		hidesolo=false,
 		set = "current",
 		mode = nil,
@@ -521,10 +520,10 @@ Skada.options = {
 							        name=L["Show minimap button"],
 							        desc=L["Toggles showing the minimap button."],
 							        order=23,
-							        get=function() return Skada.db.profile.mmbutton end,
+							        get=function() return not Skada.db.profile.icon.hide end,
 							        set=function()
-							    			Skada.db.profile.mmbutton = not Skada.db.profile.mmbutton
-											Skada:ShowMMButton(Skada.db.profile.mmbutton)
+							    			Skada.db.profile.icon.hide = not Skada.db.profile.icon.hide
+											Skada:RefreshMMButton()
 							        	end,
 							},
 

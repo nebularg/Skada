@@ -1,3 +1,9 @@
+1.0-16
+* Added Enemy damage done and Enemy damage taken modes. Shows a breakdown of damage per mob.
+
+1.0-15
+* Update for translations.
+
 1.0-14
 * Added an Interrupts mode.
 * Fixed DK pets and similar minions not being counted.

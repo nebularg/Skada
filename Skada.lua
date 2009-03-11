@@ -189,11 +189,12 @@ function Skada:Report(chan, chantype, max)
 	end
 end
 
-function Skada:ShowMMButton(show)
-	if show then
-		icon:Show("Skada")
-	else
+function Skada:RefreshMMButton()
+	icon:Refresh("Skada", self.db.profile.icon)
+	if self.db.profile.icon.hide then
 		icon:Hide("Skada")
+	else
+		icon:Show("Skada")
 	end
 end
 
@@ -680,10 +681,9 @@ function Skada:ReloadSettings()
 	-- Minimap button.
 	if not icon:IsRegistered("Skada") then
 		icon:Register("Skada", dataobj, self.db.profile.icon)
-	else
-		icon:Refresh("Skada", self.db.profile.icon)
 	end
-	self:ShowMMButton(self.db.profile.mmbutton)
+
+	self:RefreshMMButton()
 	
 	self:ApplySettings()
 end
