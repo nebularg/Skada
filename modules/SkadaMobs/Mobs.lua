@@ -2,40 +2,39 @@ local L = LibStub("AceLocale-3.0"):GetLocale("Skada", false)
 
 local Skada = Skada
 
-local donemod = Skada:NewModule("MobsDamageDoneMode", "AceEvent-3.0")
-local takenmod = Skada:NewModule("MobsDamageTakenMode")
+local done = Skada:NewModule("EnemyDoneMode", "AceEvent-3.0")
+local taken = Skada:NewModule("EnemyTakenMode")
 
-local doneplayers = Skada:NewModule("MobsDamageDoneModePlayers")
-local takenplayers = Skada:NewModule("MobsDamageTakenModePlayers")
+local doneplayers = Skada:NewModule("EnemyDonePlayers")
+local takenplayers = Skada:NewModule("EnemyTakenPlayers")
 
-donemod.name = L["Enemy damage done"]
-takenmod.name = L["Enemy damage taken"]
+done.name = L["Enemy damage done"]
+taken.name = L["Enemy damage taken"]
 
-function donemod:OnEnable()
+function done:OnEnable()
 	self:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
-	
 	Skada:AddMode(self)
 end
 
-function donemod:OnDisable()
+function done:OnDisable()
 	Skada:RemoveMode(self)
 end
 
-
-function takenmod:OnEnable()
+function taken:OnEnable()
 	Skada:AddMode(self)
 end
 
-function takenmod:OnDisable()
+function taken:OnDisable()
 	Skada:RemoveMode(self)
 end
 
 -- Called by Skada when a new set is created.
-function donemod:AddSetAttributes(set)
+function done:AddSetAttributes(set)
 	if not set.mobs then
 		set.mobs = {}
 	end
 end
+
 
 local function find_player(mob, name)
 	for i, p in ipairs(mob.players) do
@@ -81,11 +80,11 @@ end
 
 local dmg = {}
 
-function donemod:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
+function done:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
 	-- This line will determine if the src player is being tracked.
 	if Skada:IsDataCollectionActive() and srcName and dstName and srcGUID ~= dstGUID then
 		local src_is_interesting = Skada:UnitIsInteresting(srcName, srcGUID)
-		local dst_is_interesting = Skada:UnitIsInteresting(dstName, dstGUID)
+		local dst_is_interesting = Skada:UnitIsInterestingNoPets(dstName, dstGUID)
 		
 		local current = Skada:GetCurrentSet()
 
@@ -132,7 +131,7 @@ function donemod:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUI
 	end
 end
 
-function takenmod:Update(set)
+function taken:Update(set)
 	-- Calculate the highest damage.
 	-- How to get rid of this iteration?
 	local maxvalue = 0
@@ -173,7 +172,7 @@ function takenmod:Update(set)
 	Skada:SortBars()
 end
 
-function donemod:Update(set)
+function done:Update(set)
 	-- Calculate the highest damage.
 	-- How to get rid of this iteration?
 	local maxvalue = 0

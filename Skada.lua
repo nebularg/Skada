@@ -633,6 +633,14 @@ function Skada:OpenMenu()
 		        wipe(info)
 	            
 		        info.text = L["Say"]
+		        info.checked = (report_channel == "Whisper")
+		        info.func = function()
+		        				report_channel = "Whisper"
+		        				
+		        			end
+		        UIDropDownMenu_AddButton(info, level)
+		        
+		        info.text = L["Say"]
 		        info.checked = (report_channel == "Say")
 		        info.func = function() report_channel = "Say" end
 		        UIDropDownMenu_AddButton(info, level)
@@ -1348,6 +1356,8 @@ end
 
 -- Register a mode.
 function Skada:AddMode(mode)
+	self:Print("Add mode "..mode.name)
+
 	-- Ask mode to verify our sets.
 	-- Needed in case we enable a mode and we have old data.
 	for i, set in ipairs(sets) do
