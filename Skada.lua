@@ -290,10 +290,6 @@ function Skada:OnInitialize()
 	LibStub("AceConfig-3.0"):RegisterOptionsTable("Skada", self.options)
 	self.optionsFrame = LibStub("AceConfigDialog-3.0"):AddToBlizOptions("Skada", "Skada")
 
-	-- Profiles
-	LibStub("AceConfig-3.0"):RegisterOptionsTable("Skada-Profiles", LibStub("AceDBOptions-3.0"):GetOptionsTable(self.db))
-	self.profilesFrame = LibStub("AceConfigDialog-3.0"):AddToBlizOptions("Skada-Profiles", "Profiles", "Skada")
-
 	-- Windows
 	for i, win in ipairs(self.db.profile.windows) do
 		local window = Window:new()
@@ -306,7 +302,15 @@ function Skada:OnInitialize()
 		window.bargroup:HideIcon()
 		
 		table.insert(windows, window)
+
+		-- Window config.
+		LibStub("AceConfig-3.0"):RegisterOptionsTable("Skada-Window"..window.db.name, function() return Skada:GetWindowOptions(window) end)
+		self.optionsFrame = LibStub("AceConfigDialog-3.0"):AddToBlizOptions("Skada-Window"..window.db.name, window.db.name, "Skada")
 	end
+
+	-- Profiles
+	LibStub("AceConfig-3.0"):RegisterOptionsTable("Skada-Profiles", LibStub("AceDBOptions-3.0"):GetOptionsTable(self.db))
+	self.profilesFrame = LibStub("AceConfigDialog-3.0"):AddToBlizOptions("Skada-Profiles", "Profiles", "Skada")
 	
 	self:RegisterChatCommand("skada", "Command")
 	self.db.RegisterCallback(self, "OnProfileChanged", "ReloadSettings")
@@ -970,42 +974,42 @@ function Skada:ApplySettings()
 				g.bgframe:SetScript("OnMouseWheel", win.OnMouseWheel)
 			end
 	
-			local inset = p.window.margin
-			windowbackdrop.bgFile = media:Fetch("statusbar", p.window.texture)
-			if p.window.borderthickness > 0 then
-				windowbackdrop.edgeFile = media:Fetch("border", p.window.bordertexture)
+			local inset = p.background.margin
+			windowbackdrop.bgFile = media:Fetch("statusbar", p.background.texture)
+			if p.background.borderthickness > 0 then
+				windowbackdrop.edgeFile = media:Fetch("border", p.background.bordertexture)
 			else
 				windowbackdrop.edgeFile = nil
 			end
 			windowbackdrop.tile = false
 			windowbackdrop.tileSize = 0
-			windowbackdrop.edgeSize = p.window.borderthickness
+			windowbackdrop.edgeSize = p.background.borderthickness
 			windowbackdrop.insets = {left = inset, right = inset, top = inset, bottom = inset}
 			g.bgframe:SetBackdrop(windowbackdrop)
-			local color = p.window.color
+			local color = p.background.color
 			g.bgframe:SetBackdropColor(color.r, color.g, color.b, color.a or 1)
-			g.bgframe:SetWidth(g:GetWidth() + (p.window.borderthickness * 2))
-			g.bgframe:SetHeight(p.window.height)
+			g.bgframe:SetWidth(g:GetWidth() + (p.background.borderthickness * 2))
+			g.bgframe:SetHeight(p.background.height)
 	
 			g.bgframe:ClearAllPoints()
 			if p.reversegrowth then
-				g.bgframe:SetPoint("LEFT", g.button, "LEFT", -p.window.borderthickness, 0)
-				g.bgframe:SetPoint("RIGHT", g.button, "RIGHT", p.window.borderthickness, 0)
+				g.bgframe:SetPoint("LEFT", g.button, "LEFT", -p.background.borderthickness, 0)
+				g.bgframe:SetPoint("RIGHT", g.button, "RIGHT", p.background.borderthickness, 0)
 				g.bgframe:SetPoint("BOTTOM", g.button, "TOP", 0, 0)
 			else
-				g.bgframe:SetPoint("LEFT", g.button, "LEFT", -p.window.borderthickness, 0)
-				g.bgframe:SetPoint("RIGHT", g.button, "RIGHT", p.window.borderthickness, 0)
+				g.bgframe:SetPoint("LEFT", g.button, "LEFT", -p.background.borderthickness, 0)
+				g.bgframe:SetPoint("RIGHT", g.button, "RIGHT", p.background.borderthickness, 0)
 				g.bgframe:SetPoint("TOP", g.button, "BOTTOM", 0, 0)
 			end
 			g.bgframe:Show()
 			
 			-- Calculate max number of bars to show if our height is not dynamic.
-			if p.window.height > 0 then
-				local maxbars = math.floor(p.window.height / math.max(1, p.barheight + p.barspacing))
+			if p.background.height > 0 then
+				local maxbars = math.floor(p.background.height / math.max(1, p.barheight + p.barspacing))
 				g:SetMaxBars(maxbars)
 			else
 				-- Adjust background height according to current bars.
-				self:AdjustBackgroundHeight()
+				self:AdjustBackgroundHeight(win)
 			end
 			
 		elseif g.bgframe then
@@ -1371,7 +1375,7 @@ function Skada:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID,
 	-- Now also done on raid roster/party changes.
 	if eventtype == 'SPELL_SUMMON' then
 		if src_is_interesting_nopets == nil then
-			src_is_interesting_nopets = self:IsUnitInterestingNoPets(srcName, srcGUID)
+			src_is_interesting_nopets = self:UnitIsInterestingNoPets(srcName, srcGUID)
 			if src_is_interesting_nopets(srcName, srcGUID) then
 				pets[dstGUID] = {id = srcGUID, name = srcName}
 			end
@@ -1511,7 +1515,7 @@ function Skada:UpdateBars()
 		
 		-- Adjust our background frame if background height is dynamic.
 		if win.bargroup.bgframe and win.db.background.height == 0 then
-			self:AdjustBackgroundHeight()
+			self:AdjustBackgroundHeight(win)
 		end
 	end
 	
@@ -1519,7 +1523,7 @@ function Skada:UpdateBars()
 	changed = false
 end
 
-function Skada:AdjustBackgroundHeight()
+function Skada:AdjustBackgroundHeight(win)
 	local numbars = 0
 	if win:GetBars() ~= nil then
 		for name, bar in pairs(win:GetBars()) do if bar:IsShown() then numbars = numbars + 1 end end
@@ -1543,14 +1547,16 @@ Everything below this is OK to use in modes.
 
 -- Formats a number into human readable form.
 function Skada:FormatNumber(number)
-	if self.db.profile.numberformat == 1 then
-		if number > 1000000 then
-			return 	("%02.2fM"):format(number / 1000000)
+	if number then
+		if self.db.profile.numberformat == 1 then
+			if number > 1000000 then
+				return 	("%02.2fM"):format(number / 1000000)
+			else
+				return 	("%02.1fK"):format(number / 1000)
+			end
 		else
-			return 	("%02.1fK"):format(number / 1000)
+			return number
 		end
-	else
-		return number
 	end
 end
 
@@ -1575,7 +1581,7 @@ function Skada:AddMode(mode)
 	-- Bit of a hack.
 	for i, win in ipairs(windows) do
 		if mode.name == db.mode then
-			self:RestoreView(win, db.set, mode.name)
+			self:RestoreView(win, win.db.set, mode.name)
 		end
 	end
 

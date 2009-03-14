@@ -57,7 +57,7 @@ function mod:Update(win, set)
 			else
 				bar = win:CreateBar(tostring(player.id), player.name, player.healing, maxvalue, nil, false)
 				bar:EnableMouse()
-				bar:SetScript("OnMouseDown", function(bar, button) if button == "RightButton" then Skada:RightClick() end end)
+				bar:SetScript("OnMouseDown", function(bar, button) if button == "RightButton" then win:RightClick() end end)
 	--			Skada:Print("created "..player.name.." at "..tostring(player.overhealing))
 			end
 			bar.healing = player.healing + player.overhealing
