@@ -1288,9 +1288,9 @@ function Skada:RestoreView(win, theset, themode)
 		-- If the mode exists, switch to this mode.
 		-- If not, show modes.
 		if mymode then
-			self:DisplayMode(win, mymode)
+			win:DisplayMode(mymode)
 		else
-			self:DisplayModes(win, selectedset)
+			win:DisplayModes(selectedset)
 		end
 	end
 end
@@ -1647,7 +1647,7 @@ function Skada:AddMode(mode)
 	-- Set this mode as the active mode if it matches the saved one.
 	-- Bit of a hack.
 	for i, win in ipairs(windows) do
-		if mode.name == db.mode then
+		if mode.name == win.db.mode then
 			self:RestoreView(win, win.db.set, mode.name)
 		end
 	end
