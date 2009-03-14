@@ -1,0 +1,8 @@
+## Interface: 30000
+## Title: Skada |r[|caaedc99fMobs|r]
+## Notes: Adds Enemy damage done/taken modes and data collection to Skada.
+## Author: Zarnivoop
+## Version: 1.0
+## Dependencies: Skada
+
+Enemies.lua

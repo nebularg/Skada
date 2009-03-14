@@ -164,6 +164,13 @@ L["Enemy damage taken"] = "Enemy damage taken"
 L["Damage on"] = "Damage on"
 L["Damage from"] = "Damage from"
 
+L["Delete window"] = "Delete window"
+L["Deletes the chosen window."] = "Deletes the chosen window."
+L["Choose the window to be deleted."] = "Choose the window to be deleted."
+L["Enter the name for the new window."] = "Enter the name for the new window."
+L["Create window"] = "Create window"
+L["Windows"] = "Windows"
+
 -- SkadaDebuffs
 L["Debuff uptimes"] = true
 L["'s Debuffs"] = true

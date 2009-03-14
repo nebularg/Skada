@@ -3,6 +3,41 @@ local media = LibStub("LibSharedMedia-3.0")
 
 Skada.resetoptions = {[1] = L["No"], [2] = L["Yes"], [3] = L["Ask"]}
 
+Skada.windowdefaults = {
+	name = "Skada",
+	
+	barmax=10,
+	barspacing=0,
+	bartexture="BantoBar",
+	barfont="Accidental Presidency",
+	barfontsize=11,
+	barheight=15,
+	barwidth=180,
+	barorientation=1,
+	barcolor = {r = 0.3, g = 0.3, b = 0.8, a=1},
+	baraltcolor = {r = 0.45, g = 0.45, b = 0.8, a = 1},
+	barslocked=false,
+
+	title = {margin=0, texture="Round", bordertexture="None", borderthickness=2, color = {r=0,g=0,b=0,a=0.6}},
+	background = {margin=0, height=150, texture="None", bordertexture="None", borderthickness=0, color = {r=0,g=0,b=0.5,a=0.5}},
+
+	reversegrowth=false,
+	modeincombat="",
+	returnaftercombat=false,
+	
+	hidesolo=false,
+
+	shown = true,
+	enabletitle = true, 
+	enablebackground = false,
+	
+	set = "current",
+	mode = nil,
+}
+
+local windefaultscopy = {}
+Skada:tcopy(windefaultscopy, Skada.windowdefaults)
+				
 Skada.defaults = {
 	profile = {
 		reset={instance=1, join=1, leave=1},
@@ -15,40 +50,14 @@ Skada.defaults = {
 		total = nil,
 		modules = {},	-- Place module config here if needed.
 
-		windows = {
-				{
-					name = "Default",
-					
-					barmax=10,
-					barspacing=0,
-					bartexture="BantoBar",
-					barfont="Accidental Presidency",
-					barfontsize=11,
-					barheight=15,
-					barwidth=180,
-					barorientation=1,
-					barcolor = {r = 0.3, g = 0.3, b = 0.8, a=1},
-					baraltcolor = {r = 0.45, g = 0.45, b = 0.8, a = 1},
-					barslocked=false,
-
-					title = {margin=0, texture="Round", bordertexture="None", borderthickness=2, color = {r=0,g=0,b=0,a=0.6}},
-					background = {margin=0, height=150, texture="None", bordertexture="None", borderthickness=0, color = {r=0,g=0,b=0.5,a=0.5}},
-
-					reversegrowth=false,
-					modeincombat="",
-					returnaftercombat=false,
-					
-					hidesolo=false,
-
-					shown = true,
-					enabletitle = true, 
-					enablebackground = false,
-					
-					set = "current",
-					mode = nil,
-				},
-			},
+		windows = {windefaultscopy},
 	}
+}
+
+Skada.windowoptions = {
+	type="group",
+	name=L["Windows"],
+	args={},
 }
 
 function Skada:GetWindowOptions(win)
@@ -486,6 +495,8 @@ function Skada:GetWindowOptions(win)
 	return options
 end
 
+local deletewindow = nil
+
 Skada.options = {
 	        type="group",
 			name="Skada",
@@ -495,7 +506,47 @@ Skada.options = {
 						name=L["A damage meter."],
 						order=0,
 	        		},
-	        			        		
+	        		
+	        		windows = {
+	        			type = "group",
+	        			name = "Windows",
+	        			order=0,
+						args = {
+
+							create = {
+								type="input",
+								name=L["Create window"],
+								desc=L["Enter the name for the new window."],
+								set=function(self, val) if val and val ~= "" then Skada:CreateWindow(val) end end,
+								order=1,
+							},
+
+							delete = {
+								type="select",
+								name=L["Delete window"],
+								desc=L["Choose the window to be deleted."],
+								values=	function()
+											local windows = {}
+											for i, win in ipairs(Skada:GetWindows()) do
+												windows[win.db.name] = win.db.name
+											end
+											return windows
+										end,
+								get=function() return deletewindow end,
+								set=function(self, val) deletewindow = val end,
+								order=2,
+							},
+							deleteexecute = {
+								type="execute",
+								name=L["Delete window"],
+								desc=L["Deletes the chosen window."],
+								func=function(self) if deletewindow then Skada:DeleteWindow(deletewindow) end end,
+								order=3,
+							},
+																					
+						},
+	        		},
+	        		
 	        		resetoptions = {
 	        			type = "group",
 	        			name = L["Data resets"],

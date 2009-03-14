@@ -43,6 +43,10 @@ local usealt = true
 -- Our windows.
 local windows = {}
 
+function Skada:GetWindows()
+	return windows
+end
+
 Window = {
 
 	-- The selected mode and set
@@ -60,6 +64,12 @@ local mt = {__index = Window}
 
 function Window:new()
    return setmetatable({ }, mt)
+end
+
+function Window:destroy()
+	self.bargroup:Hide()
+	self.bargroup.bgframe = nil
+	self.bargroup = nil
 end
 
 function Window:AnchorClicked(cbk, group, button)
@@ -290,24 +300,6 @@ function Skada:OnInitialize()
 	LibStub("AceConfig-3.0"):RegisterOptionsTable("Skada", self.options)
 	self.optionsFrame = LibStub("AceConfigDialog-3.0"):AddToBlizOptions("Skada", "Skada")
 
-	-- Windows
-	for i, win in ipairs(self.db.profile.windows) do
-		local window = Window:new()
-		window.db = win
-		window.bargroup = self:NewBarGroup("Skada", nil, self.db.profile.barwidth, self.db.profile.barheight, "SkadaBarWindow")
-		window.bargroup.RegisterCallback(window, "AnchorMoved")
-		window.bargroup.RegisterCallback(window, "AnchorClicked")
-		window.bargroup:EnableMouse(true)
-		window.bargroup:SetScript("OnMouseDown", function(self, button) if button == "RightButton" then window:RightClick() end end)
-		window.bargroup:HideIcon()
-		
-		table.insert(windows, window)
-
-		-- Window config.
-		LibStub("AceConfig-3.0"):RegisterOptionsTable("Skada-Window"..window.db.name, function() return Skada:GetWindowOptions(window) end)
-		self.optionsFrame = LibStub("AceConfigDialog-3.0"):AddToBlizOptions("Skada-Window"..window.db.name, window.db.name, "Skada")
-	end
-
 	-- Profiles
 	LibStub("AceConfig-3.0"):RegisterOptionsTable("Skada-Profiles", LibStub("AceDBOptions-3.0"):GetOptionsTable(self.db))
 	self.profilesFrame = LibStub("AceConfigDialog-3.0"):AddToBlizOptions("Skada-Profiles", "Profiles", "Skada")
@@ -316,8 +308,65 @@ function Skada:OnInitialize()
 	self.db.RegisterCallback(self, "OnProfileChanged", "ReloadSettings")
 	self.db.RegisterCallback(self, "OnProfileCopied", "ReloadSettings")
 	self.db.RegisterCallback(self, "OnProfileReset", "ReloadSettings")
+
+	-- Window config.
+	LibStub("AceConfig-3.0"):RegisterOptionsTable("Skada-Windows", self.windowoptions)
+	self.windowFrame = LibStub("AceConfigDialog-3.0"):AddToBlizOptions("Skada-Windows", "Windows", "Skada")
 	
 	self:ReloadSettings()
+end
+
+function Skada:tcopy(to, from)
+  for k,v in pairs(from) do
+    if(type(v)=="table") then
+      to[k] = {}
+      Skada:tcopy(to[k], v);
+    else
+      to[k] = v;
+    end
+  end
+end
+
+function Skada:CreateWindow(name, db)
+	if not db then
+		db = {}
+		self:tcopy(db, Skada.windowdefaults)
+		table.insert(self.db.profile.windows, db)
+	end
+
+	local window = Window:new()
+	window.db = db
+	window.db.name = name
+	window.bargroup = self:NewBarGroup(name, nil, window.db.barwidth, window.db.barheight, "SkadaBarWindow"..name)
+	window.bargroup.RegisterCallback(window, "AnchorMoved")
+	window.bargroup.RegisterCallback(window, "AnchorClicked")
+	window.bargroup:EnableMouse(true)
+	window.bargroup:SetScript("OnMouseDown", function(self, button) if button == "RightButton" then window:RightClick() end end)
+	window.bargroup:HideIcon()
+
+	self.windowoptions.args[name] = Skada:GetWindowOptions(window)
+	
+	libwindow.RegisterConfig(window.bargroup, window.db)
+
+	table.insert(windows, window)
+
+	self:ApplySettings()
+end
+
+-- Deleted named window from our windows table, and also from db.
+function Skada:DeleteWindow(name)
+	for i, win in ipairs(windows) do
+		if win.db.name == name then
+			win:destroy()
+			wipe(table.remove(windows, i))
+		end
+	end
+	for i, win in ipairs(self.db.profile.windows) do
+		if win.name == name then
+			table.remove(self.db.profile.windows, i)
+		end
+	end
+	self.windowoptions.args[name] = nil
 end
 
 function Skada:Command(param)
@@ -897,12 +946,23 @@ function Skada:OpenMenu()
 end
 
 function Skada:ReloadSettings()
+	-- Delete all existing windows in case of a profile change.
+	for i, win in ipairs(windows) do
+		win:destroy()
+	end
+	windows = {}
+
+	-- Re-create windows
+	-- Note: as this can be called from a profile change as well as login, re-use windows when possible.
+	for i, win in ipairs(self.db.profile.windows) do
+		self:CreateWindow(win.name, win)
+	end
+
 	self.total = self.db.profile.total
 	sets = self.db.profile.sets
 	
 	-- Restore window position.
 	for i, win in ipairs(windows) do
-		libwindow.RegisterConfig(win.bargroup, win.db)
 		libwindow.RestorePosition(win.bargroup)
 	end
 	
@@ -1191,6 +1251,13 @@ function Skada:StartCombat()
 	-- Force immediate update.
 	changed = true
 	self:UpdateBars()
+end
+
+-- Simply calls the same function on all windows.
+function Skada:RemoveAllBars()
+	for i, win in ipairs(windows) do
+		win:RemoveAllBars()
+	end
 end
 
 -- Attempts to restore a view (set and mode).
