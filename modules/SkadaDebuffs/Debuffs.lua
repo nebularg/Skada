@@ -2,44 +2,10 @@ local L = LibStub("AceLocale-3.0"):GetLocale("Skada", false)
 
 local Skada = Skada
 
-local mod = Skada:NewModule("DebuffMode", "AceEvent-3.0", "AceTimer-3.0")
+local mod = Skada:NewModule("DebuffMode", "AceTimer-3.0")
 local auramod = Skada:NewModule("DebuffModeSpellView")
 
 mod.name = L["Debuff uptimes"]
-
-function mod:OnEnable()
-	self:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
-	self:ScheduleRepeatingTimer("Tick", 1)
-
-	Skada:AddMode(self)
-end
-
-function mod:OnDisable()
-	Skada:RemoveMode(self)
-end
-
-local function len(t)
-	local l = 0
-	for i,j in pairs(t) do
-		l = l + 1
-	end
-	return l
-end
-
-function mod:AddToTooltip(set, tooltip)
-end
-
--- Called by Skada when a new player is added to a set.
-function mod:AddPlayerAttributes(player)
-	if not player.auras then
-		player.auras = {}
-		player.uptime = 0
-	end
-end
-
--- Called by Skada when a new set is created.
-function mod:AddSetAttributes(set)
-end
 
 -- This is highly inefficient. Come up with something better.
 local function tick_spells(set)
@@ -58,17 +24,14 @@ end
 -- We determine this by incrementing or subtracting from a counter.
 -- This is less messy than fooling around with the aura events.
 function mod:Tick()
-	if Skada:IsDataCollectionActive() then
+	if Skada.current then
 	
-		local current = Skada:GetCurrentSet()
-		local total = Skada:GetTotalSet()
-		
-		tick_spells(current)
-		tick_spells(total)
+		tick_spells(Skada.current)
+		tick_spells(Skada.total)
 	end
 end
 
-function mod:log_auraapply(set, aura)
+local function log_auraapply(set, aura)
 	if set then
 		
 		-- Get the player.
@@ -86,7 +49,7 @@ function mod:log_auraapply(set, aura)
 	end
 end
 
-function mod:log_auraremove(set, aura)
+local function log_auraremove(set, aura)
 	if set then
 		
 		-- Get the player.
@@ -107,44 +70,44 @@ end
 
 local aura = {}
 
-function mod:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
+local function AuraApplied(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
+	local spellId, spellName, spellSchool, auraType = ...
+	if auraType == "DEBUFF" then
 
-	if Skada:IsDataCollectionActive() and srcName and (eventtype == 'SPELL_AURA_APPLIED' or eventtype == 'SPELL_AURA_REMOVED') and Skada:UnitIsInteresting(srcName) then
-	
-		local current = Skada:GetCurrentSet()
-		local total = Skada:GetTotalSet()
-
-		if eventtype == 'SPELL_AURA_APPLIED' then
-			local spellId, spellName, spellSchool, auraType = ...
-			if auraType == "DEBUFF" then
-
-				aura.playerid = srcGUID
-				aura.playername = srcName
-				aura.spellid = spellId
-				aura.spellname = spellName
-				aura.auratype = auraType
-				
-				Skada:FixPets(aura)
-				self:log_auraapply(current, aura)
-				self:log_auraapply(total, aura)
-			end
-		elseif eventtype == 'SPELL_AURA_REMOVED' then
-			local spellId, spellName, spellSchool, auraType = ...
-			if auraType == "DEBUFF" then
-			
-				aura.playerid = srcGUID
-				aura.playername = srcName
-				aura.spellid = spellId
-				aura.spellname = spellName
-				aura.auratype = auraType
-			
-				Skada:FixPets(aura)
-				self:log_auraremove(current, aura)
-				self:log_auraremove(total, aura)
-			end
-		end
+		aura.playerid = srcGUID
+		aura.playername = srcName
+		aura.spellid = spellId
+		aura.spellname = spellName
+		aura.auratype = auraType
+		
+		Skada:FixPets(aura)
+		log_auraapply(Skada.current, aura)
+		log_auraapply(Skada.total, aura)
 	end
+end
 
+local function AuraRemoved(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
+	local spellId, spellName, spellSchool, auraType = ...
+	if auraType == "DEBUFF" then
+	
+		aura.playerid = srcGUID
+		aura.playername = srcName
+		aura.spellid = spellId
+		aura.spellname = spellName
+		aura.auratype = auraType
+	
+		Skada:FixPets(aura)
+		log_auraremove(Skada.current, aura)
+		log_auraremove(Skada.total, aura)
+	end
+end
+
+local function len(t)
+	local l = 0
+	for i,j in pairs(t) do
+		l = l + 1
+	end
+	return l
 end
 
 function mod:Update(set)
@@ -235,4 +198,32 @@ function auramod:Update(set)
 	
 	-- Sort the possibly changed bars.
 	Skada:SortBars()
+end
+
+function mod:OnEnable()
+	Skada:RegisterForCL(AuraApplied, 'SPELL_AURA_APPLIED', {src_is_interesting = true})
+	Skada:RegisterForCL(AuraRemoved, 'SPELL_AURA_REMOVED', {src_is_interesting = true})
+	
+	self:ScheduleRepeatingTimer("Tick", 1)
+
+	Skada:AddMode(self)
+end
+
+function mod:OnDisable()
+	Skada:RemoveMode(self)
+end
+
+function mod:AddToTooltip(set, tooltip)
+end
+
+-- Called by Skada when a new player is added to a set.
+function mod:AddPlayerAttributes(player)
+	if not player.auras then
+		player.auras = {}
+		player.uptime = 0
+	end
+end
+
+-- Called by Skada when a new set is created.
+function mod:AddSetAttributes(set)
 end

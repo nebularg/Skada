@@ -11,10 +11,10 @@ local dataobj = ldb:NewDataObject("Skada", {label = "Skada", type = "data source
 local sets = {}
 
 -- The current set
-local current = nil
+Skada.current = nil
 
 -- The total set
-local total = nil
+Skada.total = nil
 
 -- The selected mode and set
 local selectedmode = nil
@@ -47,6 +47,9 @@ local feeds = {}
 
 -- Determines if the GetDefaultColor functions returns the alternate color.
 local usealt = true
+
+-- Our windows.
+local windows = {}
 
 function Skada:OnInitialize()
 	-- Register some SharedMedia goodies.
@@ -228,7 +231,6 @@ function Skada:OnEnable()
 	self:RegisterEvent("RAID_ROSTER_UPDATE")
 	self:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
 	self:RegisterEvent("PLAYER_ENTERING_WORLD")
-	self:RegisterEvent("UNIT_TARGET")
 	self:RegisterEvent("UNIT_PET")
 	
 	self:ScheduleRepeatingTimer("UpdateBars", 0.5)
@@ -418,14 +420,14 @@ function Skada:Reset()
 	pets = {}
 	self:CheckPets()
 	
-	if current ~= nil then
-		wipe(current)
-		current = createSet(L["Current"])
+	if self.current ~= nil then
+		wipe(self.current)
+		self.current = createSet(L["Current"])
 	end
-	if total ~= nil then
-		wipe(total)
-		total = createSet(L["Total"])
-		self.db.profile.total = total
+	if self.total ~= nil then
+		wipe(self.total)
+		self.total = createSet(L["Total"])
+		self.db.profile.total = self.total
 	end
 	
 	-- Delete sets that are not marked as persistent.
@@ -679,7 +681,7 @@ function Skada:OpenMenu()
 end
 
 function Skada:ReloadSettings()
-	total = self.db.profile.total
+	self.total = self.db.profile.total
 	sets = self.db.profile.sets
 	
 	-- Restore window position.
@@ -866,43 +868,43 @@ end
 -- check if anyone in raid is in combat; if so, close up shop.
 -- We can not simply rely on PLAYER_REGEN_ENABLED since it is fired if we die and the fight continues.
 function Skada:Tick()
-	if current and not InCombatLockdown() and not UnitIsDead("player") and not IsRaidInCombat() then
+	if self.current and not InCombatLockdown() and not UnitIsDead("player") and not IsRaidInCombat() then
 	
 		-- Save current set unless this a trivial set, or if we have the Only keep boss fights options on, and no boss in fight.
 		-- A set is trivial if we have no mob name saved, or if total time for set is not more than 5 seconds.
-		if not self.db.profile.onlykeepbosses or current.gotboss then
-			if current.mobname ~= nil and time() - current.starttime > 5 then
+		if not self.db.profile.onlykeepbosses or self.current.gotboss then
+			if self.current.mobname ~= nil and time() - self.current.starttime > 5 then
 				-- End current set.
-				current.endtime = time()
-				current.time = current.endtime - current.starttime
-				setPlayerActiveTimes(current)
-				current.name = current.mobname
+				self.current.endtime = time()
+				self.current.time = self.current.endtime - self.current.starttime
+				setPlayerActiveTimes(self.current)
+				self.current.name = self.current.mobname
 				
 				-- Tell each mode that set has finished and do whatever it wants to do about it.
 				for i, mode in ipairs(modes) do
 					if mode.SetComplete ~= nil then
-						mode:SetComplete(current)
+						mode:SetComplete(self.current)
 					end
 				end
 				
-				table.insert(sets, 1, current)
+				table.insert(sets, 1, self.current)
 			end
 		end
 		
 		-- Add time spent to total set as well.
-		total.time = total.time + current.time
-		setPlayerActiveTimes(total)
+		self.total.time = self.total.time + self.current.time
+		setPlayerActiveTimes(self.total)
 		
 		-- Set player.first and player.last to nil in total set.
 		-- Neccessary since first and last has no relevance over an entire raid.
 		-- Modes should look at the "time" value if available.
-		for i, player in ipairs(total.players) do
+		for i, player in ipairs(self.total.players) do
 			player.first = nil
 			player.last = nil
 		end
 		
 		-- Reset current set.
-		current = nil
+		self.current = nil
 		
 		-- Find out number of non-persistent sets.
 		local numsets = 0
@@ -938,7 +940,7 @@ end
 
 function Skada:PLAYER_REGEN_DISABLED()
 	-- Start a new set if we are not in one already.
-	if not current then
+	if not self.current then
 		self:StartCombat()
 	end
 end
@@ -948,12 +950,12 @@ function Skada:StartCombat()
 	self:RemoveAllBars()
 	
 	-- Create a new current set.
-	current = createSet(L["Current"])
+	self.current = createSet(L["Current"])
 
 	-- Also start the total set if it is nil.
-	if total == nil then
-		total = createSet(L["Total"])
-		self.db.profile.total = total
+	if self.total == nil then
+		self.total = createSet(L["Total"])
+		self.db.profile.total = self.total
 	end
 	
 	-- Auto-switch set/mode if configured.
@@ -1064,41 +1066,116 @@ function Skada:get_player(set, playerid, playername)
 	return player
 end
 
--- Save boss name and mark set as having a boss.
-function Skada:UNIT_TARGET(event, unitId)
-	if current and unitId and not UnitIsDead("target") and (UnitClassification(unitId.."target") == "worldboss" or UnitClassification(unitId.."target") == "boss") and not current.gotboss then
-		current.gotboss = true
-		current.mobname = UnitName(unitId.."target")
+local combatlogevents = {}
+function Skada:RegisterForCL(func, event, flags)
+	if not combatlogevents[event] then
+		combatlogevents[event] = {}
 	end
+	tinsert(combatlogevents[event], {["func"] = func, ["flags"] = flags})
 end
 
+-- The basic idea for CL processing:
+-- Modules register for interest in a certain event, along with the function to call and the flags determining if the particular event is interesting.
+-- On a new event, loop through the interested interested parties.
+-- The flags are checked, and the flag value (say, that the SRC must be interesting, ie, one of the raid) is only checked once, regardless
+-- of how many modules are interested in the event. The check is also only done on the first flag that requires it.
+-- The exception is src_is_interesting, which we always check to determine combat start - I would like to get rid of this, but am not sure how.
+-- Combat start bit disabled for now.
 function Skada:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
-	-- Detect combat start.
-	-- Not happy about this, really. Why can't there be a UNIT_ENTERED_COMBAT?
-	if not current and srcName and dstName and Skada:UnitIsInteresting(srcName) and (eventtype == 'SPELL_DAMAGE' or eventtype == 'SPELL_PERIODIC_DAMAGE' or eventtype == 'SPELL_BUILDING_DAMAGE' or eventtype == 'RANGE_DAMAGE' or eventtype == "SWING_DAMAGE") then
-		self:StartCombat()
+	local src_is_interesting = nil --self:UnitIsInteresting(srcName, srcGUID)
+	local dst_is_interesting = nil
+	local src_is_interesting_nopets = nil
+	local dst_is_interesting_nopets = nil
+	
+	if self.current and combatlogevents[eventtype] then
+		for i, mod in ipairs(combatlogevents[eventtype]) do
+			local fail = false
+	
+--			self:Print("event, "..eventtype)
+			-- Lua can not use assignments as expressions... grmbl. 
+			if not fail and mod.flags.src_is_interesting_nopets then
+				if src_is_interesting_nopets == nil then
+					src_is_interesting_nopets = self:UnitIsInterestingNoPets(srcName, srcGUID)
+					if src_is_interesting_nopets then
+						src_is_interesting = true
+					end
+				end
+				-- Lua does not have a "continue"... grmbl.
+				if not src_is_interesting_nopets then
+--				self:Print("fail on src_is_interesting_nopets")
+					fail = true
+				end
+			end
+			if not fail and mod.flags.dst_is_interesting_nopets then
+				if dst_is_interesting_nopets == nil then
+					dst_is_interesting_nopets = self:UnitIsInterestingNoPets(dstName, dstGUID)
+					if dst_is_interesting_nopets then
+						dst_is_interesting = true
+					end
+				end
+				if not dst_is_interesting_nopets then
+--				self:Print("fail on dst_is_interesting_nopets")
+					fail = true
+				end
+			end
+			if not fail and mod.flags.src_is_interesting then
+				if src_is_interesting == nil then	-- Will not happen ofc, but for clarity.
+					src_is_interesting = self:UnitIsInteresting(srcName, srcGUID)
+				end
+				if not src_is_interesting then
+--				self:Print("fail on src_is_interesting")
+					fail = true
+				end
+			end
+			if not fail and mod.flags.dst_is_interesting then
+				if dst_is_interesting_ == nil then
+					dst_is_interesting = self:UnitIsInteresting(dstName, dstGUID)
+				end
+				if not dst_is_interesting then
+--				self:Print("fail on dst_is_interesting")
+					fail = true
+				end
+			end
+			
+			-- Pass along event if it did not fail our tests.
+			if not fail then
+				mod.func(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
+			end
+			
+		end
 	end
 
+	-- Detect combat start.
+	-- Not happy about this, really. Why can't there be a UNIT_ENTERED_COMBAT?
+	--[[
+	if not self.current and srcName and srcGUID ~= dstGUID and dstName and src_is_interesting and (eventtype == 'SPELL_DAMAGE' or eventtype == 'SPELL_PERIODIC_DAMAGE' or eventtype == 'SPELL_BUILDING_DAMAGE' or eventtype == 'RANGE_DAMAGE' or eventtype == "SWING_DAMAGE") then
+		self:StartCombat()
+	else
+	--]]
+
+	if self.current and srcName and srcGUID ~= dstGUID and dstName and src_is_interesting and (eventtype == 'SPELL_DAMAGE' or eventtype == 'SPELL_PERIODIC_DAMAGE' or eventtype == 'SPELL_BUILDING_DAMAGE' or eventtype == 'RANGE_DAMAGE' or eventtype == "SWING_DAMAGE") then
+		-- Store mob name for set name. For now, just save first unfriendly name available, or first boss available.
+		if not self.current.gotboss and self.bossIDs[tonumber(dstGUID:sub(9, 12), 16)] then
+			self.current.mobname = dstName
+			self.current.gotboss = true
+		elseif not self.current.mobname then
+			self.current.mobname = dstName
+		end
+	end
+	
 	-- Pet summons.
 	-- Pet scheme: save the GUID in a table along with the GUID of the owner.
 	-- Note to self: this needs 1) to be made self-cleaning so it can't grow too much, and 2) saved persistently.
 	-- Now also done on raid roster/party changes.
-	if eventtype == 'SPELL_SUMMON' and self:UnitIsInterestingNoPets(srcName) then
-		pets[dstGUID] = {id = srcGUID, name = srcName}
+	if eventtype == 'SPELL_SUMMON' then
+		if src_is_interesting_nopets == nil then
+			src_is_interesting_nopets = self:IsUnitInterestingNoPets(srcName, srcGUID)
+			if src_is_interesting_nopets(srcName, srcGUID) then
+				pets[dstGUID] = {id = srcGUID, name = srcName}
+			end
+		end
 	end
 
-	if current and srcName and self:UnitIsInteresting(srcName) then
-		-- Store mob name for set name. For now, just save first unfriendly name available.
-		if dstName and not UnitIsFriend("player",dstName) and current.mobname == nil then
-			current.mobname = dstName
-		end
-		
-	end
-	
-	-- If we are active, and something happens to or by an interesting unit, mark as changed so we update our window.
-	--if current and srcName and (self:UnitIsInteresting(srcName) or self:UnitIsInteresting(dstName)) then
-	--	changed = true
-	--end
 end
 
 --
@@ -1185,6 +1262,7 @@ function Skada:UpdateBars()
 
 		end
 		
+		self:SetSortFunction(function(a,b) return a.name < b.name end)
 		self:SortBars()
 	else
 		-- View available sets.
@@ -1274,7 +1352,6 @@ function Skada:DisplayModes(settime)
 	selectedmode = nil
 
 	self.bargroup.button:SetText(L["Skada: Modes"])
-	self:SetSortFunction(function(a,b) return a.name < b.name end)
 
 	-- Save for posterity.
 	self.db.profile.set = settime
@@ -1356,8 +1433,6 @@ end
 
 -- Register a mode.
 function Skada:AddMode(mode)
-	self:Print("Add mode "..mode.name)
-
 	-- Ask mode to verify our sets.
 	-- Needed in case we enable a mode and we have old data.
 	for i, set in ipairs(sets) do
@@ -1453,15 +1528,8 @@ function Skada:SetSortFunction(func)
 	self.bargroup:SetSortFunction(func)
 end
 
-function Skada:SortBars(func)
-	if func then
-		local oldfunc = self.bargroup:GetSortFunction()
-		self:SetSortFunction(func)
-		self.bargroup:SortBars()
-		self:SetSortFunction(oldfunc)
-	else
-		self.bargroup:SortBars()
-	end
+function Skada:SortBars()
+	self.bargroup:SortBars()
 end
 
 function Skada:GetBars()
@@ -1515,13 +1583,13 @@ Sets
 -- If selectedset is "current", returns current set if we are in combat, otherwise returns the last set.
 function Skada:get_selected_set()
 	if selectedset == "current" then
-		if current == nil then
+		if self.current == nil then
 			return sets[1]
 		else
-			return current
+			return self.current
 		end
 	elseif selectedset == "total" then
-		return total
+		return self.total
 	else
 		return sets[selectedset]
 	end
@@ -1535,24 +1603,12 @@ function Skada:get_selected_player(set, playerid)
 	end
 end
 
-function Skada:IsDataCollectionActive()
-	return current ~= nil
-end
-
-function Skada:GetCurrentSet()
-	return current
-end
-
-function Skada:GetTotalSet()
-	return total
-end
-
--- Returns true if we are interested in the unit. Does not include pets.
+-- Returns true if we are interested in the unit. Include pets.
 function Skada:UnitIsInteresting(name, id)
 	return name and (UnitIsUnit("player",name) or UnitIsUnit("pet",name) or UnitPlayerOrPetInRaid(name) or UnitPlayerOrPetInParty(name) or (id and pets[id] ~= nil))
 end
 
--- Returns true if we are interested in the unit. Include pets.
+-- Returns true if we are interested in the unit. Does not include pets.
 function Skada:UnitIsInterestingNoPets(name)
 	return name and (UnitIsUnit("player",name) or UnitInRaid(name) or UnitInParty(name))
 end

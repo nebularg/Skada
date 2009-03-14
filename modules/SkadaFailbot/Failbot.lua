@@ -47,9 +47,9 @@ local function onFail(event, who, fatal)
 	-- Always log to Total set. Current only if we are active.
 	-- Idea: let modes force-start a set, so we can get a set
 	-- for these things.
-	if Skada:GetCurrentSet() then
+	if Skada.current then
 		local unitGUID = UnitGUID(who)
-		local player = Skada:get_player(Skada:GetCurrentSet(), unitGUID, who)
+		local player = Skada:get_player(Skada.current, unitGUID, who)
 		player.fails = player.fails + 1
 		
 		if player.failevents[event] then
@@ -59,9 +59,9 @@ local function onFail(event, who, fatal)
 		end
 	end
 	
-	if Skada:GetTotalSet() then
+	if Skada.total then
 		local unitGUID = UnitGUID(who)
-		local player = Skada:get_player(Skada:GetTotalSet(), unitGUID, who)
+		local player = Skada:get_player(Skada.total, unitGUID, who)
 		player.fails = player.fails + 1
 	
 		if player.failevents[event] then

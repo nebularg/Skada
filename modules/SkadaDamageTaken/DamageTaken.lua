@@ -2,106 +2,61 @@ local L = LibStub("AceLocale-3.0"):GetLocale("Skada", false)
 
 local Skada = Skada
 
-local mod = Skada:NewModule("DamageTakenMode", "AceEvent-3.0")
+local mod = Skada:NewModule("DamageTakenMode")
 local playermod = Skada:NewModule("DamageTakenModePlayerView")
 
 mod.name = L["Damage taken"]
 
-function mod:OnEnable()
-	self:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
-
-	Skada:AddMode(self)
-end
-
-function mod:OnDisable()
-	Skada:RemoveMode(self)
-end
-
--- Called by Skada when a new player is added to a set.
-function mod:AddPlayerAttributes(player)
-	if not player.damagetaken then
-		player.damagetaken = 0
-		player.damagetakenspells = {}
-	end
-end
-
--- Called by Skada when a new set is created.
-function mod:AddSetAttributes(set)
-	if not set.damagetaken then
-		set.damagetaken = 0
-	end
-end
-
-function mod:GetSetSummary(set)
-	return Skada:FormatNumber(set.damagetaken)
-end
-
-function mod:log_damage_taken(set, dmg)
-	if set then
-		-- Get the player.
-		local player = Skada:get_player(set, dmg.playerid, dmg.playername)
-		if player then
-			-- Also add to set total damage taken.
-			set.damagetaken = set.damagetaken + dmg.amount
-			
-			-- Add spell to player if it does not exist.
-			if not player.damagetakenspells[dmg.spellname] then
-				player.damagetakenspells[dmg.spellname] = {id = dmg.spellid, name = dmg.spellname, damage = 0}
-			end
-			
-			-- Add to player total damage.
-			player.damagetaken = player.damagetaken + dmg.amount
-			
-			-- Get the spell from player.
-			local spell = player.damagetakenspells[dmg.spellname]
+local function log_damage_taken(set, dmg)
+	-- Get the player.
+	local player = Skada:get_player(set, dmg.playerid, dmg.playername)
+	if player then
+		-- Also add to set total damage taken.
+		set.damagetaken = set.damagetaken + dmg.amount
 		
-			spell.damage = spell.damage + dmg.amount
-	
-			-- Mark set as changed.
-			set.changed = true
+		-- Add spell to player if it does not exist.
+		if not player.damagetakenspells[dmg.spellname] then
+			player.damagetakenspells[dmg.spellname] = {id = dmg.spellid, name = dmg.spellname, damage = 0}
 		end
+		
+		-- Add to player total damage.
+		player.damagetaken = player.damagetaken + dmg.amount
+		
+		-- Get the spell from player.
+		local spell = player.damagetakenspells[dmg.spellname]
+	
+		spell.damage = spell.damage + dmg.amount
 	end
 end
 
 local dmg = {}
 
-function mod:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
-
-	if Skada:IsDataCollectionActive() and dstName and Skada:UnitIsInterestingNoPets(dstName) then
+local function SpellDamage(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
+	local spellId, spellName, spellSchool, samount, soverkill, sschool, sresisted, sblocked, sabsorbed, scritical, sglancing, scrushing = ...
 	
-		local current = Skada:GetCurrentSet()
-		local total = Skada:GetTotalSet()
-
-		-- Damage taken.
-		if eventtype == 'SPELL_DAMAGE' or eventtype == 'SPELL_PERIODIC_DAMAGE' or eventtype == 'SPELL_BUILDING_DAMAGE' or eventtype == 'RANGE_DAMAGE' then
-			local spellId, spellName, spellSchool, samount, soverkill, sschool, sresisted, sblocked, sabsorbed, scritical, sglancing, scrushing = ...
-			
-			dmg.playerid = dstGUID
-			dmg.playername = dstName
-			dmg.spellid = spellId
-			dmg.spellname = spellName
-			dmg.amount = samount
-			
-			self:log_damage_taken(current, dmg)
-			self:log_damage_taken(total, dmg)
-		elseif eventtype == 'SWING_DAMAGE' then
-			-- White melee.
-			local samount, soverkill, sschool, sresisted, sblocked, sabsorbed, scritical, sglancing, scrushing = ...
-			
-			dmg.playerid = dstGUID
-			dmg.playername = dstName
-			dmg.spellid = 6603
-			dmg.spellname = L["Attack"]
-			dmg.amount = samount
-
-			self:log_damage_taken(current, dmg)
-			self:log_damage_taken(total, dmg)
-		end
-
-	end
-
+	dmg.playerid = dstGUID
+	dmg.playername = dstName
+	dmg.spellid = spellId
+	dmg.spellname = spellName
+	dmg.amount = samount
+	
+	log_damage_taken(Skada.current, dmg)
+	log_damage_taken(Skada.total, dmg)
 end
 
+local function SwingDamage(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
+	-- White melee.
+	local samount, soverkill, sschool, sresisted, sblocked, sabsorbed, scritical, sglancing, scrushing = ...
+	
+	dmg.playerid = dstGUID
+	dmg.playername = dstName
+	dmg.spellid = 6603
+	dmg.spellname = L["Attack"]
+	dmg.amount = samount
+
+	log_damage_taken(Skada.current, dmg)
+	log_damage_taken(Skada.total, dmg)
+end
 
 function mod:Update(set)
 	-- Calculate the highest damage.
@@ -182,4 +137,38 @@ function playermod:Update(set)
 	
 	-- Sort the possibly changed bars.
 	Skada:SortBars()
+end
+
+function mod:OnEnable()
+	Skada:RegisterForCL(SpellDamage, 'SPELL_DAMAGE', {dst_is_interesting_nopets = true})
+	Skada:RegisterForCL(SpellDamage, 'SPELL_PERIODIC_DAMAGE', {dst_is_interesting_nopets = true})
+	Skada:RegisterForCL(SpellDamage, 'SPELL_BUILDING_DAMAGE', {dst_is_interesting_nopets = true})
+	Skada:RegisterForCL(SpellDamage, 'RANGE_DAMAGE', {dst_is_interesting_nopets = true})
+	
+	Skada:RegisterForCL(SwingDamage, 'SWING_DAMAGE', {dst_is_interesting_nopets = true})
+
+	Skada:AddMode(self)
+end
+
+function mod:OnDisable()
+	Skada:RemoveMode(self)
+end
+
+-- Called by Skada when a new player is added to a set.
+function mod:AddPlayerAttributes(player)
+	if not player.damagetaken then
+		player.damagetaken = 0
+		player.damagetakenspells = {}
+	end
+end
+
+-- Called by Skada when a new set is created.
+function mod:AddSetAttributes(set)
+	if not set.damagetaken then
+		set.damagetaken = 0
+	end
+end
+
+function mod:GetSetSummary(set)
+	return Skada:FormatNumber(set.damagetaken)
 end

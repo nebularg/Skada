@@ -2,110 +2,59 @@ local L = LibStub("AceLocale-3.0"):GetLocale("Skada", false)
 
 local Skada = Skada
 
-local mod = Skada:NewModule("HealingMode", "AceEvent-3.0")
+local mod = Skada:NewModule("HealingMode")
 local playermod = Skada:NewModule("HealingModePlayerView")
 
 mod.name = L["Healing"]
 
-function mod:OnEnable()
-	self:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
+local function log_heal(set, heal)
+	-- Get the player from set.
+	local player = Skada:get_player(set, heal.playerid, heal.playername)
+	if player then
+		-- Subtract overhealing
+		local amount = math.max(0, heal.amount - heal.overhealing)
 
-	Skada:AddMode(self)
-end
-
-function mod:OnDisable()
-	Skada:RemoveMode(self)
-end
-
-function mod:AddToTooltip(set, tooltip)
-	local endtime = set.endtime
-	if not endtime then
-		endtime = time()
-	end
-	local raidhps = set.healing / (endtime - set.starttime + 1)
- 	GameTooltip:AddDoubleLine(L["HPS"], ("%02.1f"):format(raidhps), 1,1,1)
-end
-
-function mod:GetSetSummary(set)
-	return Skada:FormatNumber(set.healing)
-end
-
--- Called by Skada when a new player is added to a set.
-function mod:AddPlayerAttributes(player)
-	if not player.healing then
-		player.healing = 0
-		player.healingspells = {}
-		player.overhealing = 0
-	end
-end
-
--- Called by Skada when a new set is created.
-function mod:AddSetAttributes(set)
-	if not set.healing then
-		set.healing = 0
-		set.overhealing = 0
-	end
-end
-
-function mod:log_heal(set, heal)
-	if set then
-		-- Get the player from set.
-		local player = Skada:get_player(set, heal.playerid, heal.playername)
-		if player then
-			-- Subtract overhealing
-			local amount = math.max(0, heal.amount - heal.overhealing)
-	
-			-- Add to player total.
-			player.healing = player.healing + amount
-			player.overhealing = player.overhealing + heal.overhealing
-			
-			-- Also add to set total damage.
-			set.healing = set.healing + amount
-			set.overhealing = set.overhealing + heal.overhealing
-			
-			-- Create spell if it does not exist.
-			if not player.healingspells[heal.spellname] then
-				player.healingspells[heal.spellname] = {id = heal.spellid, name = heal.spellname, hit = 0, totalhits = 0, healing = 0, overhealing = 0, critical = 0}
-			end
-			
-			-- Get the spell from player.
-			local spell = player.healingspells[heal.spellname]
-			
-			spell.healing = spell.healing + amount
-			if heal.critical then
-				spell.critical = spell.critical + 1
-			end
-			spell.overhealing = spell.overhealing + heal.overhealing
-	
-			set.changed = true
+		-- Add to player total.
+		player.healing = player.healing + amount
+		player.overhealing = player.overhealing + heal.overhealing
+		
+		-- Also add to set total damage.
+		set.healing = set.healing + amount
+		set.overhealing = set.overhealing + heal.overhealing
+		
+		-- Create spell if it does not exist.
+		if not player.healingspells[heal.spellname] then
+			player.healingspells[heal.spellname] = {id = heal.spellid, name = heal.spellname, hit = 0, totalhits = 0, healing = 0, overhealing = 0, critical = 0}
 		end
+		
+		-- Get the spell from player.
+		local spell = player.healingspells[heal.spellname]
+		
+		spell.healing = spell.healing + amount
+		if heal.critical then
+			spell.critical = spell.critical + 1
+		end
+		spell.overhealing = spell.overhealing + heal.overhealing
 	end
 end
 
 local heal = {}
 
-function mod:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
-	if Skada:IsDataCollectionActive() and srcName and (eventtype == 'SPELL_HEAL' or eventtype == 'SPELL_PERIODIC_HEAL') and Skada:UnitIsInteresting(srcName, srcGUID) then
+local function SpellHeal(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
+	-- Healing
+	local spellId, spellName, spellSchool, samount, soverhealing, scritical = ...
 	
-		local current = Skada:GetCurrentSet()
-		local total = Skada:GetTotalSet()
-
-		-- Healing
-		local spellId, spellName, spellSchool, samount, soverhealing, scritical = ...
-		
-		heal.playerid = srcGUID
-		heal.playername = srcName
-		heal.spellid = spellId
-		heal.spellname = spellName
-		heal.amount = samount
-		heal.overhealing = soverhealing
-		heal.critical = scritical
-		
-		Skada:FixPets(heal)
-		self:log_heal(current, heal)
-		self:log_heal(total, heal)
-	end
-
+	heal.playerid = srcGUID
+	heal.playername = srcName
+	heal.spellid = spellId
+	heal.spellname = spellName
+	heal.amount = samount
+	heal.overhealing = soverhealing
+	heal.critical = scritical
+	
+	Skada:FixPets(heal)
+	log_heal(Skada.current, heal)
+	log_heal(Skada.total, heal)
 end
 
 local function getHPS(set, player)
@@ -209,4 +158,45 @@ function playermod:Update(set)
 	
 	-- Sort the possibly changed bars.
 	Skada:SortBars()
+end
+
+function mod:OnEnable()
+	Skada:RegisterForCL(SpellHeal, 'SPELL_HEAL', {src_is_interesting = true})
+	Skada:RegisterForCL(SpellHeal, 'SPELL_PERIODIC_HEAL', {src_is_interesting = true})
+
+	Skada:AddMode(self)
+end
+
+function mod:OnDisable()
+	Skada:RemoveMode(self)
+end
+
+function mod:AddToTooltip(set, tooltip)
+	local endtime = set.endtime
+	if not endtime then
+		endtime = time()
+	end
+	local raidhps = set.healing / (endtime - set.starttime + 1)
+ 	GameTooltip:AddDoubleLine(L["HPS"], ("%02.1f"):format(raidhps), 1,1,1)
+end
+
+function mod:GetSetSummary(set)
+	return Skada:FormatNumber(set.healing)
+end
+
+-- Called by Skada when a new player is added to a set.
+function mod:AddPlayerAttributes(player)
+	if not player.healing then
+		player.healing = 0
+		player.healingspells = {}
+		player.overhealing = 0
+	end
+end
+
+-- Called by Skada when a new set is created.
+function mod:AddSetAttributes(set)
+	if not set.healing then
+		set.healing = 0
+		set.overhealing = 0
+	end
 end

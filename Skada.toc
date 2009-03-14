@@ -30,5 +30,6 @@ locale\deDE.lua
 
 Skada.lua
 Options.lua
+Bosses.lua
 
 modules.xml

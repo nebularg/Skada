@@ -2,148 +2,84 @@ local L = LibStub("AceLocale-3.0"):GetLocale("Skada", false)
 
 local Skada = Skada
 
-local mod = Skada:NewModule("DeathsMode", "AceEvent-3.0")
-local deathlog = Skada:NewModule("DeathLogMode", "AceEvent-3.0")
+local mod = Skada:NewModule("DeathsMode")
+local deathlog = Skada:NewModule("DeathLogMode")
 
 mod.name = L["Deaths"]
 
-function mod:OnEnable()
-	self:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
+local function log_resurrect(set, playerid, playername)
+	local player = Skada:get_player(set, playerid, playername)
+	wipe(player.deathlog)
+end
+
+local function log_deathlog(set, playerid, playername, spellid, spellname, amount, timestamp)
+	local player = Skada:get_player(set, playerid, playername)
 	
-	Skada:AddMode(self)
-end
-
-function mod:OnDisable()
-	Skada:RemoveMode(self)
-end
-
--- Called by Skada when a set is complete.
-function mod:SetComplete(set)
-	-- Clean; remove logs from all who did not die.
-	for i, player in ipairs(set.players) do
-		if player.deaths == 0 then
-			wipe(player.deathlog)
-			player.deathlog = nil
-		end
-	end
-end
-
-function mod:AddToTooltip(set, tooltip)
- 	GameTooltip:AddDoubleLine(L["Deaths"], set.deaths, 1,1,1)
-end
-
-function mod:GetSetSummary(set)
-	return set.deaths
-end
-
--- Called by Skada when a new player is added to a set.
-function mod:AddPlayerAttributes(player)
-	if not player.deaths then
-		player.deaths = 0
-		player.deathts = 0
-		player.deathlog = {}
-	end
-end
-
--- Called by Skada when a new set is created.
-function mod:AddSetAttributes(set)
-	if not set.deaths then
-		set.deaths = 0
-	end
-end
-
-function mod:log_resurrect(set, playerid, playername)
-	if set then
-		local player = Skada:get_player(set, playerid, playername)
-		wipe(player.deathlog)
-	end
-end
-
-function mod:log_deathlog(set, playerid, playername, spellid, spellname, amount, timestamp)
-	if set then
-		local player = Skada:get_player(set, playerid, playername)
-		
-		table.insert(player.deathlog, 1, {["spellid"] = spellid, ["spellname"] = spellname, ["amount"] = amount, ["ts"] = timestamp})
-		
-		-- Trim.
-		while table.maxn(player.deathlog) > 15 do table.remove(player.deathlog) end
-	end
-end
-
-function mod:log_death(set, playerid, playername, timestamp)
-	if set then
-		local player = Skada:get_player(set, playerid, playername)
-		
-		-- Add to player deaths.
-		player.deaths = player.deaths + 1
-		
-		-- Set timestamp for death.
-		player.deathts = timestamp
-		
-		-- Also add to set deaths.
-		set.deaths = set.deaths + 1
-
-		-- Mark set as changed.
-		set.changed = true
-	end
-end
-
-function mod:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
-	-- Deaths
-	if Skada:IsDataCollectionActive() and dstName and Skada:UnitIsInteresting(dstName) then
-		local current = Skada:GetCurrentSet()
+	table.insert(player.deathlog, 1, {["spellid"] = spellid, ["spellname"] = spellname, ["amount"] = amount, ["ts"] = timestamp})
 	
-		if eventtype == 'UNIT_DIED' and Skada:UnitIsInterestingNoPets(dstName) then
-	
-			if not UnitIsFeignDeath(dstName) then	-- Those pesky hunters
-				local current = Skada:GetCurrentSet()
-				local total = Skada:GetTotalSet()
-				if current then
-					self:log_death(current, dstGUID, dstName, timestamp)
-				end
-				self:log_death(total, dstGUID, dstName, timestamp)
-			end
-			
-		elseif (eventtype == 'SPELL_DAMAGE' or eventtype == 'SPELL_PERIODIC_DAMAGE' or eventtype == 'SPELL_BUILDING_DAMAGE' or eventtype == 'RANGE_DAMAGE') then
-			-- Spell damage. We have to fix for pets. (hi there, Malygos!)
-			local spellId, spellName, spellSchool, samount, soverkill, sschool, sresisted, sblocked, sabsorbed, scritical, sglancing, scrushing = ...
-			
-			dstGUID, dstName = Skada:FixMyPets(dstGUID, dstName)
-			if srcName then
-				self:log_deathlog(current, dstGUID, dstName, spellId, srcName..L["'s "]..spellName, 0-samount, timestamp)
-			else
-				self:log_deathlog(current, dstGUID, dstName, spellId, spellName, 0-samount, timestamp)
-			end
-				
-		elseif eventtype == 'SWING_DAMAGE' then
-			-- White melee.
-			local samount, soverkill, sschool, sresisted, sblocked, sabsorbed, scritical, sglancing, scrushing = ...
-			local spellid = 6603
-			local spellname = L["Attack"]
-			
-			dstGUID, dstName = Skada:FixMyPets(dstGUID, dstName)
-			if srcName then
-				self:log_deathlog(current, dstGUID, dstName, spellid, srcName..L["'s "]..spellname, 0-samount, timestamp)
-			else
-				self:log_deathlog(current, dstGUID, dstName, spellid, spellname, 0-samount, timestamp)
-			end
-			
-		elseif srcName and eventtype == 'SPELL_HEAL' or eventtype == 'SPELL_PERIODIC_HEAL' then
-	
-			-- Healing
-			local spellId, spellName, spellSchool, samount, soverhealing, scritical = ...
-			smount = min(0, samount - soverhealing)
-			
-			srcGUID, srcName = Skada:FixMyPets(srcGUID, srcName)
-			dstGUID, dstName = Skada:FixMyPets(dstGUID, dstName)
-			self:log_deathlog(current, dstGUID, dstName, spellId, srcName.."'s "..spellName, samount, timestamp)
-		elseif srcName and eventtype == 'SPELL_RESURRECT' then
-			-- Clear deathlog for this player.
-			self:log_resurrect(current, dstGUID, dstName)
-		end
+	-- Trim.
+	while table.maxn(player.deathlog) > 15 do table.remove(player.deathlog) end
+end
 
+local function log_death(set, playerid, playername, timestamp)
+	local player = Skada:get_player(set, playerid, playername)
+	
+	-- Add to player deaths.
+	player.deaths = player.deaths + 1
+	
+	-- Set timestamp for death.
+	player.deathts = timestamp
+	
+	-- Also add to set deaths.
+	set.deaths = set.deaths + 1
+end
+
+local function UnitDied(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
+	if not UnitIsFeignDeath(dstName) then	-- Those pesky hunters
+		log_death(Skada.current, dstGUID, dstName, timestamp)
+		log_death(Skada.total, dstGUID, dstName, timestamp)
 	end
+end
 
+local function SpellDamage(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
+	-- Spell damage. We have to fix for pets. (hi there, Malygos!)
+	local spellId, spellName, spellSchool, samount, soverkill, sschool, sresisted, sblocked, sabsorbed, scritical, sglancing, scrushing = ...
+	
+	dstGUID, dstName = Skada:FixMyPets(dstGUID, dstName)
+	if srcName then
+		log_deathlog(Skada.current, dstGUID, dstName, spellId, srcName..L["'s "]..spellName, 0-samount, timestamp)
+	else
+		log_deathlog(Skada.current, dstGUID, dstName, spellId, spellName, 0-samount, timestamp)
+	end
+end
+
+local function SwingDamage(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
+	-- White melee.
+	local samount, soverkill, sschool, sresisted, sblocked, sabsorbed, scritical, sglancing, scrushing = ...
+	local spellid = 6603
+	local spellname = L["Attack"]
+	
+	dstGUID, dstName = Skada:FixMyPets(dstGUID, dstName)
+	if srcName then
+		log_deathlog(Skada.current, dstGUID, dstName, spellid, srcName..L["'s "]..spellname, 0-samount, timestamp)
+	else
+		log_deathlog(Skada.current, dstGUID, dstName, spellid, spellname, 0-samount, timestamp)
+	end
+end
+
+local function SpellHeal(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
+	-- Healing
+	local spellId, spellName, spellSchool, samount, soverhealing, scritical = ...
+	smount = min(0, samount - soverhealing)
+	
+	srcGUID, srcName = Skada:FixMyPets(srcGUID, srcName)
+	dstGUID, dstName = Skada:FixMyPets(dstGUID, dstName)
+	log_deathlog(Skada.current, dstGUID, dstName, spellId, srcName.."'s "..spellName, samount, timestamp)
+end
+
+local function Resurrect(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
+	-- Clear deathlog for this player.
+	log_resurrect(Skada.current, dstGUID, dstName)
 end
 
 local function sort_by_ts(a,b)
@@ -238,4 +174,61 @@ function deathlog:Update(set)
 	-- Use our special sort function and sort.
 	Skada:SetSortFunction(sort_by_ts)
 	Skada:SortBars()
+end
+
+function mod:OnEnable()
+	Skada:RegisterForCL(UnitDied, 'UNIT_DIED', {dst_is_interesting_nopets = true})
+	
+	Skada:RegisterForCL(SpellDamage, 'SPELL_DAMAGE', {dst_is_interesting_nopets = true})
+	Skada:RegisterForCL(SpellDamage, 'SPELL_PERIODIC_DAMAGE', {dst_is_interesting_nopets = true})
+	Skada:RegisterForCL(SpellDamage, 'SPELL_BUILDING_DAMAGE', {dst_is_interesting_nopets = true})
+	Skada:RegisterForCL(SpellDamage, 'RANGE_DAMAGE', {dst_is_interesting_nopets = true})
+	
+	Skada:RegisterForCL(SwingDamage, 'SWING_DAMAGE', {dst_is_interesting_nopets = true})
+
+	Skada:RegisterForCL(SpellHeal, 'SPELL_HEAL', {dst_is_interesting_nopets = true})
+	Skada:RegisterForCL(SpellHeal, 'SPELL_PERIODIC_HEAL', {dst_is_interesting_nopets = true})
+
+	Skada:RegisterForCL(Resurrect, 'SPELL_RESURRECT', {dst_is_interesting_nopets = true})
+
+	Skada:AddMode(self)
+end
+
+function mod:OnDisable()
+	Skada:RemoveMode(self)
+end
+
+-- Called by Skada when a set is complete.
+function mod:SetComplete(set)
+	-- Clean; remove logs from all who did not die.
+	for i, player in ipairs(set.players) do
+		if player.deaths == 0 then
+			wipe(player.deathlog)
+			player.deathlog = nil
+		end
+	end
+end
+
+function mod:AddToTooltip(set, tooltip)
+ 	GameTooltip:AddDoubleLine(L["Deaths"], set.deaths, 1,1,1)
+end
+
+function mod:GetSetSummary(set)
+	return set.deaths
+end
+
+-- Called by Skada when a new player is added to a set.
+function mod:AddPlayerAttributes(player)
+	if not player.deaths then
+		player.deaths = 0
+		player.deathts = 0
+		player.deathlog = {}
+	end
+end
+
+-- Called by Skada when a new set is created.
+function mod:AddSetAttributes(set)
+	if not set.deaths then
+		set.deaths = 0
+	end
 end

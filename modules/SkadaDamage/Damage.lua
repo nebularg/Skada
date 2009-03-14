@@ -2,7 +2,7 @@ local L = LibStub("AceLocale-3.0"):GetLocale("Skada", false)
 
 local Skada = Skada
 
-local mod = Skada:NewModule("DamageMode", "AceEvent-3.0")
+local mod = Skada:NewModule("DamageMode")
 local dpsmod = Skada:NewModule("DPSMode")
 local playermod = Skada:NewModule("DamageModePlayerView")
 local spellmod = Skada:NewModule("DamageModeSpellView")
@@ -28,223 +28,158 @@ local function getRaidDPS(set)
 	end
 end
 
-function mod:OnEnable()
-	self:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
+local function log_damage(set, dmg)
+	-- Get the player.
+	local player = Skada:get_player(set, dmg.playerid, dmg.playername)
+	if player then
 	
-	Skada:AddFeed(L["Damage: Personal DPS"], function()
-								local current = Skada:GetCurrentSet()
-								if current then
-									local player = Skada:find_player(current, UnitGUID("player"))
-									if player then
-										return ("%02.1f"):format(getDPS(current, player)).." "..L["DPS"]
-									end
-								end
-							end)
-	Skada:AddFeed(L["Damage: Raid DPS"], function()
-								local current = Skada:GetCurrentSet()
-								if current then
-									return ("%02.1f"):format(getRaidDPS(current)).." "..L["RDPS"]
-								end
-							end)
-	Skada:AddMode(self)
-end
+		-- Subtract overkill
+--		local amount = math.max(0,dmg.amount - dmg.overkill)
+		-- Or don't. Seems to be the way other meters do it.
+		local amount = dmg.amount
+--		self:Print(player.name..": "..dmg.spellname.." for "..tostring(amount))
 
-function mod:OnDisable()
-	Skada:RemoveMode(self)
-	
-	Skada:RemoveFeed(L["Damage: Personal DPS"])
-	Skada:RemoveFeed(L["Damage: Raid DPS"])
-end
-
-function dpsmod:OnEnable()
-	Skada:AddMode(self)
-end
-
-function dpsmod:OnDisable()
-	Skada:RemoveMode(self)
-end
-
-function mod:AddToTooltip(set, tooltip)
- 	GameTooltip:AddDoubleLine(L["DPS"], ("%02.1f"):format(getRaidDPS(set)), 1,1,1)
-end
-
-function mod:GetSetSummary(set)
-	return Skada:FormatNumber(set.damage)
-end
-
--- Called by Skada when a new player is added to a set.
-function mod:AddPlayerAttributes(player)
-	if not player.damage then
-		player.damage = 0
-		player.damagespells = {}
-	end
-end
-
--- Called by Skada when a new set is created.
-function mod:AddSetAttributes(set)
-	if not set.damage then
-		set.damage = 0
-	end
-end
-
-function mod:log_damage(set, dmg)
-	if set then
-		-- Get the player.
-		local player = Skada:get_player(set, dmg.playerid, dmg.playername)
-		if player then
+		-- Also add to set total damage.
+		set.damage = set.damage + amount
 		
-			-- Subtract overkill
-	--		local amount = math.max(0,dmg.amount - dmg.overkill)
-			-- Or don't. Seems to be the way other meters do it.
-			local amount = dmg.amount
-	--		self:Print(player.name..": "..dmg.spellname.." for "..tostring(amount))
-	
-			-- Also add to set total damage.
-			set.damage = set.damage + amount
-			
-			-- Add spell to player if it does not exist.
-			if not player.damagespells[dmg.spellname] then
-				player.damagespells[dmg.spellname] = {id = dmg.spellid, name = dmg.spellname, missed = 0, hit = 0, totalhits = 0, damage = 0, overkill = 0, resisted = 0, blocked = 0, absorbed = 0, critical = 0, glancing = 0, crushing = 0}
-			end
-			
-			-- Add to player total damage.
-			player.damage = player.damage + amount
-			
-			-- Get the spell from player.
-			local spell = player.damagespells[dmg.spellname]
-			
-			spell.totalhits = spell.totalhits + 1
+		-- Add spell to player if it does not exist.
+		if not player.damagespells[dmg.spellname] then
+			player.damagespells[dmg.spellname] = {id = dmg.spellid, name = dmg.spellname, missed = 0, hit = 0, totalhits = 0, damage = 0, overkill = 0, resisted = 0, blocked = 0, absorbed = 0, critical = 0, glancing = 0, crushing = 0}
+		end
 		
-			spell.damage = spell.damage + amount
-			if dmg.overkill then
-				spell.overkill = spell.overkill + dmg.overkill
-			end
-			if dmg.resisted then
-				spell.resisted = spell.resisted + dmg.resisted
-			end
-			if dmg.blocked then
-				spell.blocked = spell.blocked + dmg.blocked
-			end
-			if dmg.absorbed then
-				spell.absorbed = spell.absorbed + dmg.absorbed
-			end
-			if dmg.critical then
-				spell.critical = spell.critical + 1
-			elseif dmg.missed ~= nil then
-				spell.missed = spell.missed + 1
-			elseif dmg.glancing then
-				spell.glancing = spell.glancing + 1
-			elseif dmg.crushing then
-				spell.crushing = spell.crushing + 1
-			else
-				spell.hit = spell.hit + 1
-			end
+		-- Add to player total damage.
+		player.damage = player.damage + amount
+		
+		-- Get the spell from player.
+		local spell = player.damagespells[dmg.spellname]
+		
+		spell.totalhits = spell.totalhits + 1
+	
+		spell.damage = spell.damage + amount
+		if dmg.overkill then
+			spell.overkill = spell.overkill + dmg.overkill
+		end
+		if dmg.resisted then
+			spell.resisted = spell.resisted + dmg.resisted
+		end
+		if dmg.blocked then
+			spell.blocked = spell.blocked + dmg.blocked
+		end
+		if dmg.absorbed then
+			spell.absorbed = spell.absorbed + dmg.absorbed
+		end
+		if dmg.critical then
+			spell.critical = spell.critical + 1
+		elseif dmg.missed ~= nil then
+			spell.missed = spell.missed + 1
+		elseif dmg.glancing then
+			spell.glancing = spell.glancing + 1
+		elseif dmg.crushing then
+			spell.crushing = spell.crushing + 1
+		else
+			spell.hit = spell.hit + 1
 		end
 	end
 end
 
 local dmg = {}
 
-function mod:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
-	-- This line will determine if the src player is being tracked.
-	if Skada:IsDataCollectionActive() and srcName and Skada:UnitIsInteresting(srcName, srcGUID) then
-	
-		local current = Skada:GetCurrentSet()
-		local total = Skada:GetTotalSet()
+local function SpellDamage(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
+	-- Spell damage.
+	if srcGUID ~= dstGUID then
+		local spellId, spellName, spellSchool, samount, soverkill, sschool, sresisted, sblocked, sabsorbed, scritical, sglancing, scrushing = ...
+		
+		dmg.playerid = srcGUID
+		dmg.playername = srcName
+		dmg.spellid = spellId
+		dmg.spellname = spellName
+		dmg.amount = samount
+		dmg.overkill = soverkill
+		dmg.resisted = sresisted
+		dmg.blocked = sblocked
+		dmg.absorbed = sabsorbed
+		dmg.critical = scritical
+		dmg.glancing = sglancing
+		dmg.crushing = scrushing
+		dmg.missed = nil
 
-		-- Spell damage.
-		if eventtype == 'SPELL_DAMAGE' or eventtype == 'SPELL_PERIODIC_DAMAGE' or eventtype == 'SPELL_BUILDING_DAMAGE' or eventtype == 'RANGE_DAMAGE' then
-			if srcGUID ~= dstGUID then
-				local spellId, spellName, spellSchool, samount, soverkill, sschool, sresisted, sblocked, sabsorbed, scritical, sglancing, scrushing = ...
-				
-				dmg.playerid = srcGUID
-				dmg.playername = srcName
-				dmg.spellid = spellId
-				dmg.spellname = spellName
-				dmg.amount = samount
-				dmg.overkill = soverkill
-				dmg.resisted = sresisted
-				dmg.blocked = sblocked
-				dmg.absorbed = sabsorbed
-				dmg.critical = scritical
-				dmg.glancing = sglancing
-				dmg.crushing = scrushing
-				dmg.missed = nil
-
-				Skada:FixPets(dmg)
-				self:log_damage(current, dmg)
-				self:log_damage(total, dmg)
-			end
-		elseif eventtype == 'SWING_DAMAGE' then
-			-- White melee.
-			if srcGUID ~= dstGUID then
-				local samount, soverkill, sschool, sresisted, sblocked, sabsorbed, scritical, sglancing, scrushing = ...
-				
-				dmg.playerid = srcGUID
-				dmg.playername = srcName
-				dmg.spellid = 6603
-				dmg.spellname = L["Attack"]
-				dmg.amount = samount
-				dmg.overkill = soverkill
-				dmg.resisted = sresisted
-				dmg.blocked = sblocked
-				dmg.absorbed = sabsorbed
-				dmg.critical = scritical
-				dmg.glancing = sglancing
-				dmg.crushing = scrushing
-				dmg.missed = nil
-				
-				Skada:FixPets(dmg)
-				self:log_damage(current, dmg)
-				self:log_damage(total, dmg)
-			end
-		elseif eventtype == 'SWING_MISSED' then
-			if srcGUID ~= dstGUID then
-				-- Melee misses
-
-				dmg.playerid = srcGUID
-				dmg.playername = srcName
-				dmg.spellid = 6603
-				dmg.spellname = L["Attack"]
-				dmg.amount = 0
-				dmg.overkill = 0
-				dmg.resisted = nil
-				dmg.blocked = nil
-				dmg.absorbed = nil
-				dmg.critical = nil
-				dmg.glancing = nil
-				dmg.crushing = nil
-				dmg.missed = 1
-				
-				Skada:FixPets(dmg)
-				self:log_damage(current, dmg)
-				self:log_damage(total, dmg)
-			end
-		elseif eventtype == 'SPELL_MISSED' or eventtype == 'SPELL_PERIODIC_MISSED' or eventtype == 'RANGE_MISSED' or eventtype == 'SPELL_BUILDING_MISSED' then
-			-- Misses
-			if srcGUID ~= dstGUID then
-				local spellId, spellName, spellSchool, missType, samount = ...
-				dmg.playerid = srcGUID
-				dmg.playername = srcName
-				dmg.spellid = spellId
-				dmg.spellname = spellName
-				dmg.amount = 0
-				dmg.overkill = 0
-				dmg.resisted = nil
-				dmg.blocked = nil
-				dmg.absorbed = nil
-				dmg.critical = nil
-				dmg.glancing = nil
-				dmg.crushing = nil
-				dmg.missed = 1
-				
-				Skada:FixPets(dmg)
-				self:log_damage(current, dmg)
-				self:log_damage(total, dmg)
-			end
-		end
+		Skada:FixPets(dmg)
+		log_damage(Skada.current, dmg)
+		log_damage(Skada.total, dmg)
 	end
+end
 
+local function SwingDamage(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
+	-- White melee.
+	if srcGUID ~= dstGUID then
+		local samount, soverkill, sschool, sresisted, sblocked, sabsorbed, scritical, sglancing, scrushing = ...
+		
+		dmg.playerid = srcGUID
+		dmg.playername = srcName
+		dmg.spellid = 6603
+		dmg.spellname = L["Attack"]
+		dmg.amount = samount
+		dmg.overkill = soverkill
+		dmg.resisted = sresisted
+		dmg.blocked = sblocked
+		dmg.absorbed = sabsorbed
+		dmg.critical = scritical
+		dmg.glancing = sglancing
+		dmg.crushing = scrushing
+		dmg.missed = nil
+		
+		Skada:FixPets(dmg)
+		log_damage(Skada.current, dmg)
+		log_damage(Skada.total, dmg)
+	end
+end
+
+local function SwingMissed(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
+	if srcGUID ~= dstGUID then
+		-- Melee misses
+
+		dmg.playerid = srcGUID
+		dmg.playername = srcName
+		dmg.spellid = 6603
+		dmg.spellname = L["Attack"]
+		dmg.amount = 0
+		dmg.overkill = 0
+		dmg.resisted = nil
+		dmg.blocked = nil
+		dmg.absorbed = nil
+		dmg.critical = nil
+		dmg.glancing = nil
+		dmg.crushing = nil
+		dmg.missed = 1
+		
+		Skada:FixPets(dmg)
+		log_damage(Skada.current, dmg)
+		log_damage(Skada.total, dmg)
+	end
+end
+
+local function SpellMissed(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
+	-- Misses
+	if srcGUID ~= dstGUID then
+		local spellId, spellName, spellSchool, missType, samount = ...
+		dmg.playerid = srcGUID
+		dmg.playername = srcName
+		dmg.spellid = spellId
+		dmg.spellname = spellName
+		dmg.amount = 0
+		dmg.overkill = 0
+		dmg.resisted = nil
+		dmg.blocked = nil
+		dmg.absorbed = nil
+		dmg.critical = nil
+		dmg.glancing = nil
+		dmg.crushing = nil
+		dmg.missed = 1
+		
+		Skada:FixPets(dmg)
+		log_damage(Skada.current, dmg)
+		log_damage(Skada.total, dmg)
+	end
 end
 
 function mod:Update(set)
@@ -459,4 +394,72 @@ function dpsmod:Update(set)
 	Skada:SortBars()
 end
 
+
+function mod:OnEnable()
+	Skada:RegisterForCL(SpellDamage, 'SPELL_DAMAGE', {src_is_interesting = true})
+	Skada:RegisterForCL(SpellDamage, 'SPELL_PERIODIC_DAMAGE', {src_is_interesting = true})
+	Skada:RegisterForCL(SpellDamage, 'SPELL_BUILDING_DAMAGE', {src_is_interesting = true})
+	Skada:RegisterForCL(SpellDamage, 'RANGE_DAMAGE', {src_is_interesting = true})
+	
+	Skada:RegisterForCL(SwingDamage, 'SWING_DAMAGE', {src_is_interesting = true})
+	Skada:RegisterForCL(SwingMissed, 'SWING_MISSED', {src_is_interesting = true})
+	
+	Skada:RegisterForCL(SpellMissed, 'SPELL_MISSED', {src_is_interesting = true})
+	Skada:RegisterForCL(SpellMissed, 'SPELL_PERIODIC_MISSED', {src_is_interesting = true})
+	Skada:RegisterForCL(SpellMissed, 'RANGE_MISSED', {src_is_interesting = true})
+	Skada:RegisterForCL(SpellMissed, 'SPELL_BUILDING_MISSED', {src_is_interesting = true})
+	
+	Skada:AddFeed(L["Damage: Personal DPS"], function()
+								if Skada.current then
+									local player = Skada:find_player(Skada.current, UnitGUID("player"))
+									if player then
+										return ("%02.1f"):format(getDPS(Skada.current, player)).." "..L["DPS"]
+									end
+								end
+							end)
+	Skada:AddFeed(L["Damage: Raid DPS"], function()
+								if Skada.current then
+									return ("%02.1f"):format(getRaidDPS(Skada.current)).." "..L["RDPS"]
+								end
+							end)
+	Skada:AddMode(self)
+end
+
+function mod:OnDisable()
+	Skada:RemoveMode(self)
+	
+	Skada:RemoveFeed(L["Damage: Personal DPS"])
+	Skada:RemoveFeed(L["Damage: Raid DPS"])
+end
+
+function dpsmod:OnEnable()
+	Skada:AddMode(self)
+end
+
+function dpsmod:OnDisable()
+	Skada:RemoveMode(self)
+end
+
+function mod:AddToTooltip(set, tooltip)
+ 	GameTooltip:AddDoubleLine(L["DPS"], ("%02.1f"):format(getRaidDPS(set)), 1,1,1)
+end
+
+function mod:GetSetSummary(set)
+	return Skada:FormatNumber(set.damage)
+end
+
+-- Called by Skada when a new player is added to a set.
+function mod:AddPlayerAttributes(player)
+	if not player.damage then
+		player.damage = 0
+		player.damagespells = {}
+	end
+end
+
+-- Called by Skada when a new set is created.
+function mod:AddSetAttributes(set)
+	if not set.damage then
+		set.damage = 0
+	end
+end
 
