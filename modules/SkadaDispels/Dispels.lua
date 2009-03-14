@@ -6,29 +6,25 @@ local mod = Skada:NewModule("DispelMode")
 
 mod.name = L["Dispels"]
 
-function mod:log_dispell(set, dispell)
-	if set then
-		local player = Skada:get_player(set, dispell.playerid, dispell.playername)
-		if player then
-			-- Add to player dispels.
-			player.dispells = player.dispells + 1
-			
-			-- Also add to set total dispels.
-			set.dispells = set.dispells + 1
-		end
+local function log_dispell(set, dispell)
+	local player = Skada:get_player(set, dispell.playerid, dispell.playername)
+	if player then
+		-- Add to player dispels.
+		player.dispells = player.dispells + 1
+		
+		-- Also add to set total dispels.
+		set.dispells = set.dispells + 1
 	end
 end
 
-function mod:log_interrupt(set, interrupt)
-	if set then
-		local player = Skada:get_player(set, interrupt.playerid, interrupt.playername)
-		if player then
-			-- Add to player interrupts.
-			player.interrupts = player.interrupts + 1
-			
-			-- Also add to set total interrupts.
-			set.interrupts = set.interrupts + 1
-		end
+local function log_interrupt(set, interrupt)
+	local player = Skada:get_player(set, interrupt.playerid, interrupt.playername)
+	if player then
+		-- Add to player interrupts.
+		player.interrupts = player.interrupts + 1
+		
+		-- Also add to set total interrupts.
+		set.interrupts = set.interrupts + 1
 	end
 end
 
@@ -45,8 +41,8 @@ local function SpellDispel(timestamp, eventtype, srcGUID, srcName, srcFlags, dst
 	dispell.extraspellid = sextraSpellId
 	dispell.extraspellname = sextraSpellName		
 	
-	self:log_dispell(Skada.current, dispell)
-	self:log_dispell(Skada.total, dispell)
+	log_dispell(Skada.current, dispell)
+	log_dispell(Skada.total, dispell)
 end
 
 local function SpellInterrupt(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
@@ -60,8 +56,8 @@ local function SpellInterrupt(timestamp, eventtype, srcGUID, srcName, srcFlags, 
 	dispell.extraspellid = sextraSpellId
 	dispell.extraspellname = sextraSpellName		
 	
-	self:log_interrupt(current, dispell)
-	self:log_interrupt(total, dispell)
+	log_interrupt(current, dispell)
+	log_interrupt(total, dispell)
 end
 
 function mod:Update(win, set)
