@@ -87,7 +87,7 @@ local function sort_by_ts(a,b)
 end
 
 -- Death meter.
-function mod:Update(set)
+function mod:Update(win, set)
 
 	-- Calculate the highest number.
 	-- How to get rid of this iteration?
@@ -102,7 +102,7 @@ function mod:Update(set)
 	-- If so, update values, else create bar.
 	for i, player in ipairs(set.players) do
 		if player.deaths > 0 then
-			local bar = Skada:GetBar(tostring(player.id))
+			local bar = win:GetBar(tostring(player.id))
 			if bar then
 				bar:SetMaxValue(maxdeaths)
 				bar:SetValue(player.deaths)
@@ -111,16 +111,16 @@ function mod:Update(set)
 				if player.deaths > 1 then
 					label = label.." ("..player.deaths..")"
 				end
-				bar = Skada:CreateBar(tostring(player.id), label, player.deaths, maxdeaths, nil, false)
+				bar = win:CreateBar(tostring(player.id), label, player.deaths, maxdeaths, nil, false)
 				bar.ts = player.deathts
 				bar:EnableMouse()
 				bar:SetScript("OnMouseDown", function(bar, button)
 												if button == "LeftButton" then
 													deathlog.playerid = player.id
 													deathlog.name = player.name..L["'s Death"]
-													Skada:DisplayMode(deathlog)
-												elseif button == "RightButton" then Skada:RightClick() end end)
-				local color = Skada.classcolors[player.class] or Skada:GetDefaultBarColor()
+													win:DisplayMode(deathlog)
+												elseif button == "RightButton" then win:RightClick() end end)
+				local color = Skada.classcolors[player.class] or win:GetDefaultBarColor()
 				bar:SetColorAt(0, color.r, color.g, color.b, color.a or 1)
 			end
 			bar:SetTimerLabel(date("%H:%M:%S", player.deathts))
@@ -128,12 +128,12 @@ function mod:Update(set)
 	end
 	
 	-- Sort the possibly changed bars.
-	Skada:SetSortFunction(sort_by_deathts)
-	Skada:SortBars()
+	win:SetSortFunction(sort_by_deathts)
+	win:SortBars()
 end
 
 -- Death log.
-function deathlog:Update(set)
+function deathlog:Update(win, set)
 	local player = Skada:get_player(set, self.playerid)
 	
 	-- Find the max amount
@@ -148,13 +148,13 @@ function deathlog:Update(set)
 		local diff = tonumber(log.ts) - tonumber(player.deathts)
 		-- Ignore hits older than 30s before death.
 		if diff > -30 then
-			local bar = Skada:GetBar("log"..i)
+			local bar = win:GetBar("log"..i)
 			if bar then
 				bar:SetMaxValue(maxhit)
 				bar:SetValue(math.abs(log.amount))
 			else
 				local icon = select(3, GetSpellInfo(log.spellid))
-				bar = Skada:CreateBar("log"..i, log.spellname, math.abs(log.amount), maxhit, icon, false)
+				bar = win:CreateBar("log"..i, log.spellname, math.abs(log.amount), maxhit, icon, false)
 				bar.ts = log.ts
 				bar:EnableMouse()
 				bar:SetScript("OnMouseDown", function(bar, button) if button == "RightButton" then Skada:DisplayMode(mod) end end)
@@ -172,8 +172,8 @@ function deathlog:Update(set)
 	end
 	
 	-- Use our special sort function and sort.
-	Skada:SetSortFunction(sort_by_ts)
-	Skada:SortBars()
+	win:SetSortFunction(sort_by_ts)
+	win:SortBars()
 end
 
 function mod:OnEnable()

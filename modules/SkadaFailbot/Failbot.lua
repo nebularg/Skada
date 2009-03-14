@@ -76,7 +76,7 @@ for _, event in ipairs(fail_events) do
 	fail:RegisterCallback(event, onFail)
 end
 
-function mod:Update(set)
+function mod:Update(win, set)
 	-- Calculate the highest number.
 	-- How to get rid of this iteration?
 	local maxfails = 0
@@ -90,20 +90,20 @@ function mod:Update(set)
 	-- If so, update values, else create bar.
 	for i, player in ipairs(set.players) do
 		if player.fails > 0 then
-			local bar = Skada:GetBar(tostring(player.id))
+			local bar = win:GetBar(tostring(player.id))
 			if bar then
 				bar:SetMaxValue(maxfails)
 				bar:SetValue(player.fails)
 			else
-				bar = Skada:CreateBar(tostring(player.id), player.name, player.fails, maxfails, nil, false)
+				bar = win:CreateBar(tostring(player.id), player.name, player.fails, maxfails, nil, false)
 				bar:EnableMouse()
 				bar:SetScript("OnMouseDown", function(bar, button) 
 												if button == "LeftButton" then
 													playermod.playerid = player.id
 													playermod.name = player.name..L["'s Fails"]
-													Skada:DisplayMode(playermod)
-											 elseif button == "RightButton" then Skada:RightClick() end end)
-				local color = Skada.classcolors[player.class] or Skada:GetDefaultBarColor()
+													win:DisplayMode(playermod)
+											 elseif button == "RightButton" then win:RightClick() end end)
+				local color = Skada.classcolors[player.class] or win:GetDefaultBarColor()
 				bar:SetColorAt(0, color.r, color.g, color.b, color.a or 1)
 				
 			end
@@ -112,11 +112,11 @@ function mod:Update(set)
 	end
 		
 	-- Sort the possibly changed bars.
-	Skada:SortBars()
+	win:SortBars()
 end
 
 -- Detail view of a player.
-function playermod:Update(set)
+function playermod:Update(win, set)
 	-- View spells for this player.
 		
 	local player = Skada:get_selected_player(set, self.playerid)
@@ -125,20 +125,18 @@ function playermod:Update(set)
 	if player then
 		for event, fails in pairs(player.failevents) do
 				
-			local bar = Skada:GetBarGroup():GetBar(event)
-			--self:Print("max: "..tostring(player.damage))
-			--self:Print(spell.name..": "..tostring(spell.damage))
+			local bar = win:GetBar(event)
 			if bar then
 				bar:SetMaxValue(player.fails)
 				bar:SetValue(fails)
 			else
-				bar = Skada:GetBarGroup():NewCounterBar(event, event, fails, player.fails, nil, false)
+				bar = win:CreateBar(event, event, fails, player.fails, nil, false)
 				bar:SetColorAt(0, color.r, color.g, color.b, color.a)
 				bar:ShowTimerLabel()
 				bar:EnableMouse(true)
 				bar:SetScript("OnMouseDown",function(bar, button)
 												if button == "RightButton" then
-													Skada:DisplayMode(mod)
+													win:DisplayMode(mod)
 												end
 											end)
 			end
@@ -148,6 +146,6 @@ function playermod:Update(set)
 	end
 	
 	-- Sort the possibly changed bars.
-	Skada:SortBars()
+	win:SortBars()
 end
 

@@ -63,7 +63,7 @@ local function getHPS(set, player)
 	return player.healing / math.max(1,totaltime)
 end
 
-function mod:Update(set)
+function mod:Update(win, set)
 	-- Calculate the highest damage.
 	-- How to get rid of this iteration?
 	local maxhealing = 0
@@ -81,24 +81,24 @@ function mod:Update(set)
 	-- If so, update values, else create bar.
 	for i, player in ipairs(set.players) do
 		if player.healing > 0 then
-			local bar = Skada:GetBarGroup():GetBar(tostring(player.id))
+			local bar = win:GetBar(tostring(player.id))
 			if bar then
 				bar:SetMaxValue(maxhealing)
 				bar:SetValue(player.healing)
 	--			Skada:Print("updated "..player.name.." to "..tostring(player.healing))
 			else
-				bar = Skada:GetBarGroup():NewCounterBar(tostring(player.id), player.name, player.healing, maxhealing, nil, false)
+				bar = win:CreateBar(tostring(player.id), player.name, player.healing, maxhealing, nil, false)
 				bar:EnableMouse()
 				bar:SetScript("OnMouseDown", function(bar, button)
 												if button == "LeftButton" then
 													playermod.playerid = player.id
 													playermod.name = player.name..L["'s Healing"]
-													Skada:DisplayMode(playermod)
+													win:DisplayMode(playermod)
 												elseif button == "RightButton" then
-													Skada:RightClick()
+													win:RightClick()
 												end
 											end)
-				local color = Skada.classcolors[player.class] or Skada:GetDefaultBarColor()
+				local color = Skada.classcolors[player.class] or win:GetDefaultBarColor()
 				bar:SetColorAt(0, color.r, color.g, color.b, color.a or 1)
 				
 	--			Skada:Print("created "..player.name.." at "..tostring(player.healing))
@@ -110,14 +110,14 @@ function mod:Update(set)
 	end
 	
 	-- Sort the possibly changed bars.
-	Skada:SortBars()
+	win:SortBars()
 end
 
 -- Detail view of a player.
-function playermod:Update(set)
+function playermod:Update(win, set)
 	-- View spells for this player.
 		
-	local player = Skada:get_selected_player(set, self.playerid)
+	local player = Skada:find_player(set, self.playerid)
 	local maxvalue = 0
 	for spellname, spell in pairs(player.healingspells) do
 		if spell.healing > maxvalue then
@@ -128,23 +128,21 @@ function playermod:Update(set)
 	if player then
 		for spellname, spell in pairs(player.healingspells) do
 				
-			local bar = Skada:GetBarGroup():GetBar(spellname)
-			--self:Print("max: "..tostring(player.damage))
-			--self:Print(spell.name..": "..tostring(spell.damage))
+			local bar = win:GetBar(spellname)
 			if bar then
 				bar:SetMaxValue(maxvalue)
 				bar:SetValue(spell.healing)
 			else
 				local icon = select(3, GetSpellInfo(spell.id))
-				local color = Skada:GetDefaultBarColor()
+				local color = win:GetDefaultBarColor()
 			
-				bar = Skada:GetBarGroup():NewCounterBar(spellname, spell.name, spell.healing, maxvalue, icon, false)
+				bar = win:CreateBar(spellname, spell.name, spell.healing, maxvalue, icon, false)
 				bar:SetColorAt(0, color.r, color.g, color.b, color.a)
 				bar:ShowTimerLabel()
 				bar:EnableMouse(true)
 				bar:SetScript("OnMouseDown",function(bar, button)
 												if button == "RightButton" then
-													Skada:DisplayMode(mod)
+													win:DisplayMode(mod)
 												end
 											end)
 				if icon then
@@ -157,7 +155,7 @@ function playermod:Update(set)
 	end
 	
 	-- Sort the possibly changed bars.
-	Skada:SortBars()
+	win:SortBars()
 end
 
 function mod:OnEnable()

@@ -32,7 +32,7 @@ function mod:GetSetSummary(set)
 	return Skada:FormatNumber(set.overhealing)
 end
 
-function mod:Update(set)
+function mod:Update(win, set)
 	-- Calculate the highest damage.
 	-- How to get rid of this iteration?
 	local maxoverhealing = 0
@@ -47,16 +47,16 @@ function mod:Update(set)
 	-- If so, update values, else create bar.
 	for i, player in ipairs(set.players) do
 		if player.overhealing > 0 then
-			local bar = Skada:GetBar(tostring(player.id))
+			local bar = win:GetBar(tostring(player.id))
 			if bar then
 				bar:SetMaxValue(maxoverhealing)
 				bar:SetValue(player.overhealing)
 	--			Skada:Print("updated "..player.name.." to "..tostring(player.overhealing))
 			else
-				bar = Skada:CreateBar(tostring(player.id), player.name, player.overhealing, maxoverhealing, nil, false)
+				bar = win:CreateBar(tostring(player.id), player.name, player.overhealing, maxoverhealing, nil, false)
 				bar:EnableMouse()
 				bar:SetScript("OnMouseDown", function(bar, button) if button == "RightButton" then Skada:RightClick() end end)
-				local color = Skada.classcolors[player.class] or Skada:GetDefaultBarColor()
+				local color = Skada.classcolors[player.class] or win:GetDefaultBarColor()
 				bar:SetColorAt(0, color.r, color.g, color.b, color.a or 1)
 				
 	--			Skada:Print("created "..player.name.." at "..tostring(player.overhealing))
@@ -66,6 +66,6 @@ function mod:Update(set)
 	end
 	
 	-- Sort the possibly changed bars.
-	Skada:SortBars()
+	win:SortBars()
 end
 

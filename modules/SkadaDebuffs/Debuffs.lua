@@ -110,14 +110,12 @@ local function len(t)
 	return l
 end
 
-function mod:Update(set)
+function mod:Update(win, set)
 	-- For each player in the set, see if we have a bar already.
 	-- If so, update values, else create bar.
 	for i, player in ipairs(set.players) do
 		local nr = len(player.auras)
 		if nr > 0 then
-			local bar = Skada:GetBar(tostring(player.id))
-			
 			-- Calculate player max possible uptime.
 			local maxtime = Skada:PlayerActiveTime(set, player)
 			
@@ -127,22 +125,23 @@ function mod:Update(set)
 			
 			if uptime then
 				
+				local bar = win:GetBar(tostring(player.id))
 				if bar then
 					bar:SetMaxValue(maxtime)
 					bar:SetValue(uptime)
 				else
-					bar = Skada:CreateBar(tostring(player.id), player.name, uptime, maxtime, nil, false)
+					bar = win:CreateBar(tostring(player.id), player.name, uptime, maxtime, nil, false)
 					bar:EnableMouse()
 					bar:SetScript("OnMouseDown", function(bar, button)
 													if button == "LeftButton" then
 														auramod.playerid = player.id
 														auramod.name = player.name..L["'s Debuffs"]
-														Skada:DisplayMode(auramod)
+														win:DisplayMode(auramod)
 													elseif button == "RightButton" then
-														Skada:RightClick()
+														win:RightClick()
 													end
 												end)
-					local color = Skada.classcolors[player.class] or Skada:GetDefaultBarColor()
+					local color = Skada.classcolors[player.class] or win:GetDefaultBarColor()
 					bar:SetColorAt(0, color.r, color.g, color.b, color.a or 1)
 				end
 				bar:SetTimerLabel(("%02.1f%% / %u"):format(uptime / maxtime * 100, nr))
@@ -151,14 +150,14 @@ function mod:Update(set)
 	end
 		
 	-- Sort the possibly changed bars.
-	Skada:SortBars()
+	win:SortBars()
 end
 
 -- Detail view of a player.
-function auramod:Update(set)
+function auramod:Update(win, set)
 	-- View spells for this player.
 		
-	local player = Skada:get_selected_player(set, self.playerid)
+	local player = Skada:find_player(set, self.playerid)
 	
 	if player then
 		-- Calculate player max possible uptime.
@@ -168,7 +167,7 @@ function auramod:Update(set)
 			
 			local uptime = spell.uptime
 			
-			local bar = Skada:GetBar(spellname)
+			local bar = win:GetBar(spellname)
 			--self:Print("max: "..tostring(player.damage))
 			--self:Print(spell.name..": "..tostring(spell.damage))
 			if bar then
@@ -176,15 +175,15 @@ function auramod:Update(set)
 				bar:SetValue(uptime)
 			else
 				local icon = select(3, GetSpellInfo(spell.id))
-				local color = Skada:GetDefaultBarColor()
+				local color = win:GetDefaultBarColor()
 			
-				bar = Skada:CreateBar(spellname, spell.name, uptime, maxtime, icon, false)
+				bar = win:CreateBar(spellname, spell.name, uptime, maxtime, icon, false)
 				bar:SetColorAt(0, color.r, color.g, color.b, color.a)
 				bar:ShowTimerLabel()
 				bar:EnableMouse(true)
 				bar:SetScript("OnMouseDown",function(bar, button)
 												if button == "RightButton" then
-													Skada:DisplayMode(mod)
+													win:DisplayMode(mod)
 												end
 											end)
 				if icon then
@@ -197,7 +196,7 @@ function auramod:Update(set)
 	end
 	
 	-- Sort the possibly changed bars.
-	Skada:SortBars()
+	win:SortBars()
 end
 
 function mod:OnEnable()

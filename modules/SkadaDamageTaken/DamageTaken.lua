@@ -58,7 +58,7 @@ local function SwingDamage(timestamp, eventtype, srcGUID, srcName, srcFlags, dst
 	log_damage_taken(Skada.total, dmg)
 end
 
-function mod:Update(set)
+function mod:Update(win, set)
 	-- Calculate the highest damage.
 	-- How to get rid of this iteration?
 	local maxdamagetaken = 0
@@ -73,23 +73,23 @@ function mod:Update(set)
 	-- If so, update values, else create bar.
 	for i, player in ipairs(set.players) do
 		if player.damagetaken > 0 then
-			local bar = Skada:GetBar(tostring(playerid))
+			local bar = win:GetBar(tostring(playerid))
 			if bar then
 				bar:SetMaxValue(maxdamagetaken)
 				bar:SetValue(player.damagetaken)
 			else
-				bar = Skada:CreateBar(tostring(player.id), player.name, player.damagetaken, maxdamagetaken, nil, false)
+				bar = win:CreateBar(tostring(player.id), player.name, player.damagetaken, maxdamagetaken, nil, false)
 				bar:EnableMouse()
 				bar:SetScript("OnMouseDown", function(bar, button)
 												if button == "LeftButton" then
 													playermod.playerid = player.id
 													playermod.name = player.name..L["'s Damage taken"]
-													Skada:DisplayMode(playermod)
+													win:DisplayMode(playermod)
 												elseif button == "RightButton" then
-													Skada:RightClick()
+													win:RightClick()
 												end
 											end)
-				local color = Skada.classcolors[player.class] or Skada:GetDefaultBarColor()
+				local color = Skada.classcolors[player.class] or win:GetDefaultBarColor()
 				bar:SetColorAt(0, color.r, color.g, color.b, color.a or 1)
 			end
 			bar:SetTimerLabel(Skada:FormatNumber(player.damagetaken)..(" (%02.1f%%)"):format(player.damagetaken / set.damagetaken * 100))
@@ -98,11 +98,11 @@ function mod:Update(set)
 	end
 	
 	-- Sort the possibly changed bars.
-	Skada:SortBars()
+	win:SortBars()
 end
 
 -- Detail view of a player.
-function playermod:Update(set)
+function playermod:Update(win, set)
 	-- View spells for this player.
 		
 	local player = Skada:get_selected_player(set, self.playerid)
@@ -110,20 +110,20 @@ function playermod:Update(set)
 	if player then
 		for spellname, spell in pairs(player.damagetakenspells) do
 				
-			local bar = Skada:GetBar(spellname)
+			local bar = win:GetBar(spellname)
 			if bar then
 				bar:SetMaxValue(player.damagetaken)
 				bar:SetValue(spell.damage)
 			else
 				local icon = select(3, GetSpellInfo(spell.id))
-				bar = Skada:CreateBar(tostring(spellname), spell.name, spell.damage, player.damagetaken, icon, false)
+				bar = win:CreateBar(tostring(spellname), spell.name, spell.damage, player.damagetaken, icon, false)
 				local color = Skada:GetDefaultBarColor()
 				bar:SetColorAt(0, color.r, color.g, color.b, color.a)
 				bar:ShowTimerLabel()
 				bar:EnableMouse(true)
 				bar:SetScript("OnMouseDown",function(bar, button)
 												if button == "RightButton" then
-													Skada:DisplayMode(mod)
+													win:DisplayMode(mod)
 												end
 											end)
 				if icon then
@@ -136,7 +136,7 @@ function playermod:Update(set)
 	end
 	
 	-- Sort the possibly changed bars.
-	Skada:SortBars()
+	win:SortBars()
 end
 
 function mod:OnEnable()

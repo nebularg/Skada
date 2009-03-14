@@ -64,7 +64,7 @@ local function SpellInterrupt(timestamp, eventtype, srcGUID, srcName, srcFlags, 
 	self:log_interrupt(total, dispell)
 end
 
-function mod:Update(set)
+function mod:Update(win, set)
 	-- Calculate the highest number.
 	-- How to get rid of this iteration?
 	local maxdispells = 0
@@ -78,15 +78,15 @@ function mod:Update(set)
 	-- If so, update values, else create bar.
 	for i, player in ipairs(set.players) do
 		if player.dispells > 0 then
-			local bar = Skada:GetBar(tostring(player.id))
+			local bar = win:GetBar(tostring(player.id))
 			if bar then
 				bar:SetMaxValue(maxdispells)
 				bar:SetValue(player.dispells)
 			else
-				bar = Skada:CreateBar(tostring(player.id), player.name, player.dispells, maxdispells, nil, false)
+				bar = win:CreateBar(tostring(player.id), player.name, player.dispells, maxdispells, nil, false)
 				bar:EnableMouse()
-				bar:SetScript("OnMouseDown", function(bar, button) if button == "RightButton" then Skada:RightClick() end end)
-				local color = Skada.classcolors[player.class] or Skada:GetDefaultBarColor()
+				bar:SetScript("OnMouseDown", function(bar, button) if button == "RightButton" then win:RightClick() end end)
+				local color = Skada.classcolors[player.class] or win:GetDefaultBarColor()
 				bar:SetColorAt(0, color.r, color.g, color.b, color.a or 1)
 				
 			end
@@ -95,7 +95,7 @@ function mod:Update(set)
 	end
 		
 	-- Sort the possibly changed bars.
-	Skada:SortBars()
+	win:SortBars()
 end
 
 function mod:OnEnable()

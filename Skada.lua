@@ -2,7 +2,7 @@ Skada = LibStub("AceAddon-3.0"):NewAddon("Skada", "AceConsole-3.0", "AceEvent-3.
 local L = LibStub("AceLocale-3.0"):GetLocale("Skada", false)
 local ldb = LibStub:GetLibrary("LibDataBroker-1.1")
 local icon = LibStub("LibDBIcon-1.0")
-local win = LibStub("LibWindow-1.1")
+local libwindow = LibStub("LibWindow-1.1")
 local media = LibStub("LibSharedMedia-3.0")
 
 local dataobj = ldb:NewDataObject("Skada", {label = "Skada", type = "data source", icon = "Interface\\Icons\\Spell_Lightning_LightningBolt01", text = "n/a"})
@@ -15,14 +15,6 @@ Skada.current = nil
 
 -- The total set
 Skada.total = nil
-
--- The selected mode and set
-local selectedmode = nil
-local selectedset = nil
-
--- Mode and set to return to after combat.
-local restore_mode = nil
-local restore_set = nil
 
 -- Modes - these are modules, really. Modeules?
 local modes = {}
@@ -50,6 +42,225 @@ local usealt = true
 
 -- Our windows.
 local windows = {}
+
+Window = {
+
+	-- The selected mode and set
+	selectedmode = nil,
+	selectedset = nil,
+
+	-- Mode and set to return to after combat.
+	restore_mode = nil,
+	restore_set = nil,
+	
+	usealt = true,
+}
+
+local mt = {__index = Window}
+
+function Window:new()
+   return setmetatable({ }, mt)
+end
+
+function Window:AnchorClicked(cbk, group, button)
+	if IsShiftKeyDown() then
+		Skada:OpenMenu()
+	elseif button == "RightButton" then
+		self:RightClick()
+	end
+end
+
+function Window:AnchorMoved(cbk, group, x, y)
+	libwindow.SavePosition(self.bargroup)
+end
+				
+function Window:Show()
+	self.db.shown = true
+	self.bargroup:Show()
+end
+
+function Window:Hide()
+	self.db.shown = false
+	self.bargroup:Hide()
+end
+					
+function Window:IsShown()
+	return self.bargroup:IsShown()
+end
+	
+function Window:SortBars()
+	self.bargroup:SortBars()
+end
+
+function Window:GetBars()
+	return self.bargroup:GetBars()
+end
+						
+function Window:getNumberOfBars()
+	local bars = self.bargroup:GetBars()
+	local n = 0
+	for i, bar in pairs(bars) do n = n + 1 end
+	return n
+end
+
+function Window:OnMouseWheel(frame, direction)
+	if direction == 1 and self.bargroup:GetBarOffset() > 0 then
+		self.bargroup:SetBarOffset(self.bargroup:GetBarOffset() - 1)
+	elseif direction == -1 and ((self:getNumberOfBars() - self.bargroup:GetMaxBars() - self.bargroup:GetBarOffset()) > 0) then
+		self.bargroup:SetBarOffset(self.bargroup:GetBarOffset() + 1)
+	end
+end
+
+function Window:GetDefaultBarColorOne()
+	return self.db.barcolor
+end
+
+function Window:GetDefaultBarColorTwo()
+	return self.db.baraltcolor
+end
+
+function Window:GetDefaultBarColor()
+	self.usealt = not self.usealt
+	if self.usealt then
+		return self.db.baraltcolor
+	else
+		return self.db.barcolor
+	end
+end
+
+function Window:GetBarGroup()
+	return self.bargroup
+end
+
+function Window:SetSortFunction(func)
+	self.bargroup:SetSortFunction(func)
+end
+
+function Window:GetBar(name)
+	return self.bargroup:GetBar(name)
+end
+
+function Window:RemoveBar(bar)
+	self.bargroup:RemoveBar(bar)
+end
+
+function Window:CreateBar(name, label, value, maxvalue, icon, o)
+	local bar = self.bargroup:NewCounterBar(name, label, value, maxvalue, icon, o)
+	bar:EnableMouseWheel(true)
+	bar:SetScript("OnMouseWheel", function(f, d) self:OnMouseWheel(f, d) end)
+	return bar
+end
+
+function Window:RemoveAllBars()
+	self.usealt = true
+	
+	-- Reset sort function.
+	self.bargroup:SetSortFunction(nil)
+	
+	-- Reset scroll offset.
+	self.bargroup:SetBarOffset(0)
+	
+	-- Remove the bars.
+	local bars = self.bargroup:GetBars()
+	if bars then
+		for i, bar in pairs(bars) do
+			bar:Hide()
+			self.bargroup:RemoveBar(bar)
+		end
+	end
+	
+	-- Clean up.
+	self.bargroup:SortBars()
+end
+								
+-- If selectedset is "current", returns current set if we are in combat, otherwise returns the last set.
+function Window:get_selected_set()
+	if self.selectedset == "current" then
+		if Skada.current == nil then
+			return sets[1]
+		else
+			return Skada.current
+		end
+	elseif self.selectedset == "total" then
+		return Skada.total
+	else
+		return sets[selectedset]
+	end
+end
+
+-- Sets up the mode view.
+function Window:DisplayMode(mode)
+	self:RemoveAllBars()
+
+	self.selectedplayer = nil
+	self.selectedspell = nil
+	self.selectedmode = mode
+
+	-- Save for posterity.
+	self.db.mode = self.selectedmode.name
+
+	self.bargroup.button:SetText(mode.name)
+
+	changed = true
+	Skada:UpdateBars()
+end
+
+-- Sets up the mode list.
+function Window:DisplayModes(settime)
+	self:RemoveAllBars()
+
+	self.selectedplayer = nil
+	self.selectedspell = nil
+	self.selectedmode = nil
+
+	self.bargroup.button:SetText(L["Skada: Modes"])
+
+	-- Save for posterity.
+	self.db.set = settime
+
+	-- Find the selected set
+	if settime == "current" or settime == "total" then
+		self.selectedset = settime
+	else
+		for i, set in ipairs(sets) do
+			if set.starttime == settime then
+				if set.name == L["Current"] then
+					selfselectedset = "current"
+				elseif set.name == L["Total"] then
+					self.selectedset = "total"
+				else
+					self.selectedset = i
+				end
+			end
+		end
+	end
+
+	changed = true
+	Skada:UpdateBars()
+end
+
+-- Sets up the set list.
+function Window:DisplaySets()
+	self:RemoveAllBars()
+	
+	self.selectedspell = nil
+	self.selectedplayer = nil
+	self.selectedmode = nil
+	self.selectedset = nil
+
+	self.bargroup.button:SetText(L["Skada: Fights"])
+	
+	changed = true
+	Skada:UpdateBars()
+end
+
+function Window:RightClick(group, button)
+	if self.selectedmode then
+		self:DisplayModes(self.selectedset)
+	elseif self.selectedset then
+		self:DisplaySets()
+	end
+end
 
 function Skada:OnInitialize()
 	-- Register some SharedMedia goodies.
@@ -83,13 +294,19 @@ function Skada:OnInitialize()
 	LibStub("AceConfig-3.0"):RegisterOptionsTable("Skada-Profiles", LibStub("AceDBOptions-3.0"):GetOptionsTable(self.db))
 	self.profilesFrame = LibStub("AceConfigDialog-3.0"):AddToBlizOptions("Skada-Profiles", "Profiles", "Skada")
 
-	-- Window
-	self.bargroup = self:NewBarGroup("Skada", nil, self.db.profile.barwidth, self.db.profile.barheight, "SkadaBarWindow")
-	self.bargroup.RegisterCallback(self,"AnchorMoved")
-	self.bargroup.RegisterCallback(self,"AnchorClicked")
-	self.bargroup:EnableMouse(true)
-	self.bargroup:SetScript("OnMouseDown", function(self, button) if button == "RightButton" then Skada:RightClick() end end)
-	self.bargroup:HideIcon()
+	-- Windows
+	for i, win in ipairs(self.db.profile.windows) do
+		local window = Window:new()
+		window.db = win
+		window.bargroup = self:NewBarGroup("Skada", nil, self.db.profile.barwidth, self.db.profile.barheight, "SkadaBarWindow")
+		window.bargroup.RegisterCallback(window, "AnchorMoved")
+		window.bargroup.RegisterCallback(window, "AnchorClicked")
+		window.bargroup:EnableMouse(true)
+		window.bargroup:SetScript("OnMouseDown", function(self, button) if button == "RightButton" then window:RightClick() end end)
+		window.bargroup:HideIcon()
+		
+		table.insert(windows, window)
+	end
 	
 	self:RegisterChatCommand("skada", "Command")
 	self.db.RegisterCallback(self, "OnProfileChanged", "ReloadSettings")
@@ -199,18 +416,6 @@ function Skada:RefreshMMButton()
 	else
 		icon:Show("Skada")
 	end
-end
-
-function Skada:AnchorClicked(cbk, group, button)
-	if IsShiftKeyDown() then
-		Skada:OpenMenu()
-	elseif button == "RightButton" then
-		Skada:RightClick()
-	end
-end
-
-function Skada:AnchorMoved(cbk, group, x, y)
-	win.SavePosition(self.bargroup)
 end
 
 function Skada:OpenOptions()
@@ -336,8 +541,10 @@ local function check_for_join_and_leave()
 		end
 		
 		-- Hide window if we have enabled the "Hide when solo" option.
-		if Skada.db.profile.hidesolo then
-			Skada.bargroup:Hide()
+		for i, win in ipairs(windows) do
+			if win.db.hidesolo then
+				win:Hide()
+			end
 		end
 	end
 
@@ -351,9 +558,11 @@ local function check_for_join_and_leave()
 		end
 
 		-- Show window if we have enabled the "Hide when solo" option.
-		if Skada.db.profile.hidesolo then
-			Skada.bargroup:Show()
-			Skada:SortBars()
+		for i, win in ipairs(windows) do
+			if win.db.hidesolo then
+				win:Show()
+				win:SortBars()
+			end
 		end
 	end
 
@@ -390,14 +599,17 @@ function Skada:OnDisable()
 	end
 end
 
+-- Toggles all windows.
 function Skada:ToggleWindow()
-	if self.bargroup:IsShown() then
-		self.db.profile.window.shown = false
-		self.bargroup:Hide()
-	else
-		self.db.profile.window.shown = true
-		self.bargroup:Show()
-		self.bargroup:SortBars()
+	for i, win in ipairs(windows) do
+		if win:IsShown() then
+			win.db.shown = false
+			win:Hide()
+		else
+			win.db.shown = true
+			win:Show()
+			win:SortBars()
+		end
 	end
 end
 
@@ -685,9 +897,11 @@ function Skada:ReloadSettings()
 	sets = self.db.profile.sets
 	
 	-- Restore window position.
-	win.RegisterConfig(self.bargroup, self.db.profile)
-	win.RestorePosition(self.bargroup)
-
+	for i, win in ipairs(windows) do
+		libwindow.RegisterConfig(win.bargroup, win.db)
+		libwindow.RestorePosition(win.bargroup)
+	end
+	
 	-- Minimap button.
 	if not icon:IsRegistered("Skada") then
 		icon:Register("Skada", dataobj, self.db.profile.icon)
@@ -698,132 +912,119 @@ function Skada:ReloadSettings()
 	self:ApplySettings()
 end
 
-local function getNumberOfBars()
-	local bars = Skada.bargroup:GetBars()
-	local n = 0
-	for i, bar in pairs(bars) do n = n + 1 end
-	return n
-end
-
-local function OnMouseWheel(frame, direction)
-	if direction == 1 and Skada.bargroup:GetBarOffset() > 0 then
-		Skada.bargroup:SetBarOffset(Skada.bargroup:GetBarOffset() - 1)
-	elseif direction == -1 and ((getNumberOfBars() - Skada.bargroup:GetMaxBars() - Skada.bargroup:GetBarOffset()) > 0) then
-		Skada.bargroup:SetBarOffset(Skada.bargroup:GetBarOffset() + 1)
-	end
-end
-
 local titlebackdrop = {}
 local windowbackdrop = {}
 
 -- Applies settings to things like the bar window.
 function Skada:ApplySettings()
-	local g = self.bargroup
-	local p = self.db.profile
-	g:ReverseGrowth(p.reversegrowth)
-	g:SetOrientation(p.barorientation)
-	g:SetHeight(p.barheight)
-	g:SetWidth(p.barwidth)
-	g:SetTexture(media:Fetch('statusbar', p.bartexture))
-	g:SetFont(media:Fetch('font', p.barfont), p.barfontsize)
-	g:SetSpacing(p.barspacing)
-	g:UnsetAllColors()
-	g:SetColorAt(0,p.barcolor.r,p.barcolor.g,p.barcolor.b, p.barcolor.a)
-	g:SetMaxBars(p.barmax)
-	if p.barslocked then
-		g:Lock()
-	else
-		g:Unlock()
-	end
-	g:SortBars()
-
-	-- Header
-	local inset = p.title.margin
-	titlebackdrop.bgFile = media:Fetch("statusbar", p.title.texture)
-	if p.title.borderthickness > 0 then
-		titlebackdrop.edgeFile = media:Fetch("border", p.title.bordertexture)
-	else
-		titlebackdrop.edgeFile = nil
-	end
-	titlebackdrop.tile = false
-	titlebackdrop.tileSize = 0
-	titlebackdrop.edgeSize = p.title.borderthickness
-	titlebackdrop.insets = {left = inset, right = inset, top = inset, bottom = inset}
-	g.button:SetBackdrop(titlebackdrop)
-	local color = p.title.color
-	g.button:SetBackdropColor(color.r, color.g, color.b, color.a or 1)
-	
-	if p.window.enabletitle then
-		g:ShowAnchor()
-	else
-		g:HideAnchor()
-	end
-	
-	-- Window
-	if p.window.enablebackground then
-		if g.bgframe == nil then
-			g.bgframe = CreateFrame("Frame", nil, self.bargroup)
-			g.bgframe:SetFrameStrata("BACKGROUND")
-			g.bgframe:EnableMouse()
-			g.bgframe:EnableMouseWheel()
-			g.bgframe:SetScript("OnMouseDown", function(frame, btn) if btn == "RightButton" then Skada:RightClick() end end)
-			g.bgframe:SetScript("OnMouseWheel", OnMouseWheel)
-		end
-
-		local inset = p.window.margin
-		windowbackdrop.bgFile = media:Fetch("statusbar", p.window.texture)
-		if p.window.borderthickness > 0 then
-			windowbackdrop.edgeFile = media:Fetch("border", p.window.bordertexture)
+	for i, win in ipairs(windows) do
+		local g = win.bargroup
+		local p = win.db
+		g:ReverseGrowth(p.reversegrowth)
+		g:SetOrientation(p.barorientation)
+		g:SetHeight(p.barheight)
+		g:SetWidth(p.barwidth)
+		g:SetTexture(media:Fetch('statusbar', p.bartexture))
+		g:SetFont(media:Fetch('font', p.barfont), p.barfontsize)
+		g:SetSpacing(p.barspacing)
+		g:UnsetAllColors()
+		g:SetColorAt(0,p.barcolor.r,p.barcolor.g,p.barcolor.b, p.barcolor.a)
+		g:SetMaxBars(p.barmax)
+		if p.barslocked then
+			g:Lock()
 		else
-			windowbackdrop.edgeFile = nil
+			g:Unlock()
 		end
-		windowbackdrop.tile = false
-		windowbackdrop.tileSize = 0
-		windowbackdrop.edgeSize = p.window.borderthickness
-		windowbackdrop.insets = {left = inset, right = inset, top = inset, bottom = inset}
-		g.bgframe:SetBackdrop(windowbackdrop)
-		local color = p.window.color
-		g.bgframe:SetBackdropColor(color.r, color.g, color.b, color.a or 1)
-		g.bgframe:SetWidth(g:GetWidth() + (p.window.borderthickness * 2))
-		g.bgframe:SetHeight(p.window.height)
-
-		g.bgframe:ClearAllPoints()
-		if p.reversegrowth then
-			g.bgframe:SetPoint("LEFT", g.button, "LEFT", -p.window.borderthickness, 0)
-			g.bgframe:SetPoint("RIGHT", g.button, "RIGHT", p.window.borderthickness, 0)
-			g.bgframe:SetPoint("BOTTOM", g.button, "TOP", 0, 0)
+		g:SortBars()
+	
+		-- Header
+		local inset = p.title.margin
+		titlebackdrop.bgFile = media:Fetch("statusbar", p.title.texture)
+		if p.title.borderthickness > 0 then
+			titlebackdrop.edgeFile = media:Fetch("border", p.title.bordertexture)
 		else
-			g.bgframe:SetPoint("LEFT", g.button, "LEFT", -p.window.borderthickness, 0)
-			g.bgframe:SetPoint("RIGHT", g.button, "RIGHT", p.window.borderthickness, 0)
-			g.bgframe:SetPoint("TOP", g.button, "BOTTOM", 0, 0)
+			titlebackdrop.edgeFile = nil
 		end
-		g.bgframe:Show()
+		titlebackdrop.tile = false
+		titlebackdrop.tileSize = 0
+		titlebackdrop.edgeSize = p.title.borderthickness
+		titlebackdrop.insets = {left = inset, right = inset, top = inset, bottom = inset}
+		g.button:SetBackdrop(titlebackdrop)
+		local color = p.title.color
+		g.button:SetBackdropColor(color.r, color.g, color.b, color.a or 1)
 		
-		-- Calculate max number of bars to show if our height is not dynamic.
-		if p.window.height > 0 then
-			local maxbars = math.floor(p.window.height / math.max(1, p.barheight + p.barspacing))
-			g:SetMaxBars(maxbars)
+		if p.enabletitle then
+			g:ShowAnchor()
 		else
-			-- Adjust background height according to current bars.
-			self:AdjustBackgroundHeight()
+			g:HideAnchor()
 		end
 		
-	elseif g.bgframe then
-		g.bgframe:Hide()
-	end
+		-- Window
+		if p.enablebackground then
+			if g.bgframe == nil then
+				g.bgframe = CreateFrame("Frame", nil, g)
+				g.bgframe:SetFrameStrata("BACKGROUND")
+				g.bgframe:EnableMouse()
+				g.bgframe:EnableMouseWheel()
+				g.bgframe:SetScript("OnMouseDown", function(frame, btn) if btn == "RightButton" then win:RightClick() end end)
+				g.bgframe:SetScript("OnMouseWheel", win.OnMouseWheel)
+			end
 	
-	if self.db.profile.window.shown then
-		-- Don't show window if we are solo and we have enabled the "Hide when solo" option.
-		if not (self.db.profile.hidesolo and GetNumRaidMembers() == 0 and GetNumPartyMembers() == 0) then
-			self.bargroup:Show()
-		else
-			self.bargroup:Hide()
+			local inset = p.window.margin
+			windowbackdrop.bgFile = media:Fetch("statusbar", p.window.texture)
+			if p.window.borderthickness > 0 then
+				windowbackdrop.edgeFile = media:Fetch("border", p.window.bordertexture)
+			else
+				windowbackdrop.edgeFile = nil
+			end
+			windowbackdrop.tile = false
+			windowbackdrop.tileSize = 0
+			windowbackdrop.edgeSize = p.window.borderthickness
+			windowbackdrop.insets = {left = inset, right = inset, top = inset, bottom = inset}
+			g.bgframe:SetBackdrop(windowbackdrop)
+			local color = p.window.color
+			g.bgframe:SetBackdropColor(color.r, color.g, color.b, color.a or 1)
+			g.bgframe:SetWidth(g:GetWidth() + (p.window.borderthickness * 2))
+			g.bgframe:SetHeight(p.window.height)
+	
+			g.bgframe:ClearAllPoints()
+			if p.reversegrowth then
+				g.bgframe:SetPoint("LEFT", g.button, "LEFT", -p.window.borderthickness, 0)
+				g.bgframe:SetPoint("RIGHT", g.button, "RIGHT", p.window.borderthickness, 0)
+				g.bgframe:SetPoint("BOTTOM", g.button, "TOP", 0, 0)
+			else
+				g.bgframe:SetPoint("LEFT", g.button, "LEFT", -p.window.borderthickness, 0)
+				g.bgframe:SetPoint("RIGHT", g.button, "RIGHT", p.window.borderthickness, 0)
+				g.bgframe:SetPoint("TOP", g.button, "BOTTOM", 0, 0)
+			end
+			g.bgframe:Show()
+			
+			-- Calculate max number of bars to show if our height is not dynamic.
+			if p.window.height > 0 then
+				local maxbars = math.floor(p.window.height / math.max(1, p.barheight + p.barspacing))
+				g:SetMaxBars(maxbars)
+			else
+				-- Adjust background height according to current bars.
+				self:AdjustBackgroundHeight()
+			end
+			
+		elseif g.bgframe then
+			g.bgframe:Hide()
 		end
-	else
-		self.bargroup:Hide()
+		
+		if p.shown then
+			-- Don't show window if we are solo and we have enabled the "Hide when solo" option.
+			if not (p.hidesolo and GetNumRaidMembers() == 0 and GetNumPartyMembers() == 0) then
+				win:Show()
+			else
+				win:Hide()
+			end
+		else
+			win:Hide()
+		end
+	
+		win:SortBars()
 	end
-
-	g:SortBars()
 	
 	changed = true
 	self:UpdateBars()
@@ -919,22 +1120,24 @@ function Skada:Tick()
 			end
 		end
 		
-		self:RemoveAllBars()
-		changed = true
-		self:UpdateBars()
+		for i, win in ipairs(windows) do
+			win:RemoveAllBars()
+			changed = true
 		
-		-- Auto-switch back to previous set/mode.
-		if self.db.profile.returnaftercombat and restore_mode and restore_set then
-			if restore_set ~= selectedset or restore_mode ~= selectedmode then
---				self:Print("Switching back to "..restore_mode.." mode.")
-				
-				self:RestoreView(restore_set, restore_mode)
-				
-				restore_mode = nil
-				restore_set = nil
+			-- Auto-switch back to previous set/mode.
+			if win.db.returnaftercombat and win.restore_mode and win.restore_set then
+				if win.restore_set ~= selectedset or win.restore_mode ~= selectedmode then
+					
+					win:RestoreView(win.restore_set, win.restore_mode)
+					
+					win.restore_mode = nil
+					win.restore_set = nil
+				end
 			end
 		end
-		
+
+		self:UpdateBars()
+
 	end
 end
 
@@ -989,14 +1192,14 @@ end
 -- Attempts to restore a view (set and mode).
 -- Set is either the set name ("total", "current"), or an index.
 -- Mode is the name of a mode.
-function Skada:RestoreView(theset, themode)
+function Skada:RestoreView(win, theset, themode)
 	-- Set the... set. If no such set exists, set to current.
 	if theset and type(theset) == "string" and (theset == "current" or theset == "total") then
-		selectedset = theset
+		win.selectedset = theset
 	elseif theset and type(theset) == "number" and theset <= table.maxn(sets) then
-		selectedset = theset
+		win.selectedset = theset
 	else
-		selectedset = "current"
+		win.selectedset = "current"
 	end
 	
 	-- Force an update.
@@ -1014,10 +1217,9 @@ function Skada:RestoreView(theset, themode)
 		-- If the mode exists, switch to this mode.
 		-- If not, show modes.
 		if mymode then
---			self:Print("Switching to "..mymode.name.." mode.")
-			self:DisplayMode(mymode)
+			self:DisplayMode(win, mymode)
 		else
-			self:DisplayModes(selectedset)
+			self:DisplayModes(win, selectedset)
 		end
 	end
 end
@@ -1187,7 +1389,12 @@ function dataobj:OnEnter()
     GameTooltip:SetPoint("TOPLEFT", self, "BOTTOMLEFT")
     GameTooltip:ClearLines()
     
-    local set = Skada:get_selected_set()
+    local set
+    if Skada.current then
+    	set = Skada.current
+    else
+    	set = sets[1]
+    end
     if set then
 	    GameTooltip:AddLine(L["Skada summary"], 0, 1, 0)
 	    for i, mode in ipairs(modes) do
@@ -1233,78 +1440,79 @@ function Skada:UpdateBars()
 		return
 	end
 
-	if selectedmode then
-
-		local set = self:get_selected_set()
-		
-		-- If we have a set, go on.
-		if set then
-			-- Let mode handle the rest.
-			selectedmode:Update(set)
-		end
-		
-	elseif selectedset then
-		local set = self:get_selected_set()
-		
-		-- View available modes.
-		for i, mode in ipairs(modes) do
-			local bar = self.bargroup:GetBar(mode.name)
-			if not bar then
-				bar = self:CreateBar(mode.name, mode.name, 1, 1)
-				local c = self:GetDefaultBarColor()
-				bar:SetColorAt(0,c.r,c.g,c.b, c.a)
-				bar:EnableMouse(true)
-				bar:SetScript("OnMouseDown", function(bar, button) if button == "LeftButton" then Skada:DisplayMode(mode) elseif button == "RightButton" then Skada:RightClick() end end)
-			end
-			if set and mode.GetSetSummary ~= nil then
-				bar:SetTimerLabel(mode:GetSetSummary(set))
-			end
-
-		end
-		
-		self:SetSortFunction(function(a,b) return a.name < b.name end)
-		self:SortBars()
-	else
-		-- View available sets.
-		local bar = self:GetBar("total")
-		if not bar then
-			local bar = self:CreateBar("total", L["Total"], 1, 1)
-			local c = self:GetDefaultBarColor()
-			bar:SetColorAt(0,c.r,c.g,c.b, c.a)
-			bar:EnableMouse(true)
-			bar:SetScript("OnMouseDown", function(bar, button) if button == "LeftButton" then Skada:DisplayModes("total") elseif button == "RightButton" then Skada:RightClick() end end)
-		end
-
-		local bar = self:GetBar("current")
-		if not bar then
-			local bar = self:CreateBar("current", L["Current"], 1, 1)
-			local c = self:GetDefaultBarColor()
-			bar:SetColorAt(0,c.r,c.g,c.b, c.a)
-			bar:EnableMouse(true)
-			bar:SetScript("OnMouseDown", function(bar, button) if button == "LeftButton" then Skada:DisplayModes("current") elseif button == "RightButton" then Skada:RightClick() end end)
-		end
-
-		for i, set in ipairs(sets) do
-		
-			local bar = self:GetBar(tostring(set.starttime))
-			if not bar then
-				local bar = self:CreateBar(tostring(set.starttime), set.name, 1, 1)
-				bar:SetTimerLabel(date("%H:%M",set.starttime).." - "..date("%H:%M",set.endtime))
-				local c = self:GetDefaultBarColor()
-				bar:SetColorAt(0,c.r,c.g,c.b, c.a)
-				bar:EnableMouse(true)
-				if set.keep then
-					bar:SetFont(nil,nil,"OUTLINE")
-				end
-				bar:SetScript("OnMouseDown", function(bar, button) if button == "LeftButton" then Skada:DisplayModes(set.starttime) elseif button == "RightButton" then Skada:RightClick() end end)
+	for i, win in ipairs(windows) do
+		if win.selectedmode then
+	
+			local set = win:get_selected_set()
+			
+			-- If we have a set, go on.
+			if set then
+				-- Let mode handle the rest.
+				win.selectedmode:Update(win, set)
 			end
 			
-		end
-	end
+		elseif win.selectedset then
+			local set = win:get_selected_set()
+			
+			-- View available modes.
+			for i, mode in ipairs(modes) do
+				local bar = win:GetBar(mode.name)
+				if not bar then
+					bar = win:CreateBar(mode.name, mode.name, 1, 1)
+					local c = win:GetDefaultBarColor()
+					bar:SetColorAt(0,c.r,c.g,c.b, c.a)
+					bar:EnableMouse(true)
+					bar:SetScript("OnMouseDown", function(bar, button) if button == "LeftButton" then win:DisplayMode(mode) elseif button == "RightButton" then win:RightClick() end end)
+				end
+				if set and mode.GetSetSummary ~= nil then
+					bar:SetTimerLabel(mode:GetSetSummary(set))
+				end
+			end
+			
+			win:SetSortFunction(function(a,b) return a.name < b.name end)
+			win:SortBars()
+		else
+			-- View available sets.
+			local bar = self:GetBar("total")
+			if not bar then
+				local bar = win:CreateBar("total", L["Total"], 1, 1)
+				local c = win:GetDefaultBarColor()
+				bar:SetColorAt(0,c.r,c.g,c.b, c.a)
+				bar:EnableMouse(true)
+				bar:SetScript("OnMouseDown", function(bar, button) if button == "LeftButton" then win:DisplayModes("total") elseif button == "RightButton" then win:RightClick() end end)
+			end
 	
-	-- Adjust our background frame if background height is dynamic.
-	if self.bargroup.bgframe and self.db.profile.window.height == 0 then
-		self:AdjustBackgroundHeight()
+			local bar = win:GetBar("current")
+			if not bar then
+				local bar = win:CreateBar("current", L["Current"], 1, 1)
+				local c = win:GetDefaultBarColor()
+				bar:SetColorAt(0,c.r,c.g,c.b, c.a)
+				bar:EnableMouse(true)
+				bar:SetScript("OnMouseDown", function(bar, button) if button == "LeftButton" then win:DisplayModes("current") elseif button == "RightButton" then win:RightClick() end end)
+			end
+	
+			for i, set in ipairs(sets) do
+			
+				local bar = win:GetBar(tostring(set.starttime))
+				if not bar then
+					local bar = win:CreateBar(tostring(set.starttime), set.name, 1, 1)
+					bar:SetTimerLabel(date("%H:%M",set.starttime).." - "..date("%H:%M",set.endtime))
+					local c = win:GetDefaultBarColor()
+					bar:SetColorAt(0,c.r,c.g,c.b, c.a)
+					bar:EnableMouse(true)
+					if set.keep then
+						bar:SetFont(nil,nil,"OUTLINE")
+					end
+					bar:SetScript("OnMouseDown", function(bar, button) if button == "LeftButton" then win:DisplayModes(set.starttime) elseif button == "RightButton" then win:RightClick() end end)
+				end
+				
+			end
+		end
+		
+		-- Adjust our background frame if background height is dynamic.
+		if win.bargroup.bgframe and win.db.background.height == 0 then
+			self:AdjustBackgroundHeight()
+		end
 	end
 	
 	-- Mark as unchanged.
@@ -1313,11 +1521,11 @@ end
 
 function Skada:AdjustBackgroundHeight()
 	local numbars = 0
-	if self:GetBars() ~= nil then
-		for name, bar in pairs(self:GetBars()) do if bar:IsShown() then numbars = numbars + 1 end end
-		local height = numbars * (self.db.profile.barheight + self.db.profile.barspacing) + self.db.profile.window.borderthickness
-		if self.bargroup.bgframe:GetHeight() ~= height then
-			self.bargroup.bgframe:SetHeight(height)
+	if win:GetBars() ~= nil then
+		for name, bar in pairs(win:GetBars()) do if bar:IsShown() then numbars = numbars + 1 end end
+		local height = numbars * (win.db.barheight + win.db.barspacing) + win.db.background.borderthickness
+		if win.bargroup.bgframe:GetHeight() ~= height then
+			win.bargroup.bgframe:SetHeight(height)
 		end
 	end
 end
@@ -1325,91 +1533,6 @@ end
 function Skada:GetModes()
 	return modes
 end
-
--- Sets up the mode view.
-function Skada:DisplayMode(mode)
-	self:RemoveAllBars()
-
-	selectedplayer = nil
-	selectedspell = nil
-	selectedmode = mode
-
-	-- Save for posterity.
-	self.db.profile.mode = selectedmode.name
-
-	self.bargroup.button:SetText(mode.name)
-
-	changed = true
-	self:UpdateBars()
-end
-
--- Sets up the mode list.
-function Skada:DisplayModes(settime)
-	self:RemoveAllBars()
-
-	selectedplayer = nil
-	selectedspell = nil
-	selectedmode = nil
-
-	self.bargroup.button:SetText(L["Skada: Modes"])
-
-	-- Save for posterity.
-	self.db.profile.set = settime
-
-	-- Find the selected set
-	if settime == "current" or settime == "total" then
-		selectedset = settime
-	else
-	
-		for i, set in ipairs(sets) do
-			if set.starttime == settime then
-				if set.name == L["Current"] then
-					selectedset = "current"
-				elseif set.name == L["Total"] then
-					selectedset = "total"
-				else
-					selectedset = i
-				end
-			end
-		end
-		
-	end
-
-	changed = true
-	self:UpdateBars()
-end
-
--- Sets up the set list.
-function Skada:DisplaySets()
-	self:RemoveAllBars()
-	
-	selectedspell = nil
-	selectedplayer = nil
-	selectedmode = nil
-	selectedset = nil
-
-	self.bargroup.button:SetText(L["Skada: Fights"])
-	
-	changed = true
-	self:UpdateBars()
-end
-
-function Skada:RightClick(group, button)
---	self:Print("rightclick!")
-	-- Step up one level.
-	-- Levels are:
-	-- 1. Sets
-	-- 2. Type
-	-- 3. A mode
-	if selectedmode then
-		self:DisplayModes(selectedset)
-	elseif selectedset then
-		self:DisplaySets()
-	else
-		-- Top level. Do nothing.
-	end
-end
-
 
 --[[
 
@@ -1450,8 +1573,10 @@ function Skada:AddMode(mode)
 	
 	-- Set this mode as the active mode if it matches the saved one.
 	-- Bit of a hack.
-	if mode.name == self.db.profile.mode then
-		self:RestoreView(self.db.profile.set, mode.name)
+	for i, win in ipairs(windows) do
+		if mode.name == db.mode then
+			self:RestoreView(win, db.set, mode.name)
+		end
 	end
 
 	-- Find if we now have our chosen feed.
@@ -1470,8 +1595,10 @@ function Skada:AddMode(mode)
 	-- Remove all bars and start over to get ordering right.
 	-- Yes, this all sucks - the problem with this and the above is that I don't know when
 	-- all modules are loaded. :/
-	self:RemoveAllBars()
-	changed = true
+	for i, win in ipairs(windows) do
+		win:RemoveAllBars()
+		changed = true
+	end
 end
 
 -- Unregister a mode.
@@ -1499,109 +1626,9 @@ end
 
 --[[
 
-Bars
-
---]]
-
-function Skada:GetDefaultBarColorOne()
-	return self.db.profile.barcolor
-end
-
-function Skada:GetDefaultBarColorTwo()
-	return self.db.profile.baraltcolor
-end
-
-function Skada:GetDefaultBarColor()
-	usealt = not usealt
-	if usealt == true then
-		return self.db.profile.baraltcolor
-	else
-		return self.db.profile.barcolor
-	end
-end
-
-function Skada:GetBarGroup()
-	return self.bargroup
-end
-
-function Skada:SetSortFunction(func)
-	self.bargroup:SetSortFunction(func)
-end
-
-function Skada:SortBars()
-	self.bargroup:SortBars()
-end
-
-function Skada:GetBars()
-	return self.bargroup:GetBars()
-end
-
-function Skada:GetBar(name)
-	return self.bargroup:GetBar(name)
-end
-
-function Skada:RemoveBar(bar)
-	self.bargroup:RemoveBar(bar)
-end
-
-function Skada:CreateBar(name, label, value, maxvalue, icon, o)
-	local bar = self.bargroup:NewCounterBar(name, label, value, maxvalue, icon, o)
-	bar:EnableMouseWheel(true)
-	bar:SetScript("OnMouseWheel", OnMouseWheel)
-	return bar
-end
-
-function Skada:RemoveAllBars()
-	usealt = true
-	
-	-- Reset sort function.
-	self.bargroup:SetSortFunction(nil)
-	
-	-- Reset scroll offset.
-	self.bargroup:SetBarOffset(0)
-	
-	-- Remove the bars.
-	local bars = self.bargroup:GetBars()
-	if bars then
-		for i, bar in pairs(bars) do
-			bar:Hide()
-			self.bargroup:RemoveBar(bar)
-		end
-	end
-	
-	-- Clean up.
-	self.bargroup:SortBars()
-end
-
-
---[[
-
 Sets
 
 --]]
-
--- If selectedset is "current", returns current set if we are in combat, otherwise returns the last set.
-function Skada:get_selected_set()
-	if selectedset == "current" then
-		if self.current == nil then
-			return sets[1]
-		else
-			return self.current
-		end
-	elseif selectedset == "total" then
-		return self.total
-	else
-		return sets[selectedset]
-	end
-end
-
-function Skada:get_selected_player(set, playerid)
-	for i, player in ipairs(set.players) do
-		if player.id == playerid then
-			return player
-		end
-	end
-end
 
 -- Returns true if we are interested in the unit. Include pets.
 function Skada:UnitIsInteresting(name, id)

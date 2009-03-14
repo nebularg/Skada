@@ -30,7 +30,7 @@ local function sort_by_healing(a, b)
 	return a.healing > b.healing
 end
 
-function mod:Update(set)
+function mod:Update(win, set)
 	-- Calculate the highest total healing.
 	-- How to get rid of this iteration?
 	local maxvalue = 0
@@ -40,22 +40,22 @@ function mod:Update(set)
 		end
 	end
 	
-	local color = Skada:GetDefaultBarColorOne()
-	local altcolor = Skada:GetDefaultBarColorTwo()
+	local color = win:GetDefaultBarColorOne()
+	local altcolor = win:GetDefaultBarColorTwo()
 
 	-- For each player in the set, see if we have a bar already.
 	-- If so, update values, else create bar.
 	for i, player in ipairs(set.players) do
 		if player.healing > 0 or player.overhealing > 0 then
 			local mypercent = (player.healing + player.overhealing) / maxvalue
-			local bar = Skada:GetBar(tostring(player.id))
+			local bar = win:GetBar(tostring(player.id))
 			if bar then
 				bar:SetMaxValue(maxvalue)
 				bar:SetValue(player.healing)
 				bar.bgtexture:SetWidth(mypercent * bar:GetLength())
 				bar.healing = player.healing + player.overhealing
 			else
-				bar = Skada:CreateBar(tostring(player.id), player.name, player.healing, maxvalue, nil, false)
+				bar = win:CreateBar(tostring(player.id), player.name, player.healing, maxvalue, nil, false)
 				bar:EnableMouse()
 				bar:SetScript("OnMouseDown", function(bar, button) if button == "RightButton" then Skada:RightClick() end end)
 	--			Skada:Print("created "..player.name.." at "..tostring(player.overhealing))
@@ -71,9 +71,9 @@ function mod:Update(set)
 		end
 	end
 	
-	Skada:SetSortFunction(sort_by_healing)
+	win:SetSortFunction(sort_by_healing)
 	
 	-- Sort the possibly changed bars.
-	Skada:SortBars()
+	win:SortBars()
 end
 

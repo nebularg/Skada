@@ -34,14 +34,8 @@ Skada.defaults = {
 		total = nil,
 		modules = {},	-- Place module config here if needed.
 
-	}
-}
-
-
---[[
 		windows = {
 				{
-					-- Default window.
 					name = "Default",
 					
 					barmax=10,
@@ -55,28 +49,26 @@ Skada.defaults = {
 					barcolor = {r = 0.3, g = 0.3, b = 0.8, a=1},
 					baraltcolor = {r = 0.45, g = 0.45, b = 0.8, a = 1},
 					barslocked=false,
+
 					title = {margin=0, texture="Round", bordertexture="None", borderthickness=2, color = {r=0,g=0,b=0,a=0.6}},
+					background = {margin=0, height=150, texture="None", bordertexture="None", borderthickness=0, color = {r=0,g=0,b=0.5,a=0.5}},
+
 					reversegrowth=false,
 					modeincombat="",
+					returnaftercombat=false,
 					
+					hidesolo=false,
+
 					shown = true,
 					enabletitle = true, 
 					enablebackground = false,
-					background = {
-						margin=0,
-						height=150,
-						texture="None",
-						bordertexture="None",
-						borderthickness=0,
-						color = {r=0,g=0,b=0.5,a=0.5}},
-					},
 					
 					set = "current",
 					mode = nil,
 				},
 			},
-		}
---]]
+	}
+}
 
 Skada.options = {
 	        type="group",
