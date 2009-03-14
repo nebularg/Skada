@@ -56,7 +56,7 @@ end
 local dmg = {}
 
 local function SpellDamageTaken(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
-	if srcGUID ~= dstGUID then
+	if srcName and dstName and srcGUID ~= dstGUID then
 		dmg.dstName = dstName
 		dmg.srcName = srcName
 		dmg.amount = select(4, ...)
@@ -67,7 +67,7 @@ local function SpellDamageTaken(timestamp, eventtype, srcGUID, srcName, srcFlags
 end
 
 local function SpellDamageDone(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
-	if srcGUID ~= dstGUID then
+	if srcName and dstName and srcGUID ~= dstGUID then
 		dmg.dstName = dstName
 		dmg.srcName = srcName
 		dmg.amount = select(4, ...)
@@ -77,7 +77,7 @@ local function SpellDamageDone(timestamp, eventtype, srcGUID, srcName, srcFlags,
 end
 
 local function SwingDamageTaken(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
-	if srcGUID ~= dstGUID then
+	if srcName and dstName and srcGUID ~= dstGUID then
 		dmg.dstName = dstName
 		dmg.srcName = srcName
 		dmg.amount = select(1,...)
@@ -88,7 +88,7 @@ local function SwingDamageTaken(timestamp, eventtype, srcGUID, srcName, srcFlags
 end
 
 local function SwingDamageDone(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
-	if srcGUID ~= dstGUID then
+	if srcName and dstName and srcGUID ~= dstGUID then
 		dmg.dstName = dstName
 		dmg.srcName = srcName
 		dmg.amount = select(1,...)
