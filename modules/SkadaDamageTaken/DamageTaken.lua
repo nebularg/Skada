@@ -105,7 +105,7 @@ end
 function playermod:Update(win, set)
 	-- View spells for this player.
 		
-	local player = Skada:get_selected_player(set, self.playerid)
+	local player = Skada:find_player(set, self.playerid)
 	
 	if player then
 		for spellname, spell in pairs(player.damagetakenspells) do
@@ -117,7 +117,7 @@ function playermod:Update(win, set)
 			else
 				local icon = select(3, GetSpellInfo(spell.id))
 				bar = win:CreateBar(tostring(spellname), spell.name, spell.damage, player.damagetaken, icon, false)
-				local color = Skada:GetDefaultBarColor()
+				local color = win:GetDefaultBarColor()
 				bar:SetColorAt(0, color.r, color.g, color.b, color.a)
 				bar:ShowTimerLabel()
 				bar:EnableMouse(true)

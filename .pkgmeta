@@ -26,4 +26,5 @@ move-folders:
     Skada/modules/SkadaFailbot: SkadaFailbot
     Skada/modules/SkadaDamageTaken: SkadaDamageTaken
     Skada/modules/SkadaDispels: SkadaDispels
+    Skada/modules/SkadaEnemies: SkadaEnemies
 
