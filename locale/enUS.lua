@@ -171,6 +171,9 @@ L["Enter the name for the new window."] = "Enter the name for the new window."
 L["Create window"] = "Create window"
 L["Windows"] = "Windows"
 
+L["Switch to segment"] = "Switch to segment"
+L["Segment"] = "Segment"
+
 -- SkadaDebuffs
 L["Debuff uptimes"] = true
 L["'s Debuffs"] = true

@@ -337,7 +337,15 @@ function Skada:CreateWindow(name, db)
 	local window = Window:new()
 	window.db = db
 	window.db.name = name
-	window.bargroup = self:NewBarGroup(name, nil, window.db.barwidth, window.db.barheight, "SkadaBarWindow"..name)
+	
+	-- Re-use bargroup if it exists.
+	window.bargroup = self:GetBarGroup(name)
+	if window.bargroup then
+		-- Clear callbacks.
+		window.bargroup.callbacks = LibStub:GetLibrary("CallbackHandler-1.0"):New(window.bargroup)
+	else
+		window.bargroup = self:NewBarGroup(name, nil, window.db.barwidth, window.db.barheight, "SkadaBarWindow"..name)
+	end
 	window.bargroup.RegisterCallback(window, "AnchorMoved")
 	window.bargroup.RegisterCallback(window, "AnchorClicked")
 	window.bargroup:EnableMouse(true)
@@ -720,13 +728,17 @@ function Skada:DeleteSet(set)
 	self:UpdateBars()
 end
 
-function Skada:OpenMenu()
+function Skada:OpenMenu(win)
 
 	local report_channel = "Say"
 	local report_number = 10
 	local report_mode = nil
-	if selectedmode then
-		report_mode = selectedmode
+	local tempwin = nil
+	if win and win.selectedset then
+		report_set = win.selectedset
+	end
+	if win and win.selectedmode then
+		report_mode = win.selectedmode
 	end
 
 	if not self.skadamenu then
@@ -746,10 +758,19 @@ function Skada:OpenMenu()
 	        info.notCheckable = 1
 	        UIDropDownMenu_AddButton(info, level)
 	        
+			for i, win in ipairs(windows) do
+		        wipe(info)
+		        info.text = win.db.name
+		        info.hasArrow = 1
+		        info.value = "win"
+		        info.func = function() tempwin = win end
+		        info.notCheckable = 1
+		        UIDropDownMenu_AddButton(info, level)
+			end
+
+	        -- Add a blank separator
 	        wipe(info)
-	        info.text = L["Switch to mode"]
-	        info.hasArrow = 1
-	        info.value = "show"
+	        info.disabled = 1
 	        info.notCheckable = 1
 	        UIDropDownMenu_AddButton(info, level)
 
@@ -802,14 +823,22 @@ function Skada:OpenMenu()
 	        info.notCheckable = 1
 	        UIDropDownMenu_AddButton(info, level)
 	    elseif level == 2 then
-		    if UIDROPDOWNMENU_MENU_VALUE == "show" then
-		        for i, module in ipairs(Skada:GetModes()) do
-			        wipe(info)
-		            info.text = module.name
-		            info.func = function() Skada:DisplayMode(module) end
-			        info.notCheckable = 1
-		            UIDropDownMenu_AddButton(info, level)
-		        end
+	    	if UIDROPDOWNMENU_MENU_VALUE == "win" then
+	    	
+		        wipe(info)
+		        info.text = L["Switch to mode"]
+		        info.hasArrow = 1
+		        info.value = "switchmode"
+		        info.notCheckable = 1
+		        UIDropDownMenu_AddButton(info, level)
+
+		        wipe(info)
+		        info.text = L["Switch to segment"]
+		        info.hasArrow = 1
+		        info.value = "switchset"
+		        info.notCheckable = 1
+		        UIDropDownMenu_AddButton(info, level)
+	    	
 		    elseif UIDROPDOWNMENU_MENU_VALUE == "delete" then
 		        for i, set in ipairs(sets) do
 			        wipe(info)
@@ -838,6 +867,13 @@ function Skada:OpenMenu()
 		        info.value = "modes"
 		        info.notCheckable = 1
 		        UIDropDownMenu_AddButton(info, level)
+
+		        wipe(info)
+		        info.text = L["Segment"]
+		        info.hasArrow = 1
+		        info.value = "sets"
+		        info.notCheckable = 1
+		        UIDropDownMenu_AddButton(info, level)
 		        
 		        wipe(info)
 		        info.text = L["Lines"]
@@ -858,18 +894,28 @@ function Skada:OpenMenu()
 		        info.func = function()
 		        				if report_mode ~= nil then
 		        					-- Reporting is done on current bars... so we have to switch to the selected mode.
-		        					local old_mode = selectedmode
-			        				Skada:DisplayMode(report_mode)
-			        				Skada:UpdateBars()
-			        				if report_channel == "Self" then
-										Skada:Report(report_channel, "self", report_number)
-									else
-										Skada:Report(report_channel, "preset", report_number)
-									end
-									-- Switch back to previous mode. Can you say "ugly"?
-									if old_mode then
-										Skada:DisplayMode(old_mode)
+		        					-- To make it worse, with our new multiple window paradigm, we have to hijack
+		        					-- a random window!
+		        					-- This is utter madness. Work something out that does not suck at some point.
+		        					-- Ideally we want modes to be display system agnostic, so that we can simply
+		        					-- ask the chosen mode to print its contents as strings instead of bars.
+	        						local window = win or windows[1]
+		        					if window then
+			        					local old_mode = win.selectedmode
+				        				win:DisplayMode(report_mode)
 				        				Skada:UpdateBars()
+				        				if report_channel == "Self" then
+											Skada:Report(report_channel, "self", report_mode, report_set, report_number)
+										else
+											Skada:Report(report_channel, "preset", report_mode, report_set, report_number)
+										end
+										-- Switch back to previous mode. Can you say "ugly"?
+										if old_mode then
+											Skada:DisplayMode(old_mode)
+					        				Skada:UpdateBars()
+										end
+									else
+										self:Print("Reporting requires a window to be present.")
 									end
 								else
 									self:Print(L["No mode selected for report."])
@@ -879,13 +925,78 @@ function Skada:OpenMenu()
 		        UIDropDownMenu_AddButton(info, level)
 		    end
 		elseif level == 3 then
-		    if UIDROPDOWNMENU_MENU_VALUE == "modes" then
+		    if UIDROPDOWNMENU_MENU_VALUE == "switchmode" then
+		        for i, module in ipairs(Skada:GetModes()) do
+			        wipe(info)
+		            info.text = module.name
+		            info.func = function() tempwin:DisplayMode(module) end
+			        info.notCheckable = 1
+		            UIDropDownMenu_AddButton(info, level)
+		        end
+		    elseif UIDROPDOWNMENU_MENU_VALUE == "switchset" then
+		        wipe(info)
+	            info.text = L["Total"]
+	            info.func = function()
+	            				tempwin.selectedset = "total"
+	            				Skada:RemoveAllBars()
+	            				changed = true
+	            				Skada:UpdateBars()
+	            			end
+	            info.notCheckable = 1
+	            UIDropDownMenu_AddButton(info, level)
+
+		        wipe(info)
+	            info.text = L["Current"]
+	            info.func = function()
+	            				tempwin.selectedset = "current"
+	            				Skada:RemoveAllBars()
+	            				changed = true
+	            				Skada:UpdateBars()
+	            			end
+	            info.notCheckable = 1
+	            UIDropDownMenu_AddButton(info, level)
+		        for i, set in ipairs(sets) do
+			        wipe(info)
+		            info.text = set.name..": "..date("%H:%M",set.starttime).." - "..date("%H:%M",set.endtime)
+		            info.func = function() 
+		            				tempwin.selectedset = i
+		            				Skada:RemoveAllBars()
+		            				changed = true
+		            				Skada:UpdateBars()
+		            			end
+		            info.notCheckable = 1
+		            UIDropDownMenu_AddButton(info, level)
+		        end
+	        elseif UIDROPDOWNMENU_MENU_VALUE == "modes" then
 
 		        for i, module in ipairs(Skada:GetModes()) do
 			        wipe(info)
 		            info.text = module.name
+					info.keepShownOnClick = 1
 		            info.checked = (report_mode == module)
 		            info.func = function() report_mode = module end
+		            UIDropDownMenu_AddButton(info, level)
+		        end
+		    elseif UIDROPDOWNMENU_MENU_VALUE == "sets" then
+		        wipe(info)
+	            info.text = L["Total"]
+	            info.func = function() report_set = "total" end
+	            info.checked = (report_set == "total")
+				info.keepShownOnClick = 1
+	            UIDropDownMenu_AddButton(info, level)
+	            
+		        wipe(info)
+	            info.text = L["Current"]
+	            info.func = function() report_set = "current" end
+	            info.checked = (report_set == "current")
+				info.keepShownOnClick = 1
+	            UIDropDownMenu_AddButton(info, level)
+		        for i, set in ipairs(sets) do
+			        wipe(info)
+		            info.text = set.name..": "..date("%H:%M",set.starttime).." - "..date("%H:%M",set.endtime)
+		            info.func = function() report_set = i end
+		            info.checked = (report_set == i)
+					info.keepShownOnClick = 1
 		            UIDropDownMenu_AddButton(info, level)
 		        end
 		    elseif UIDROPDOWNMENU_MENU_VALUE == "number" then
@@ -1349,7 +1460,7 @@ end
 
 -- The basic idea for CL processing:
 -- Modules register for interest in a certain event, along with the function to call and the flags determining if the particular event is interesting.
--- On a new event, loop through the interested interested parties.
+-- On a new event, loop through the interested parties.
 -- The flags are checked, and the flag value (say, that the SRC must be interesting, ie, one of the raid) is only checked once, regardless
 -- of how many modules are interested in the event. The check is also only done on the first flag that requires it.
 -- The exception is src_is_interesting, which we always check to determine combat start - I would like to get rid of this, but am not sure how.
