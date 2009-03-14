@@ -144,10 +144,10 @@ end
 local threattable = {}
 local last_warn = time()
 
-function mod:Update(set)
+function mod:Update(win, set)
 	if not UnitExists("target") then
 		-- We have no target - wipe all threat bars.
-		Skada:RemoveAllBars()
+		win:RemoveAllBars()
 		return
 	end
 	
@@ -199,7 +199,7 @@ function mod:Update(set)
 	end
 
 	-- For each bar, mark bar as unchecked.
-	local bars = Skada:GetBars()
+	local bars = win:GetBars()
 	if bars then
 		for name, bar in pairs(bars) do
 			bar.checked = false
@@ -216,7 +216,7 @@ function mod:Update(set)
 	-- For each player in threat table, create or update bars.
 	for i, player in ipairs(threattable) do
 		if player.threat > 0 then
-			local bar = Skada:GetBar(player.name)
+			local bar = win:GetBar(player.name)
 			
 			if player.name == UnitName("player") then
 				if Skada.db.profile.modules.threattreshold and Skada.db.profile.modules.threattreshold < player.threat then
@@ -228,10 +228,10 @@ function mod:Update(set)
 				bar:SetMaxValue(maxthreat)
 				bar:SetValue(player.threat)
 			else
-				bar = Skada:CreateBar(player.name, player.name, player.threat, maxthreat, nil, false)
+				bar = win:CreateBar(player.name, player.name, player.threat, maxthreat, nil, false)
 				bar:EnableMouse()
-				bar:SetScript("OnMouseDown", function(bar, button) if button == "RightButton" then Skada:RightClick() end end)
-				local color = Skada.classcolors[player.class] or Skada:GetDefaultBarColor()
+				bar:SetScript("OnMouseDown", function(bar, button) if button == "RightButton" then win:RightClick() end end)
+				local color = Skada.classcolors[player.class] or win:GetDefaultBarColor()
 				bar:SetColorAt(0, color.r, color.g, color.b, color.a or 1)
 			end
 			bar:SetTimerLabel(format_threatvalue(player.value)..(", %02.1f%%"):format(player.threat / maxthreat * 100).."%")
@@ -258,13 +258,13 @@ function mod:Update(set)
 	if bars then
 		for name, bar in pairs(bars) do
 			if not bar.checked then
-				Skada:RemoveBar(bar)
+				win:RemoveBar(bar)
 			end
 		end	
 	end
 	
 	-- Sort the possibly changed bars.
-	Skada:SortBars()
+	win:SortBars()
 end
 
 -- Shamelessly copied from Omen - thanks!
