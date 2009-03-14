@@ -1443,7 +1443,7 @@ function Skada:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID,
 	if eventtype == 'SPELL_SUMMON' then
 		if src_is_interesting_nopets == nil then
 			src_is_interesting_nopets = self:UnitIsInterestingNoPets(srcName, srcGUID)
-			if src_is_interesting_nopets(srcName, srcGUID) then
+			if src_is_interesting_nopets then
 				pets[dstGUID] = {id = srcGUID, name = srcName}
 			end
 		end
