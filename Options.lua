@@ -25,8 +25,6 @@ Skada.windowdefaults = {
 	modeincombat="",
 	returnaftercombat=false,
 	
-	hidesolo=false,
-
 	shown = true,
 	enabletitle = true, 
 	enablebackground = false,
@@ -45,6 +43,7 @@ Skada.defaults = {
 		numberformat=1,
 		setstokeep = 10,
 		onlykeepbosses=false,
+		hidesolo=false,
 		feed = "",
 		sets = {},
 		total = nil,

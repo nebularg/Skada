@@ -85,12 +85,10 @@ function Window:AnchorMoved(cbk, group, x, y)
 end
 				
 function Window:Show()
-	self.db.shown = true
 	self.bargroup:Show()
 end
 
 function Window:Hide()
-	self.db.shown = false
 	self.bargroup:Hide()
 end
 					
@@ -442,12 +440,21 @@ local function sendchat(msg, chan, chantype)
 	end
 end
 
--- Sends a report of the currently active set and mode to chat. 
-function Skada:Report(chan, chantype, max)
-	local set = self:get_selected_set()
-	local mode = selectedmode
-	
-	if set and mode then
+-- Reporting is done on current bars... so we have to switch to the selected mode.
+-- To make it worse, with our new multiple window setup, we have to hijack
+-- a random window!
+-- Ideally we want modes to be display system agnostic, so that we can simply
+-- ask the chosen mode to print its contents as a table instead of bars. But for now...
+function Skada:Report(channel, report_mode, report_set, max)
+
+	local window = win or windows[1]
+	if window then
+		local old_mode = win.selectedmode
+		local old_set = win.selectedset
+		
+		win:DisplayModes(report_set)
+		win:DisplayMode(report_mode)
+		
 		local bars = self:GetBars()
 		local list = {}
 		
@@ -458,7 +465,8 @@ function Skada:Report(chan, chantype, max)
 	
 		-- Title
 		local endtime = set.endtime or time()
-		sendchat(string.format(L["Skada report on %s for %s, %s to %s:"], selectedmode.name, set.name, date("%X",set.starttime), date("%X",endtime)), chan, chantype)
+		local set = win:get_selected_set()
+		sendchat(string.format(L["Skada report on %s for %s, %s to %s:"], win.selectedmode.name, set.name, date("%X",set.starttime), date("%X",endtime)), chan, chantype)
 		
 		-- For each active bar, print label and timer value.
 		for i, bar in ipairs(list) do
@@ -467,7 +475,20 @@ function Skada:Report(chan, chantype, max)
 				break
 			end
 		end
+		
+		-- Switch back to previous mode. Can you say "ugly"?
+		if old_set then
+			win:DisplayModes(old_set)
+			if old_mode then
+				win:DisplayMode(old_mode)
+			end
+		else
+			win:DisplaySets()
+		end
+	else
+		self:Print("Reporting requires a window to be present.")
 	end
+	
 end
 
 function Skada:RefreshMMButton()
@@ -614,8 +635,8 @@ local function check_for_join_and_leave()
 		end
 		
 		-- Hide window if we have enabled the "Hide when solo" option.
-		for i, win in ipairs(windows) do
-			if win.db.hidesolo then
+		if Skada.db.profile.hidesolo then
+			for i, win in ipairs(windows) do
 				win:Hide()
 			end
 		end
@@ -631,8 +652,8 @@ local function check_for_join_and_leave()
 		end
 
 		-- Show window if we have enabled the "Hide when solo" option.
-		for i, win in ipairs(windows) do
-			if win.db.hidesolo then
+		if Skada.db.profile.hidesolo then
+			for i, win in ipairs(windows) do
 				win:Show()
 				win:SortBars()
 			end
@@ -928,39 +949,61 @@ function Skada:OpenMenu(win)
 		            UIDropDownMenu_AddButton(info, level)
 		        end
 		    elseif UIDROPDOWNMENU_MENU_VALUE == "report" then
-
-	    		-- Display list of modes. Copy & paste ftw.
 		        wipe(info)
-		        info.isTitle = 1
 		        info.text = L["Mode"]
-		        UIDropDownMenu_AddButton(info, level)
-		        
-		        wipe(info)
-		        for i, module in ipairs(Skada:GetModes()) do
-		            info.text = module.name
-		            info.func = function() report_mode = module end
-		            info.checked = (report_mode == module)
-					info.keepShownOnClick = 1
-		            UIDropDownMenu_AddButton(info, level)
-		        end
-		        
-		        -- Separator
-		        wipe(info)
-		        info.disabled = 1
+		        info.hasArrow = 1
+		        info.value = "modes"
 		        info.notCheckable = 1
 		        UIDropDownMenu_AddButton(info, level)
-	        
-		        -- Display list of sets.
+
 		        wipe(info)
-		        info.isTitle = 1
+		        info.hasArrow = 1
+		        info.value = "segment"
+		        info.notCheckable = 1
 		        info.text = L["Segment"]
 		        UIDropDownMenu_AddButton(info, level)
 		        
 		        wipe(info)
+		        info.text = L["Channel"]
+		        info.hasArrow = 1
+		        info.value = "channel"
+		        info.notCheckable = 1
+		        UIDropDownMenu_AddButton(info, level)
+		        
+		        wipe(info)
+		        info.text = L["Lines"]
+		        info.hasArrow = 1
+		        info.value = "number"
+		        info.notCheckable = 1
+		        UIDropDownMenu_AddButton(info, level)
+		        
+		        wipe(info)
+		        info.text = L["Send report"]
+		        info.func = function()
+		        				if report_mode ~= nil and report_set ~= nil then
+									Skada:Report(report_channel, report_mode, report_set, report_number)
+								else
+									self:Print(L["No mode or segment selected for report."])
+								end
+		        			end
+		        info.notCheckable = 1
+		        UIDropDownMenu_AddButton(info, level)
+		    end
+		elseif level == 3 then
+		    if UIDROPDOWNMENU_MENU_VALUE == "modes" then
+
+		        for i, module in ipairs(Skada:GetModes()) do
+			        wipe(info)
+		            info.text = module.name
+		            info.checked = (report_mode == module)
+		            info.func = function() report_mode = module end
+		            UIDropDownMenu_AddButton(info, level)
+		        end
+		    elseif UIDROPDOWNMENU_MENU_VALUE == "segment" then
+		        wipe(info)
 	            info.text = L["Total"]
 	            info.func = function() report_set = "total" end
 	            info.checked = (report_set == "total")
-				info.keepShownOnClick = 1
 	            UIDropDownMenu_AddButton(info, level)
 	            
 	            info.text = L["Current"]
@@ -973,14 +1016,16 @@ function Skada:OpenMenu(win)
 		            info.func = function() report_set = set.starttime end
 		            info.checked = (report_set == set.starttime)
 		            UIDropDownMenu_AddButton(info, level)
+		        end		        
+		    elseif UIDROPDOWNMENU_MENU_VALUE == "number" then
+		        for i = 1,10 do
+			        wipe(info)
+		            info.text = i
+		            info.checked = (report_number == i)
+		            info.func = function() report_number = i end
+		            UIDropDownMenu_AddButton(info, level)
 		        end
-		    
-		        -- Separator
-		        wipe(info)
-		        info.disabled = 1
-		        info.notCheckable = 1
-		        UIDropDownMenu_AddButton(info, level)
-		        
+		    elseif UIDROPDOWNMENU_MENU_VALUE == "channel" then
 		        wipe(info)
 		        info.text = L["Whisper"]
 				info.keepShownOnClick = 1
@@ -1017,59 +1062,7 @@ function Skada:OpenMenu(win)
 	            info.checked = (report_channel == "Self")
 	            info.func = function() report_channel = "Self" end
 	            UIDropDownMenu_AddButton(info, level)
-	            
-	            
-		        wipe(info)
-		        info.text = L["Lines"]
-		        info.hasArrow = 1
-		        info.value = "number"
-		        info.notCheckable = 1
-		        UIDropDownMenu_AddButton(info, level)
-		        
-		        wipe(info)
-		        info.text = L["Send report"]
-		        info.func = function()
-		        				if report_mode ~= nil then
-		        					-- Reporting is done on current bars... so we have to switch to the selected mode.
-		        					-- To make it worse, with our new multiple window paradigm, we have to hijack
-		        					-- a random window!
-		        					-- This is utter madness. Work something out that does not suck at some point.
-		        					-- Ideally we want modes to be display system agnostic, so that we can simply
-		        					-- ask the chosen mode to print its contents as strings instead of bars.
-	        						local window = win or windows[1]
-		        					if window then
-			        					local old_mode = win.selectedmode
-				        				win:DisplayMode(report_mode)
-				        				Skada:UpdateBars()
-				        				if report_channel == "Self" then
-											Skada:Report(report_channel, "self", report_mode, report_set, report_number)
-										else
-											Skada:Report(report_channel, "preset", report_mode, report_set, report_number)
-										end
-										-- Switch back to previous mode. Can you say "ugly"?
-										if old_mode then
-											Skada:DisplayMode(old_mode)
-					        				Skada:UpdateBars()
-										end
-									else
-										self:Print("Reporting requires a window to be present.")
-									end
-								else
-									self:Print(L["No mode selected for report."])
-								end
-		        			end
-		        info.notCheckable = 1
-		        UIDropDownMenu_AddButton(info, level)
-		    end
-		elseif level == 3 then
-		    if UIDROPDOWNMENU_MENU_VALUE == "number" then
-		        for i = 1,10 do
-			        wipe(info)
-		            info.text = i
-		            info.checked = (report_number == i)
-		            info.func = function() report_number = i end
-		            UIDropDownMenu_AddButton(info, level)
-		        end
+	            		    
 		    end
 		
 	    end
@@ -1212,7 +1205,7 @@ function Skada:ApplySettings()
 		
 		if p.shown then
 			-- Don't show window if we are solo and we have enabled the "Hide when solo" option.
-			if not (p.hidesolo and GetNumRaidMembers() == 0 and GetNumPartyMembers() == 0) then
+			if not (self.db.profile.hidesolo and GetNumRaidMembers() == 0 and GetNumPartyMembers() == 0) then
 				win:Show()
 			else
 				win:Hide()
