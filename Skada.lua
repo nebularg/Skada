@@ -192,7 +192,7 @@ function Window:get_selected_set()
 	elseif self.selectedset == "total" then
 		return Skada.total
 	else
-		return sets[selectedset]
+		return sets[self.selectedset]
 	end
 end
 
@@ -386,6 +386,7 @@ function Skada:Command(param)
 		self:ToggleWindow()
 	elseif param == "config" then
 		self:OpenOptions()
+	--[[
 	elseif param:sub(1,6) == "report" then
 		param = param:sub(7)
 		local chan = "say"
@@ -408,6 +409,7 @@ function Skada:Command(param)
 			end
 		end
 		self:Report(chan, chantype, max)
+	--]]
 	else
 		self:Print("Usage:")
 		self:Print(("%-20s %-s"):format("/skada report",L["reports the active mode"]))
@@ -428,34 +430,35 @@ local function sendchat(msg, chan, chantype)
 	if chantype == "self" then
 		-- To self.
 		Skada:Print(msg)
-	elseif chantype == "WHISPER" then
-		-- To player.
-		SendChatMessage(msg, "WHISPER", GetDefaultLanguage("player"), chan)
-	elseif chantype == "CHANNEL" then
+	elseif chantype == "channel" then
 		-- To channel.
-		SendChatMessage(msg, "CHANNEL", GetDefaultLanguage("player"), select(1, GetChannelName(chan)))
+		SendChatMessage(msg, "CHANNEL", nil, chan)
 	elseif chantype == "preset" then
 		-- To a preset channel id (say, guild, etc).
 		SendChatMessage(msg, string.upper(chan))
+	elseif chantype == "whisper" then
+		-- To player.
+		SendChatMessage(msg, "WHISPER", nil, chan)
 	end
 end
 
--- Reporting is done on current bars... so we have to switch to the selected mode.
--- To make it worse, with our new multiple window setup, we have to hijack
--- a random window!
+-- I refuse to acknoledge that I have written this.
 -- Ideally we want modes to be display system agnostic, so that we can simply
 -- ask the chosen mode to print its contents as a table instead of bars. But for now...
-function Skada:Report(channel, report_mode, report_set, max)
+function Skada:Report(channel, chantype, report_mode, report_set, max)
 
-	local window = win or windows[1]
-	if window then
+	local win = win or windows[1]
+	if win then
 		local old_mode = win.selectedmode
 		local old_set = win.selectedset
 		
-		win:DisplayModes(report_set)
-		win:DisplayMode(report_mode)
+		win.selectedset = report_set
+		win.selectedmode = report_mode
 		
-		local bars = self:GetBars()
+		changed = true
+		self:UpdateBars()
+
+		local bars = win:GetBars()
 		local list = {}
 		
 		for name, bar in pairs(bars) do table.insert(list, bar)	end
@@ -464,27 +467,29 @@ function Skada:Report(channel, report_mode, report_set, max)
 		table.sort(list, function(a,b) return a.value > b.value end)
 	
 		-- Title
-		local endtime = set.endtime or time()
 		local set = win:get_selected_set()
-		sendchat(string.format(L["Skada report on %s for %s, %s to %s:"], win.selectedmode.name, set.name, date("%X",set.starttime), date("%X",endtime)), chan, chantype)
+		local endtime = set.endtime or time()
+		sendchat(string.format(L["Skada report on %s for %s, %s to %s:"], win.selectedmode.name, set.name, date("%X",set.starttime), date("%X",endtime)), channel, chantype)
 		
 		-- For each active bar, print label and timer value.
 		for i, bar in ipairs(list) do
-			sendchat(("%s   %s"):format(bar:GetLabel(), bar:GetTimerLabel()), chan, chantype)
-			if i == max or (max == 0 and i == self.db.profile.barmax) then
+			sendchat(("%s   %s"):format(bar:GetLabel(), bar:GetTimerLabel()), channel, chantype)
+			if i == max or (max == 0 and i == win.db.barmax) then
 				break
 			end
 		end
 		
 		-- Switch back to previous mode. Can you say "ugly"?
 		if old_set then
-			win:DisplayModes(old_set)
+			win.selectedset = old_set
 			if old_mode then
-				win:DisplayMode(old_mode)
+				win.selectedmode = old_mode
 			end
 		else
 			win:DisplaySets()
 		end
+		changed = true
+		self:UpdateBars()
 	else
 		self:Print("Reporting requires a window to be present.")
 	end
@@ -760,6 +765,7 @@ end
 local report_channel = "Say"
 local report_number = 10
 local report_mode = nil
+local report_chantype = "preset"
 	
 -- Open a menu. Supply a window to tailor it to that window, else generic.
 function Skada:OpenMenu(win)
@@ -981,7 +987,24 @@ function Skada:OpenMenu(win)
 		        info.text = L["Send report"]
 		        info.func = function()
 		        				if report_mode ~= nil and report_set ~= nil then
-									Skada:Report(report_channel, report_mode, report_set, report_number)
+		        				
+									if report_chantype == "whisper" then
+										StaticPopupDialogs["SkadaReportDialog"] = {
+															text = L["Name of recipient"], 
+															button1 = ACCEPT, 
+															button2 = CANCEL,
+															hasEditBox = 1,
+															timeout = 30, 
+															hideOnEscape = 1, 
+															OnAccept = 	function()
+																			report_channel = getglobal(this:GetParent():GetName().."EditBox"):GetText()
+																			Skada:Report(report_channel, report_chantype, report_mode, report_set, report_number)
+																		end,
+														}
+										StaticPopup_Show("SkadaReportDialog")
+									else
+										Skada:Report(report_channel, report_chantype, report_mode, report_set, report_number)
+									end
 								else
 									self:Print(L["No mode or segment selected for report."])
 								end
@@ -1013,8 +1036,8 @@ function Skada:OpenMenu(win)
 	            
 		        for i, set in ipairs(sets) do
 		            info.text = set.name..": "..date("%H:%M",set.starttime).." - "..date("%H:%M",set.endtime)
-		            info.func = function() report_set = set.starttime end
-		            info.checked = (report_set == set.starttime)
+		            info.func = function() report_set = i end
+		            info.checked = (report_set == i)
 		            UIDropDownMenu_AddButton(info, level)
 		        end		        
 		    elseif UIDROPDOWNMENU_MENU_VALUE == "number" then
@@ -1028,40 +1051,50 @@ function Skada:OpenMenu(win)
 		    elseif UIDROPDOWNMENU_MENU_VALUE == "channel" then
 		        wipe(info)
 		        info.text = L["Whisper"]
-				info.keepShownOnClick = 1
-		        info.checked = (report_channel == "Whisper")
-		        info.func = function() report_channel = "Whisper" end
+		        info.checked = (report_chantype == "whisper")
+		        info.func = function() report_channel = "Whisper"; report_chantype = "whisper" end
 		        UIDropDownMenu_AddButton(info, level)
 		        
 		        info.text = L["Say"]
 		        info.checked = (report_channel == "Say")
-		        info.func = function() report_channel = "Say" end
+		        info.func = function() report_channel = "Say"; report_chantype = "preset" end
 		        UIDropDownMenu_AddButton(info, level)
         
 	            info.text = L["Raid"]
 	            info.checked = (report_channel == "Raid")
-	            info.func = function() report_channel = "Raid" end
+	            info.func = function() report_channel = "Raid"; report_chantype = "preset" end
 	            UIDropDownMenu_AddButton(info, level)
 
 	            info.text = L["Party"]
 	            info.checked = (report_channel == "Party")
-	            info.func = function() report_channel = "Party" end
+	            info.func = function() report_channel = "Party"; report_chantype = "preset" end
 	            UIDropDownMenu_AddButton(info, level)
 	            
 	            info.text = L["Guild"]
 	            info.checked = (report_channel == "Guild")
-	            info.func = function() report_channel = "Guild" end
+	            info.func = function() report_channel = "Guild"; report_chantype = "preset" end
 	            UIDropDownMenu_AddButton(info, level)
 	            
 	            info.text = L["Officer"]
 	            info.checked = (report_channel == "Officer")
-	            info.func = function() report_channel = "Officer" end
+	            info.func = function() report_channel = "Officer"; report_chantype = "preset" end
 	            UIDropDownMenu_AddButton(info, level)
 	            
 	            info.text = L["Self"]
-	            info.checked = (report_channel == "Self")
-	            info.func = function() report_channel = "Self" end
+	            info.checked = (report_chantype == "self")
+	            info.func = function() report_channel = "Self"; report_chantype = "self" end
 	            UIDropDownMenu_AddButton(info, level)
+	            
+	            local list = {GetChannelList()}
+	            local i = 1
+	            while i < #list do
+		            info.text = list[i+1]
+		            info.checked = (report_channel == list[i])
+		            info.func = function() report_channel = list[i]; report_chantype = "channel" end
+		            UIDropDownMenu_AddButton(info, level)
+	            	
+	            	i = i + 2
+	            end
 	            		    
 		    end
 		
@@ -1762,6 +1795,9 @@ function Skada:AddMode(mode)
 	-- Needed in case we enable a mode and we have old data.
 	if self.total then
 		verify_set(mode, self.total)
+	end
+	if self.current then
+		verify_set(mode, self.current)
 	end
 	for i, set in ipairs(sets) do
 		verify_set(mode, set)

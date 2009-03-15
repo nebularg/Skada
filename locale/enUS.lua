@@ -175,6 +175,8 @@ L["Switch to segment"] = "Switch to segment"
 L["Segment"] = "Segment"
 
 L["Whisper"] = "Whisper"
+L["No mode or segment selected for report."] = "No mode or segment selected for report."
+L["Name of recipient"] = "Name of recipient"
 
 -- SkadaDebuffs
 L["Debuff uptimes"] = true
