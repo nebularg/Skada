@@ -546,6 +546,18 @@ function Skada:CheckPets()
 	end
 end
 
+-- Ask a mode to verify the contents of a set.
+local function verify_set(mode, set)
+	if mode.AddSetAttributes ~= nil then
+		mode:AddSetAttributes(set)
+	end
+	for j, player in ipairs(set.players) do
+		if mode.AddPlayerAttributes ~= nil then
+			mode:AddPlayerAttributes(player)
+		end
+	end
+end
+
 local wasininstance
 
 local function ask_for_reset()
@@ -678,11 +690,7 @@ local function createSet(setname)
 	local set = {players = {}, name = setname, starttime = time(), ["time"] = 0, last_action = time()}
 
 	-- Tell each mode to apply its needed attributes.
-	for i, mode in ipairs(modes) do
-		if mode.AddSetAttributes ~= nil then
-			mode:AddSetAttributes(set)
-		end
-	end
+	for i, mode in ipairs(modes) do verify_set(mode, set) end
 
 	return set
 end
@@ -728,12 +736,12 @@ function Skada:DeleteSet(set)
 	self:UpdateBars()
 end
 
+local report_channel = "Say"
+local report_number = 10
+local report_mode = nil
+	
+-- Open a menu. Supply a window to tailor it to that window, else generic.
 function Skada:OpenMenu(win)
-
-	local report_channel = "Say"
-	local report_number = 10
-	local report_mode = nil
-	local tempwin = nil
 	if win and win.selectedset then
 		report_set = win.selectedset
 	end
@@ -762,8 +770,7 @@ function Skada:OpenMenu(win)
 		        wipe(info)
 		        info.text = win.db.name
 		        info.hasArrow = 1
-		        info.value = "win"
-		        info.func = function() tempwin = win end
+		        info.value = win
 		        info.notCheckable = 1
 		        UIDropDownMenu_AddButton(info, level)
 			end
@@ -823,22 +830,82 @@ function Skada:OpenMenu(win)
 	        info.notCheckable = 1
 	        UIDropDownMenu_AddButton(info, level)
 	    elseif level == 2 then
-	    	if UIDROPDOWNMENU_MENU_VALUE == "win" then
-	    	
+	    	if type(UIDROPDOWNMENU_MENU_VALUE) == "table" then
+	    		local window = UIDROPDOWNMENU_MENU_VALUE
+	    		-- Display list of modes with current ticked; let user switch mode by checking one.
 		        wipe(info)
-		        info.text = L["Switch to mode"]
-		        info.hasArrow = 1
-		        info.value = "switchmode"
+		        info.isTitle = 1
+		        info.text = L["Mode"]
+		        UIDropDownMenu_AddButton(info, level)
+		        
+		        for i, module in ipairs(Skada:GetModes()) do
+			        wipe(info)
+		            info.text = module.name
+		            info.func = function() window:DisplayMode(module) end
+		            info.checked = (window.selectedmode == module)
+		            UIDropDownMenu_AddButton(info, level)
+		        end
+		        
+		        -- Separator
+		        wipe(info)
+		        info.disabled = 1
 		        info.notCheckable = 1
 		        UIDropDownMenu_AddButton(info, level)
+	        
+		        -- Display list of sets with current ticked; let user switch set by checking one.
+		        wipe(info)
+		        info.isTitle = 1
+		        info.text = L["Segment"]
+		        UIDropDownMenu_AddButton(info, level)
+		        
+		        wipe(info)
+	            info.text = L["Total"]
+	            info.func = function()
+	            				window.selectedset = "total"
+	            				Skada:RemoveAllBars()
+	            				changed = true
+	            				Skada:UpdateBars()
+	            			end
+	            info.checked = (window.selectedset == "total")
+	            UIDropDownMenu_AddButton(info, level)
+		        wipe(info)
+	            info.text = L["Current"]
+	            info.func = function()
+	            				window.selectedset = "current"
+	            				Skada:RemoveAllBars()
+	            				changed = true
+	            				Skada:UpdateBars()
+	            			end
+	            info.checked = (window.selectedset == "current")
+	            UIDropDownMenu_AddButton(info, level)
+		        for i, set in ipairs(sets) do
+			        wipe(info)
+		            info.text = set.name..": "..date("%H:%M",set.starttime).." - "..date("%H:%M",set.endtime)
+		            info.func = function() 
+		            				window.selectedset = i
+		            				Skada:RemoveAllBars()
+		            				changed = true
+		            				Skada:UpdateBars()
+		            			end
+		            info.checked = (window.selectedset == set.starttime)
+		            UIDropDownMenu_AddButton(info, level)
+		        end
 
+		        -- Add a blank separator
 		        wipe(info)
-		        info.text = L["Switch to segment"]
-		        info.hasArrow = 1
-		        info.value = "switchset"
+		        info.disabled = 1
 		        info.notCheckable = 1
 		        UIDropDownMenu_AddButton(info, level)
-	    	
+	        
+		        wipe(info)
+	            info.text = L["Lock window"]
+	            info.func = function()
+	            				window.db.barslocked = not window.db.barslocked
+	            				Skada:ApplySettings()
+	            			end
+	            info.checked = window.db.barslocked
+		        UIDropDownMenu_AddButton(info, level)
+			        	    	
 		    elseif UIDROPDOWNMENU_MENU_VALUE == "delete" then
 		        for i, set in ipairs(sets) do
 			        wipe(info)
@@ -861,31 +928,101 @@ function Skada:OpenMenu(win)
 		            UIDropDownMenu_AddButton(info, level)
 		        end
 		    elseif UIDROPDOWNMENU_MENU_VALUE == "report" then
+
+	    		-- Display list of modes. Copy & paste ftw.
 		        wipe(info)
+		        info.isTitle = 1
 		        info.text = L["Mode"]
-		        info.hasArrow = 1
-		        info.value = "modes"
+		        UIDropDownMenu_AddButton(info, level)
+		        
+		        wipe(info)
+		        for i, module in ipairs(Skada:GetModes()) do
+		            info.text = module.name
+		            info.func = function() report_mode = module end
+		            info.checked = (report_mode == module)
+					info.keepShownOnClick = 1
+		            UIDropDownMenu_AddButton(info, level)
+		        end
+		        
+		        -- Separator
+		        wipe(info)
+		        info.disabled = 1
 		        info.notCheckable = 1
 		        UIDropDownMenu_AddButton(info, level)
-
+	        
+		        -- Display list of sets.
 		        wipe(info)
+		        info.isTitle = 1
 		        info.text = L["Segment"]
-		        info.hasArrow = 1
-		        info.value = "sets"
+		        UIDropDownMenu_AddButton(info, level)
+		        
+		        wipe(info)
+	            info.text = L["Total"]
+	            info.func = function() report_set = "total" end
+	            info.checked = (report_set == "total")
+				info.keepShownOnClick = 1
+	            UIDropDownMenu_AddButton(info, level)
+	            
+	            info.text = L["Current"]
+	            info.func = function() report_set = "current" end
+	            info.checked = (report_set == "current")
+	            UIDropDownMenu_AddButton(info, level)
+	            
+		        for i, set in ipairs(sets) do
+		            info.text = set.name..": "..date("%H:%M",set.starttime).." - "..date("%H:%M",set.endtime)
+		            info.func = function() report_set = set.starttime end
+		            info.checked = (report_set == set.starttime)
+		            UIDropDownMenu_AddButton(info, level)
+		        end
+		    
+		        -- Separator
+		        wipe(info)
+		        info.disabled = 1
 		        info.notCheckable = 1
 		        UIDropDownMenu_AddButton(info, level)
 		        
+		        wipe(info)
+		        info.text = L["Whisper"]
+				info.keepShownOnClick = 1
+		        info.checked = (report_channel == "Whisper")
+		        info.func = function() report_channel = "Whisper" end
+		        UIDropDownMenu_AddButton(info, level)
+		        
+		        info.text = L["Say"]
+		        info.checked = (report_channel == "Say")
+		        info.func = function() report_channel = "Say" end
+		        UIDropDownMenu_AddButton(info, level)
+        
+	            info.text = L["Raid"]
+	            info.checked = (report_channel == "Raid")
+	            info.func = function() report_channel = "Raid" end
+	            UIDropDownMenu_AddButton(info, level)
+
+	            info.text = L["Party"]
+	            info.checked = (report_channel == "Party")
+	            info.func = function() report_channel = "Party" end
+	            UIDropDownMenu_AddButton(info, level)
+	            
+	            info.text = L["Guild"]
+	            info.checked = (report_channel == "Guild")
+	            info.func = function() report_channel = "Guild" end
+	            UIDropDownMenu_AddButton(info, level)
+	            
+	            info.text = L["Officer"]
+	            info.checked = (report_channel == "Officer")
+	            info.func = function() report_channel = "Officer" end
+	            UIDropDownMenu_AddButton(info, level)
+	            
+	            info.text = L["Self"]
+	            info.checked = (report_channel == "Self")
+	            info.func = function() report_channel = "Self" end
+	            UIDropDownMenu_AddButton(info, level)
+	            
+	            
 		        wipe(info)
 		        info.text = L["Lines"]
 		        info.hasArrow = 1
 		        info.value = "number"
-		        info.notCheckable = 1
-		        UIDropDownMenu_AddButton(info, level)
-		        
-		        wipe(info)
-		        info.text = L["Channel"]
-		        info.hasArrow = 1
-		        info.value = "channels"
 		        info.notCheckable = 1
 		        UIDropDownMenu_AddButton(info, level)
 		        
@@ -925,81 +1062,7 @@ function Skada:OpenMenu(win)
 		        UIDropDownMenu_AddButton(info, level)
 		    end
 		elseif level == 3 then
-		    if UIDROPDOWNMENU_MENU_VALUE == "switchmode" then
-		        for i, module in ipairs(Skada:GetModes()) do
-			        wipe(info)
-		            info.text = module.name
-		            info.func = function() tempwin:DisplayMode(module) end
-			        info.notCheckable = 1
-		            UIDropDownMenu_AddButton(info, level)
-		        end
-		    elseif UIDROPDOWNMENU_MENU_VALUE == "switchset" then
-		        wipe(info)
-	            info.text = L["Total"]
-	            info.func = function()
-	            				tempwin.selectedset = "total"
-	            				Skada:RemoveAllBars()
-	            				changed = true
-	            				Skada:UpdateBars()
-	            			end
-	            info.notCheckable = 1
-	            UIDropDownMenu_AddButton(info, level)
-
-		        wipe(info)
-	            info.text = L["Current"]
-	            info.func = function()
-	            				tempwin.selectedset = "current"
-	            				Skada:RemoveAllBars()
-	            				changed = true
-	            				Skada:UpdateBars()
-	            			end
-	            info.notCheckable = 1
-	            UIDropDownMenu_AddButton(info, level)
-		        for i, set in ipairs(sets) do
-			        wipe(info)
-		            info.text = set.name..": "..date("%H:%M",set.starttime).." - "..date("%H:%M",set.endtime)
-		            info.func = function() 
-		            				tempwin.selectedset = i
-		            				Skada:RemoveAllBars()
-		            				changed = true
-		            				Skada:UpdateBars()
-		            			end
-		            info.notCheckable = 1
-		            UIDropDownMenu_AddButton(info, level)
-		        end
-	        elseif UIDROPDOWNMENU_MENU_VALUE == "modes" then
-
-		        for i, module in ipairs(Skada:GetModes()) do
-			        wipe(info)
-		            info.text = module.name
-					info.keepShownOnClick = 1
-		            info.checked = (report_mode == module)
-		            info.func = function() report_mode = module end
-		            UIDropDownMenu_AddButton(info, level)
-		        end
-		    elseif UIDROPDOWNMENU_MENU_VALUE == "sets" then
-		        wipe(info)
-	            info.text = L["Total"]
-	            info.func = function() report_set = "total" end
-	            info.checked = (report_set == "total")
-				info.keepShownOnClick = 1
-	            UIDropDownMenu_AddButton(info, level)
-	            
-		        wipe(info)
-	            info.text = L["Current"]
-	            info.func = function() report_set = "current" end
-	            info.checked = (report_set == "current")
-				info.keepShownOnClick = 1
-	            UIDropDownMenu_AddButton(info, level)
-		        for i, set in ipairs(sets) do
-			        wipe(info)
-		            info.text = set.name..": "..date("%H:%M",set.starttime).." - "..date("%H:%M",set.endtime)
-		            info.func = function() report_set = i end
-		            info.checked = (report_set == i)
-					info.keepShownOnClick = 1
-		            UIDropDownMenu_AddButton(info, level)
-		        end
-		    elseif UIDROPDOWNMENU_MENU_VALUE == "number" then
+		    if UIDROPDOWNMENU_MENU_VALUE == "number" then
 		        for i = 1,10 do
 			        wipe(info)
 		            info.text = i
@@ -1007,46 +1070,6 @@ function Skada:OpenMenu(win)
 		            info.func = function() report_number = i end
 		            UIDropDownMenu_AddButton(info, level)
 		        end
-		    elseif UIDROPDOWNMENU_MENU_VALUE == "channels" then
-		        wipe(info)
-	            
-		        info.text = L["Say"]
-		        info.checked = (report_channel == "Whisper")
-		        info.func = function()
-		        				report_channel = "Whisper"
-		        				
-		        			end
-		        UIDropDownMenu_AddButton(info, level)
-		        
-		        info.text = L["Say"]
-		        info.checked = (report_channel == "Say")
-		        info.func = function() report_channel = "Say" end
-		        UIDropDownMenu_AddButton(info, level)
-        
-	            info.text = L["Raid"]
-	            info.checked = (report_channel == "Raid")
-	            info.func = function() report_channel = "Raid" end
-	            UIDropDownMenu_AddButton(info, level)
-
-	            info.text = L["Party"]
-	            info.checked = (report_channel == "Party")
-	            info.func = function() report_channel = "Party" end
-	            UIDropDownMenu_AddButton(info, level)
-	            
-	            info.text = L["Guild"]
-	            info.checked = (report_channel == "Guild")
-	            info.func = function() report_channel = "Guild" end
-	            UIDropDownMenu_AddButton(info, level)
-	            
-	            info.text = L["Officer"]
-	            info.checked = (report_channel == "Officer")
-	            info.func = function() report_channel = "Officer" end
-	            UIDropDownMenu_AddButton(info, level)
-	            
-	            info.text = L["Self"]
-	            info.checked = (report_channel == "Self")
-	            info.func = function() report_channel = "Self" end
-	            UIDropDownMenu_AddButton(info, level)
 		    end
 		
 	    end
@@ -1301,9 +1324,9 @@ function Skada:Tick()
 		
 			-- Auto-switch back to previous set/mode.
 			if win.db.returnaftercombat and win.restore_mode and win.restore_set then
-				if win.restore_set ~= selectedset or win.restore_mode ~= selectedmode then
+				if win.restore_set ~= win.selectedset or win.restore_mode ~= win.selectedmode then
 					
-					win:RestoreView(win.restore_set, win.restore_mode)
+					self:RestoreView(win, win.restore_set, win.restore_mode)
 					
 					win.restore_mode = nil
 					win.restore_set = nil
@@ -1337,25 +1360,27 @@ function Skada:StartCombat()
 	end
 	
 	-- Auto-switch set/mode if configured.
-	if self.db.profile.modeincombat ~= "" then
-		-- First, get the mode. The mode may not actually be available.
-		local mymode = find_mode(self.db.profile.modeincombat)
-		
-		-- If the mode exists, switch to current set and this mode. Save current set/mode so we can return after combat if configured.
-		if mymode ~= nil then
---				self:Print("Switching to "..mymode.name.." mode.")
+	for i, win in ipairs(windows) do
+		if win.db.modeincombat ~= "" then
+			-- First, get the mode. The mode may not actually be available.
+			local mymode = find_mode(win.db.modeincombat)
 			
-			if self.db.profile.returnaftercombat then
-				if selectedset then
-					restore_set = selectedset
+			-- If the mode exists, switch to current set and this mode. Save current set/mode so we can return after combat if configured.
+			if mymode ~= nil then
+	--				self:Print("Switching to "..mymode.name.." mode.")
+				
+				if win.db.returnaftercombat then
+					if win.selectedset then
+						win.restore_set = win.selectedset
+					end
+					if win.selectedmode then
+						win.restore_mode = win.selectedmode.name
+					end
 				end
-				if selectedmode then
-					restore_mode = selectedmode.name
-				end
+				
+				win.selectedset = "current"
+				win:DisplayMode(mymode)
 			end
-			
-			selectedset = "current"
-			self:DisplayMode(mymode)
 		end
 	end
 	
@@ -1742,15 +1767,11 @@ end
 function Skada:AddMode(mode)
 	-- Ask mode to verify our sets.
 	-- Needed in case we enable a mode and we have old data.
+	if self.total then
+		verify_set(mode, self.total)
+	end
 	for i, set in ipairs(sets) do
-		if mode.AddSetAttributes ~= nil then
-			mode:AddSetAttributes(set)
-		end
-		for j, player in ipairs(set.players) do
-			if mode.AddPlayerAttributes ~= nil then
-				mode:AddPlayerAttributes(player)
-			end
-		end
+		verify_set(mode, set)
 	end
 
 	table.insert(modes, mode)

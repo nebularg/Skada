@@ -174,6 +174,8 @@ L["Windows"] = "Windows"
 L["Switch to segment"] = "Switch to segment"
 L["Segment"] = "Segment"
 
+L["Whisper"] = "Whisper"
+
 -- SkadaDebuffs
 L["Debuff uptimes"] = true
 L["'s Debuffs"] = true

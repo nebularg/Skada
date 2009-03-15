@@ -500,6 +500,7 @@ local deletewindow = nil
 Skada.options = {
 	        type="group",
 			name="Skada",
+			plugins = {},
 	        args={
 	        		d = {
 	        			type="description",
