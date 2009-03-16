@@ -94,8 +94,7 @@ end
 function mod:OnEnable()
 	-- Add our feed.
 	Skada:AddFeed(L["Threat: Personal Threat"], function()
-								local current = Skada:GetCurrentSet()
-								if current and UnitExists("target") then
+								if Skada.current and UnitExists("target") then
 									local isTanking, status, threatpct, rawthreatpct, threatvalue = UnitDetailedThreatSituation("player", "target")
 									if threatpct then
 										return ("%02.1f%%"):format(threatpct)

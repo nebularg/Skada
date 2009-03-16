@@ -1516,6 +1516,8 @@ end
 -- of how many modules are interested in the event. The check is also only done on the first flag that requires it.
 -- The exception is src_is_interesting, which we always check to determine combat start - I would like to get rid of this, but am not sure how.
 -- Combat start bit disabled for now.
+
+-- TODO: Start looking at flags instead of using functions.
 function Skada:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
 	local src_is_interesting = nil --self:UnitIsInteresting(srcName, srcGUID)
 	local dst_is_interesting = nil
@@ -1554,7 +1556,7 @@ function Skada:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID,
 				end
 			end
 			if not fail and mod.flags.src_is_interesting then
-				if src_is_interesting == nil then	-- Will not happen ofc, but for clarity.
+				if src_is_interesting == nil then
 					src_is_interesting = self:UnitIsInteresting(srcName, srcGUID)
 				end
 				if not src_is_interesting then

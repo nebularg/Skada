@@ -55,7 +55,7 @@ Skada.defaults = {
 
 Skada.windowoptions = {
 	type="group",
-	name=L["Windows"],
+	name="Windows",
 	args={},
 }
 
@@ -509,7 +509,7 @@ Skada.options = {
 	        		
 	        		windows = {
 	        			type = "group",
-	        			name = "Windows",
+	        			name = L["Windows"],
 	        			order=0,
 						args = {
 

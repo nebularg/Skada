@@ -398,8 +398,8 @@ function dpsmod:Update(win, set)
 	win:SortBars()
 end
 
-
 function mod:OnEnable()
+	Skada:RegisterForCL(SpellDamage, 'DAMAGE_SHIELD', {src_is_interesting = true})
 	Skada:RegisterForCL(SpellDamage, 'SPELL_DAMAGE', {src_is_interesting = true})
 	Skada:RegisterForCL(SpellDamage, 'SPELL_PERIODIC_DAMAGE', {src_is_interesting = true})
 	Skada:RegisterForCL(SpellDamage, 'SPELL_BUILDING_DAMAGE', {src_is_interesting = true})
