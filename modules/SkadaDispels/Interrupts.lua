@@ -36,7 +36,7 @@ function mod:AddSetAttributes(set)
 	end
 end
 
-function mod:Update(set)
+function mod:Update(win, set)
 	-- Calculate the highest number.
 	local maxvalue = 0
 	for i, player in ipairs(set.players) do
@@ -49,15 +49,15 @@ function mod:Update(set)
 	-- If so, update values, else create bar.
 	for i, player in ipairs(set.players) do
 		if player.interrupts > 0 then
-			local bar = Skada:GetBar(tostring(player.id))
+			local bar = win:GetBar(tostring(player.id))
 			if bar then
 				bar:SetMaxValue(maxvalue)
 				bar:SetValue(player.interrupts)
 			else
-				bar = Skada:CreateBar(tostring(player.id), player.name, player.interrupts, maxvalue, nil, false)
+				bar = win:CreateBar(tostring(player.id), player.name, player.interrupts, maxvalue, nil, false)
 				bar:EnableMouse()
-				bar:SetScript("OnMouseDown", function(bar, button) if button == "RightButton" then Skada:RightClick() end end)
-				local color = Skada.classcolors[player.class] or Skada:GetDefaultBarColor()
+				bar:SetScript("OnMouseDown", function(bar, button) if button == "RightButton" then win:RightClick() end end)
+				local color = Skada.classcolors[player.class] or win:GetDefaultBarColor()
 				bar:SetColorAt(0, color.r, color.g, color.b, color.a or 1)
 				
 			end
@@ -66,5 +66,5 @@ function mod:Update(set)
 	end
 		
 	-- Sort the possibly changed bars.
-	Skada:SortBars()
+	win:SortBars()
 end
