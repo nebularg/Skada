@@ -1006,7 +1006,7 @@ function Skada:OpenMenu(win)
 										Skada:Report(report_channel, report_chantype, report_mode, report_set, report_number)
 									end
 								else
-									self:Print(L["No mode or segment selected for report."])
+									Skada:Print(L["No mode or segment selected for report."])
 								end
 		        			end
 		        info.notCheckable = 1
