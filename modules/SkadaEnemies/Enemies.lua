@@ -180,75 +180,80 @@ function done:Update(win, set)
 end
 
 function doneplayers:Update(win, set)
-	-- Calculate the highest damage.
-	-- How to get rid of this iteration?
-	local maxvalue = 0
-	for name, player in ipairs(self.mob.players) do
-		if player.done > maxvalue then
-			maxvalue = player.done
-		end
-	end
-	
-	table.sort(self.mob.players, function(a,b) return a.done > b.done end)
-	
-	-- For each mob in the set, see if we have a bar already.
-	-- If so, update values, else create bar.
-	for i, player in ipairs(self.mob.players) do
-		if player.done > 0 then
-			local bar = win:GetBar(player.name)
-			if bar then
-				bar:SetMaxValue(maxvalue)
-				bar:SetValue(player.done)
-			else
-				bar = win:CreateBar(player.name, player.name, player.done, maxvalue, nil, false)
-				bar:EnableMouse()
-				bar:SetScript("OnMouseDown",function(bar, button) if button == "RightButton" then win:DisplayMode(done) end end)
-				local color = Skada.classcolors[player.class] or win:GetDefaultBarColor()
-				bar:SetColorAt(0, color.r, color.g, color.b, color.a or 1)
+	if self.mob then
+
+		-- Calculate the highest damage.
+		-- How to get rid of this iteration?
+		local maxvalue = 0
+		for name, player in ipairs(self.mob.players) do
+			if player.done > maxvalue then
+				maxvalue = player.done
 			end
-			bar:SetTimerLabel(Skada:FormatNumber(player.done)..(" (%02.1f%%)"):format(player.done / self.mob.done * 100))
-			bar:SetLabel(("%2u. %s"):format(i, player.name))
 		end
+		
+		table.sort(self.mob.players, function(a,b) return a.done > b.done end)
+		
+		-- For each mob in the set, see if we have a bar already.
+		-- If so, update values, else create bar.
+		for i, player in ipairs(self.mob.players) do
+			if player.done > 0 then
+				local bar = win:GetBar(player.name)
+				if bar then
+					bar:SetMaxValue(maxvalue)
+					bar:SetValue(player.done)
+				else
+					bar = win:CreateBar(player.name, player.name, player.done, maxvalue, nil, false)
+					bar:EnableMouse()
+					bar:SetScript("OnMouseDown",function(bar, button) if button == "RightButton" then win:DisplayMode(done) end end)
+					local color = Skada.classcolors[player.class] or win:GetDefaultBarColor()
+					bar:SetColorAt(0, color.r, color.g, color.b, color.a or 1)
+				end
+				bar:SetTimerLabel(Skada:FormatNumber(player.done)..(" (%02.1f%%)"):format(player.done / self.mob.done * 100))
+				bar:SetLabel(("%2u. %s"):format(i, player.name))
+			end
+		end
+		
+		-- Sort the possibly changed bars.
+		win:SortBars()
 	end
-	
-	-- Sort the possibly changed bars.
-	win:SortBars()
 end
 
 function takenplayers:Update(win, set)
-	-- Calculate the highest damage.
-	-- How to get rid of this iteration?
-	local maxvalue = 0
-	for name, player in ipairs(self.mob.players) do
-		if player.taken > maxvalue then
-			maxvalue = player.taken
-		end
-	end
-	
-	table.sort(self.mob.players, function(a,b) return a.taken > b.taken end)
-	
-	-- For each mob in the set, see if we have a bar already.
-	-- If so, update values, else create bar.
-	for i, player in ipairs(self.mob.players) do
-		if player.taken > 0 then
-			local bar = win:GetBar(player.name)
-			if bar then
-				bar:SetMaxValue(maxvalue)
-				bar:SetValue(player.taken)
-			else
-				bar = win:CreateBar(player.name, player.name, player.taken, maxvalue, nil, false)
-				bar:EnableMouse()
-				bar:SetScript("OnMouseDown",function(bar, button) if button == "RightButton" then win:DisplayMode(taken) end end)
-				local color = Skada.classcolors[player.class] or win:GetDefaultBarColor()
-				bar:SetColorAt(0, color.r, color.g, color.b, color.a or 1)
+	if self.mob then
+		-- Calculate the highest damage.
+		-- How to get rid of this iteration?
+		local maxvalue = 0
+		for name, player in ipairs(self.mob.players) do
+			if player.taken > maxvalue then
+				maxvalue = player.taken
 			end
-			bar:SetTimerLabel(Skada:FormatNumber(player.taken)..(" (%02.1f%%)"):format(player.taken / self.mob.taken * 100))
-			bar:SetLabel(("%2u. %s"):format(i, player.name))
 		end
+		
+		table.sort(self.mob.players, function(a,b) return a.taken > b.taken end)
+		
+		-- For each mob in the set, see if we have a bar already.
+		-- If so, update values, else create bar.
+		for i, player in ipairs(self.mob.players) do
+			if player.taken > 0 then
+				local bar = win:GetBar(player.name)
+				if bar then
+					bar:SetMaxValue(maxvalue)
+					bar:SetValue(player.taken)
+				else
+					bar = win:CreateBar(player.name, player.name, player.taken, maxvalue, nil, false)
+					bar:EnableMouse()
+					bar:SetScript("OnMouseDown",function(bar, button) if button == "RightButton" then win:DisplayMode(taken) end end)
+					local color = Skada.classcolors[player.class] or win:GetDefaultBarColor()
+					bar:SetColorAt(0, color.r, color.g, color.b, color.a or 1)
+				end
+				bar:SetTimerLabel(Skada:FormatNumber(player.taken)..(" (%02.1f%%)"):format(player.taken / self.mob.taken * 100))
+				bar:SetLabel(("%2u. %s"):format(i, player.name))
+			end
+		end
+		
+		-- Sort the possibly changed bars.
+		win:SortBars()
 	end
-	
-	-- Sort the possibly changed bars.
-	win:SortBars()
 end
 
 

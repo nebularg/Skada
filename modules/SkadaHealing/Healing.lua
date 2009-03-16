@@ -118,14 +118,15 @@ function playermod:Update(win, set)
 	-- View spells for this player.
 		
 	local player = Skada:find_player(set, self.playerid)
-	local maxvalue = 0
-	for spellname, spell in pairs(player.healingspells) do
-		if spell.healing > maxvalue then
-			maxvalue = spell.healing
-		end
-	end
 	
 	if player then
+		local maxvalue = 0
+		for spellname, spell in pairs(player.healingspells) do
+			if spell.healing > maxvalue then
+				maxvalue = spell.healing
+			end
+		end
+		
 		for spellname, spell in pairs(player.healingspells) do
 				
 			local bar = win:GetBar(spellname)

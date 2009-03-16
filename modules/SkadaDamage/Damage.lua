@@ -237,46 +237,50 @@ function playermod:Update(win, set)
 		
 	local player = Skada:find_player(set, self.playerid)
 
-	-- Find max hit.
-	local maxvalue = 0
-	for spellname, spell in pairs(player.damagespells) do
-		if spell.damage > maxvalue then
-			maxvalue = spell.damage
-		end
-	end
-	
+	-- If we reset we have no data.
 	if player then
+	
+		-- Find max hit.
+		local maxvalue = 0
 		for spellname, spell in pairs(player.damagespells) do
-		
-			local bar = win:GetBar(tostring(spellname))
-			--self:Print("max: "..tostring(player.damage))
-			--self:Print(spell.name..": "..tostring(spell.damage))
-			if bar then
-				bar:SetMaxValue(maxvalue)
-				bar:SetValue(spell.damage)
-			else
-				local icon = select(3, GetSpellInfo(spell.id))
-				local color = win:GetDefaultBarColor()
-			
-				bar = win:CreateBar(spellname, spell.name, spell.damage, maxvalue, icon, false)
-				bar:SetColorAt(0, color.r, color.g, color.b, color.a)
-				bar:ShowTimerLabel()
-				bar:EnableMouse(true)
-				bar:SetScript("OnMouseDown",function(bar, button)
-												if button == "LeftButton" then
-													spellmod.spellname = spellname
-													spellmod.name = player.name..L["'s "]..spell.name
-													win:DisplayMode(spellmod)
-												elseif button == "RightButton" then
-													win:DisplayMode(mod)
-												end
-											end)
-				if icon then
-					bar:ShowIcon()
-				end
+			if spell.damage > maxvalue then
+				maxvalue = spell.damage
 			end
-			bar:SetTimerLabel(Skada:FormatNumber(spell.damage)..(" (%02.1f%%)"):format(spell.damage / player.damage * 100))
+		end
+		
+		if player then
+			for spellname, spell in pairs(player.damagespells) do
 			
+				local bar = win:GetBar(tostring(spellname))
+				--self:Print("max: "..tostring(player.damage))
+				--self:Print(spell.name..": "..tostring(spell.damage))
+				if bar then
+					bar:SetMaxValue(maxvalue)
+					bar:SetValue(spell.damage)
+				else
+					local icon = select(3, GetSpellInfo(spell.id))
+					local color = win:GetDefaultBarColor()
+				
+					bar = win:CreateBar(spellname, spell.name, spell.damage, maxvalue, icon, false)
+					bar:SetColorAt(0, color.r, color.g, color.b, color.a)
+					bar:ShowTimerLabel()
+					bar:EnableMouse(true)
+					bar:SetScript("OnMouseDown",function(bar, button)
+													if button == "LeftButton" then
+														spellmod.spellname = spellname
+														spellmod.name = player.name..L["'s "]..spell.name
+														win:DisplayMode(spellmod)
+													elseif button == "RightButton" then
+														win:DisplayMode(mod)
+													end
+												end)
+					if icon then
+						bar:ShowIcon()
+					end
+				end
+				bar:SetTimerLabel(Skada:FormatNumber(spell.damage)..(" (%02.1f%%)"):format(spell.damage / player.damage * 100))
+				
+			end
 		end
 	end
 	

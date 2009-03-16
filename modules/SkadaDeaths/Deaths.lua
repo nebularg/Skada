@@ -136,44 +136,46 @@ end
 function deathlog:Update(win, set)
 	local player = Skada:get_player(set, self.playerid)
 	
-	-- Find the max amount
-	local maxhit = 0
-	for i, log in ipairs(player.deathlog) do
-		if math.abs(log.amount) > maxhit then
-			maxhit = math.abs(log.amount)
-		end
-	end
-	
-	for i, log in ipairs(player.deathlog) do
-		local diff = tonumber(log.ts) - tonumber(player.deathts)
-		-- Ignore hits older than 30s before death.
-		if diff > -30 then
-			local bar = win:GetBar("log"..i)
-			if bar then
-				bar:SetMaxValue(maxhit)
-				bar:SetValue(math.abs(log.amount))
-			else
-				local icon = select(3, GetSpellInfo(log.spellid))
-				bar = win:CreateBar("log"..i, log.spellname, math.abs(log.amount), maxhit, icon, false)
-				bar.ts = log.ts
-				bar:EnableMouse()
-				bar:SetScript("OnMouseDown", function(bar, button) if button == "RightButton" then Skada:DisplayMode(mod) end end)
-				if log.amount > 0 then
-					bar:SetColorAt(0, 0, 255, 0, 1)
-				else
-					bar:SetColorAt(0, 255, 0, 0, 1)
-				end
-				if icon then
-					bar:ShowIcon()
-				end
+	if player then
+		-- Find the max amount
+		local maxhit = 0
+		for i, log in ipairs(player.deathlog) do
+			if math.abs(log.amount) > maxhit then
+				maxhit = math.abs(log.amount)
 			end
-			bar:SetTimerLabel(Skada:FormatNumber(log.amount)..", "..("%2.3f"):format(diff))
 		end
+		
+		for i, log in ipairs(player.deathlog) do
+			local diff = tonumber(log.ts) - tonumber(player.deathts)
+			-- Ignore hits older than 30s before death.
+			if diff > -30 then
+				local bar = win:GetBar("log"..i)
+				if bar then
+					bar:SetMaxValue(maxhit)
+					bar:SetValue(math.abs(log.amount))
+				else
+					local icon = select(3, GetSpellInfo(log.spellid))
+					bar = win:CreateBar("log"..i, log.spellname, math.abs(log.amount), maxhit, icon, false)
+					bar.ts = log.ts
+					bar:EnableMouse()
+					bar:SetScript("OnMouseDown", function(bar, button) if button == "RightButton" then Skada:DisplayMode(mod) end end)
+					if log.amount > 0 then
+						bar:SetColorAt(0, 0, 255, 0, 1)
+					else
+						bar:SetColorAt(0, 255, 0, 0, 1)
+					end
+					if icon then
+						bar:ShowIcon()
+					end
+				end
+				bar:SetTimerLabel(Skada:FormatNumber(log.amount)..", "..("%2.3f"):format(diff))
+			end
+		end
+		
+		-- Use our special sort function and sort.
+		win:SetSortFunction(sort_by_ts)
+		win:SortBars()
 	end
-	
-	-- Use our special sort function and sort.
-	win:SetSortFunction(sort_by_ts)
-	win:SortBars()
 end
 
 function mod:OnEnable()
