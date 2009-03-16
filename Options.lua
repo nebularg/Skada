@@ -47,7 +47,9 @@ Skada.defaults = {
 		feed = "",
 		sets = {},
 		total = nil,
-		modules = {},	-- Place module config here if needed.
+
+		modules = {},
+		report = {mode = "Damage", set = "current", channel = "Say", chantype = "preset", number = 10},
 
 		windows = {windefaultscopy},
 	}

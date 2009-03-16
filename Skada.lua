@@ -761,11 +761,6 @@ function Skada:DeleteSet(set)
 	changed = true
 	self:UpdateBars()
 end
-
-local report_channel = "Say"
-local report_number = 10
-local report_mode = nil
-local report_chantype = "preset"
 	
 -- Open a menu. Supply a window to tailor it to that window, else generic.
 function Skada:OpenMenu(win)
@@ -986,9 +981,9 @@ function Skada:OpenMenu(win)
 		        wipe(info)
 		        info.text = L["Send report"]
 		        info.func = function()
-		        				if report_mode ~= nil and report_set ~= nil then
+		        				if Skada.db.profile.report.mode ~= nil and Skada.db.profile.report.set ~= nil then
 		        				
-									if report_chantype == "whisper" then
+									if Skada.db.profile.report.chantype == "whisper" then
 										StaticPopupDialogs["SkadaReportDialog"] = {
 															text = L["Name of recipient"], 
 															button1 = ACCEPT, 
@@ -998,12 +993,12 @@ function Skada:OpenMenu(win)
 															hideOnEscape = 1, 
 															OnAccept = 	function()
 																			report_channel = getglobal(this:GetParent():GetName().."EditBox"):GetText()
-																			Skada:Report(report_channel, report_chantype, report_mode, report_set, report_number)
+																			Skada:Report(Skada.db.profile.report.channel, Skada.db.profile.report.chantype, Skada.db.profile.report.mode, Skada.db.profile.report.set, Skada.db.profile.report.number)
 																		end,
 														}
 										StaticPopup_Show("SkadaReportDialog")
 									else
-										Skada:Report(report_channel, report_chantype, report_mode, report_set, report_number)
+										Skada:Report(Skada.db.profile.report.channel, Skada.db.profile.report.chantype, Skada.db.profile.report.mode, Skada.db.profile.report.set, Skada.db.profile.report.number)
 									end
 								else
 									Skada:Print(L["No mode or segment selected for report."])
@@ -1018,79 +1013,79 @@ function Skada:OpenMenu(win)
 		        for i, module in ipairs(Skada:GetModes()) do
 			        wipe(info)
 		            info.text = module.name
-		            info.checked = (report_mode == module)
-		            info.func = function() report_mode = module end
+		            info.checked = (Skada.db.profile.report.mode == module.name)
+		            info.func = function() Skada.db.profile.report.mode = module.name end
 		            UIDropDownMenu_AddButton(info, level)
 		        end
 		    elseif UIDROPDOWNMENU_MENU_VALUE == "segment" then
 		        wipe(info)
 	            info.text = L["Total"]
-	            info.func = function() report_set = "total" end
-	            info.checked = (report_set == "total")
+	            info.func = function() Skada.db.profile.report.set = "total" end
+	            info.checked = (Skada.db.profile.report.set == "total")
 	            UIDropDownMenu_AddButton(info, level)
 	            
 	            info.text = L["Current"]
-	            info.func = function() report_set = "current" end
-	            info.checked = (report_set == "current")
+	            info.func = function() Skada.db.profile.report.set = "current" end
+	            info.checked = (Skada.db.profile.report.set == "current")
 	            UIDropDownMenu_AddButton(info, level)
 	            
 		        for i, set in ipairs(sets) do
 		            info.text = set.name..": "..date("%H:%M",set.starttime).." - "..date("%H:%M",set.endtime)
-		            info.func = function() report_set = i end
-		            info.checked = (report_set == i)
+		            info.func = function() Skada.db.profile.report.set = i end
+		            info.checked = (Skada.db.profile.report.set == i)
 		            UIDropDownMenu_AddButton(info, level)
 		        end		        
 		    elseif UIDROPDOWNMENU_MENU_VALUE == "number" then
 		        for i = 1,10 do
 			        wipe(info)
 		            info.text = i
-		            info.checked = (report_number == i)
-		            info.func = function() report_number = i end
+		            info.checked = (Skada.db.profile.report.number == i)
+		            info.func = function() Skada.db.profile.report.number = i end
 		            UIDropDownMenu_AddButton(info, level)
 		        end
 		    elseif UIDROPDOWNMENU_MENU_VALUE == "channel" then
 		        wipe(info)
 		        info.text = L["Whisper"]
-		        info.checked = (report_chantype == "whisper")
-		        info.func = function() report_channel = "Whisper"; report_chantype = "whisper" end
+		        info.checked = (Skada.db.profile.report.chantype == "whisper")
+		        info.func = function() Skada.db.profile.report.channel = "Whisper"; Skada.db.profile.report.chantype = "whisper" end
 		        UIDropDownMenu_AddButton(info, level)
 		        
 		        info.text = L["Say"]
-		        info.checked = (report_channel == "Say")
-		        info.func = function() report_channel = "Say"; report_chantype = "preset" end
+		        info.checked = (Skada.db.profile.report.channel == "Say")
+		        info.func = function() Skada.db.profile.report.channel = "Say"; Skada.db.profile.report.chantype = "preset" end
 		        UIDropDownMenu_AddButton(info, level)
         
 	            info.text = L["Raid"]
-	            info.checked = (report_channel == "Raid")
-	            info.func = function() report_channel = "Raid"; report_chantype = "preset" end
+	            info.checked = (Skada.db.profile.report.channel == "Raid")
+	            info.func = function() Skada.db.profile.report.channel = "Raid"; Skada.db.profile.report.chantype = "preset" end
 	            UIDropDownMenu_AddButton(info, level)
 
 	            info.text = L["Party"]
-	            info.checked = (report_channel == "Party")
-	            info.func = function() report_channel = "Party"; report_chantype = "preset" end
+	            info.checked = (Skada.db.profile.report.channel == "Party")
+	            info.func = function() Skada.db.profile.report.channel = "Party"; Skada.db.profile.report.chantype = "preset" end
 	            UIDropDownMenu_AddButton(info, level)
 	            
 	            info.text = L["Guild"]
-	            info.checked = (report_channel == "Guild")
-	            info.func = function() report_channel = "Guild"; report_chantype = "preset" end
+	            info.checked = (Skada.db.profile.report.channel == "Guild")
+	            info.func = function() Skada.db.profile.report.channel = "Guild"; Skada.db.profile.report.chantype = "preset" end
 	            UIDropDownMenu_AddButton(info, level)
 	            
 	            info.text = L["Officer"]
-	            info.checked = (report_channel == "Officer")
-	            info.func = function() report_channel = "Officer"; report_chantype = "preset" end
+	            info.checked = (Skada.db.profile.report.channel == "Officer")
+	            info.func = function() Skada.db.profile.report.channel = "Officer"; Skada.db.profile.report.chantype = "preset" end
 	            UIDropDownMenu_AddButton(info, level)
 	            
 	            info.text = L["Self"]
-	            info.checked = (report_chantype == "self")
-	            info.func = function() report_channel = "Self"; report_chantype = "self" end
+	            info.checked = (Skada.db.profile.report.channel == "self")
+	            info.func = function() Skada.db.profile.report.channel = "Self"; Skada.db.profile.report.chantype = "self" end
 	            UIDropDownMenu_AddButton(info, level)
 	            
 	            local list = {GetChannelList()}
 	            local i = 1
 	            while i < #list do
 		            info.text = list[i+1]
-		            info.checked = (report_channel == list[i])
-		            info.func = function() report_channel = list[i]; report_chantype = "channel" end
+		            info.checked = (Skada.db.profile.report.channel == list[i])
+		            info.func = function() Skada.db.profile.report.channel = list[i]; Skada.db.profile.report.chantype = "channel" end
 		            UIDropDownMenu_AddButton(info, level)
 	            	
 	            	i = i + 2
