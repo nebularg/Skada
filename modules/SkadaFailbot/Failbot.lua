@@ -119,8 +119,8 @@ end
 function playermod:Update(win, set)
 	-- View spells for this player.
 		
-	local player = Skada:get_selected_player(set, self.playerid)
-	local color = Skada:GetDefaultBarColor()
+	local player = Skada:find_player(set, self.playerid)
+	local color = win:GetDefaultBarColor()
 	
 	if player then
 		for event, fails in pairs(player.failevents) do

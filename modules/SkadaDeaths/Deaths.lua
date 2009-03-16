@@ -158,7 +158,7 @@ function deathlog:Update(win, set)
 					bar = win:CreateBar("log"..i, log.spellname, math.abs(log.amount), maxhit, icon, false)
 					bar.ts = log.ts
 					bar:EnableMouse()
-					bar:SetScript("OnMouseDown", function(bar, button) if button == "RightButton" then Skada:DisplayMode(mod) end end)
+					bar:SetScript("OnMouseDown", function(bar, button) if button == "RightButton" then win:DisplayMode(mod) end end)
 					if log.amount > 0 then
 						bar:SetColorAt(0, 0, 255, 0, 1)
 					else
