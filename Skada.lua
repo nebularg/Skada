@@ -445,7 +445,9 @@ end
 -- I refuse to acknoledge that I have written this.
 -- Ideally we want modes to be display system agnostic, so that we can simply
 -- ask the chosen mode to print its contents as a table instead of bars. But for now...
-function Skada:Report(channel, chantype, report_mode, report_set, max)
+function Skada:Report(channel, chantype, report_mode_name, report_set, max)
+
+	local report_mode = find_mode(report_mode_name)
 
 	local win = win or windows[1]
 	if win then
@@ -764,13 +766,6 @@ end
 	
 -- Open a menu. Supply a window to tailor it to that window, else generic.
 function Skada:OpenMenu(win)
-	if win and win.selectedset then
-		report_set = win.selectedset
-	end
-	if win and win.selectedmode then
-		report_mode = win.selectedmode
-	end
-
 	if not self.skadamenu then
 		self.skadamenu = CreateFrame("Frame", "SkadaMenu")
 	end
