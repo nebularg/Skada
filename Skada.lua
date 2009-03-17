@@ -442,10 +442,20 @@ local function sendchat(msg, chan, chantype)
 	end
 end
 
--- I refuse to acknoledge that I have written this.
+-- I refuse to acknowledge that I have written this.
 -- Ideally we want modes to be display system agnostic, so that we can simply
 -- ask the chosen mode to print its contents as a table instead of bars. But for now...
 function Skada:Report(channel, chantype, report_mode_name, report_set, max)
+
+	if(chantype == "channel") then
+		local list = {GetChannelList()}
+		for i=1,table.getn(list)/2 do
+			if(Skada.db.profile.report.channel == list[i*2]) then
+				channel = list[i*2-1]
+				break
+			end
+		end
+	end
 
 	local report_mode = find_mode(report_mode_name)
 
@@ -748,6 +758,7 @@ function Skada:Reset()
 	changed = true
 	self:UpdateBars()
 	self:Print(L["All data has been reset."])
+	collectgarbage("collect")
 end
 
 -- Delete a set.
@@ -987,7 +998,7 @@ function Skada:OpenMenu(win)
 															timeout = 30, 
 															hideOnEscape = 1, 
 															OnAccept = 	function()
-																			report_channel = getglobal(this:GetParent():GetName().."EditBox"):GetText()
+																			Skada.db.profile.report.channel = getglobal(this:GetParent():GetName().."EditBox"):GetText()
 																			Skada:Report(Skada.db.profile.report.channel, Skada.db.profile.report.chantype, Skada.db.profile.report.mode, Skada.db.profile.report.set, Skada.db.profile.report.number)
 																		end,
 														}
@@ -1071,21 +1082,18 @@ function Skada:OpenMenu(win)
 	            UIDropDownMenu_AddButton(info, level)
 	            
 	            info.text = L["Self"]
-	            info.checked = (Skada.db.profile.report.channel == "self")
+	            info.checked = (Skada.db.profile.report.chantype == "self")
 	            info.func = function() Skada.db.profile.report.channel = "Self"; Skada.db.profile.report.chantype = "self" end
 	            UIDropDownMenu_AddButton(info, level)
 	            
-	            local list = {GetChannelList()}
-	            local i = 1
-	            while i < #list do
-		            info.text = list[i+1]
-		            info.checked = (Skada.db.profile.report.channel == list[i])
-		            info.func = function() Skada.db.profile.report.channel = list[i]; Skada.db.profile.report.chantype = "channel" end
-		            UIDropDownMenu_AddButton(info, level)
-	            	
-	            	i = i + 2
-	            end
-	            		    
+				local list = {GetChannelList()}
+				for i=1,table.getn(list)/2 do
+					info.text = list[i*2]
+					info.checked = (Skada.db.profile.report.channel == list[i*2])
+					info.func = function() Skada.db.profile.report.channel = list[i*2]; Skada.db.profile.report.chantype = "channel" end
+					UIDropDownMenu_AddButton(info, level)
+				end	            
+	            
 		    end
 		
 	    end
