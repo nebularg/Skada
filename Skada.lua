@@ -308,8 +308,8 @@ function Skada:OnInitialize()
 	self.db.RegisterCallback(self, "OnProfileReset", "ReloadSettings")
 
 	-- Window config.
-	LibStub("AceConfig-3.0"):RegisterOptionsTable("Skada-Windows", self.windowoptions)
-	self.windowFrame = LibStub("AceConfigDialog-3.0"):AddToBlizOptions("Skada-Windows", "Windows", "Skada")
+--	LibStub("AceConfig-3.0"):RegisterOptionsTable("Skada-Windows", self.windowoptions)
+--	self.windowFrame = LibStub("AceConfigDialog-3.0"):AddToBlizOptions("Skada-Windows", "Windows", "Skada")
 	
 	self:ReloadSettings()
 end
@@ -350,7 +350,8 @@ function Skada:CreateWindow(name, db)
 	window.bargroup:SetScript("OnMouseDown", function(self, button) if button == "RightButton" then window:RightClick() end end)
 	window.bargroup:HideIcon()
 
-	self.windowoptions.args[name] = Skada:GetWindowOptions(window)
+--	self.windowoptions.args[name] = Skada:GetWindowOptions(window)
+	self.options.args.windows.args[name] = Skada:GetWindowOptions(window)
 	
 	libwindow.RegisterConfig(window.bargroup, window.db)
 
