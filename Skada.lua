@@ -1,7 +1,7 @@
 Skada = LibStub("AceAddon-3.0"):NewAddon("Skada", "AceConsole-3.0", "AceEvent-3.0", "AceTimer-3.0", "SpecializedLibBars-1.0")
 local L = LibStub("AceLocale-3.0"):GetLocale("Skada", false)
 local ldb = LibStub:GetLibrary("LibDataBroker-1.1")
-local icon = LibStub("LibDBIcon-1.0")
+local icon = LibStub("LibDBIcon-1.0", true)
 local libwindow = LibStub("LibWindow-1.1")
 local media = LibStub("LibSharedMedia-3.0")
 
@@ -516,11 +516,13 @@ function Skada:Report(channel, chantype, report_mode_name, report_set, max)
 end
 
 function Skada:RefreshMMButton()
-	icon:Refresh("Skada", self.db.profile.icon)
-	if self.db.profile.icon.hide then
-		icon:Hide("Skada")
-	else
-		icon:Show("Skada")
+	if icon then
+		icon:Refresh("Skada", self.db.profile.icon)
+		if self.db.profile.icon.hide then
+			icon:Hide("Skada")
+		else
+			icon:Show("Skada")
+		end
 	end
 end
 
@@ -643,8 +645,8 @@ function Skada:PLAYER_ENTERING_WORLD()
 	local inInstance, instanceType = IsInInstance()
 	local isininstance = inInstance and (instanceType == "party" or instanceType == "raid")
 
-	-- If we are entering an instance, and we were not previously in an instance, and we got this event before...
-	if isininstance and wasininstance ~= nil and not wasininstance and self.db.profile.reset.instance ~= 1 then
+	-- If we are entering an instance, and we were not previously in an instance, and we got this event before... and we have some data...
+	if isininstance and wasininstance ~= nil and not wasininstance and self.db.profile.reset.instance ~= 1 and total ~= nil then
 		if self.db.profile.reset.instance == 3 then
 			ask_for_reset()
 		else
@@ -1164,7 +1166,7 @@ function Skada:ReloadSettings()
 	end
 	
 	-- Minimap button.
-	if not icon:IsRegistered("Skada") then
+	if icon and not icon:IsRegistered("Skada") then
 		icon:Register("Skada", dataobj, self.db.profile.icon)
 	end
 
