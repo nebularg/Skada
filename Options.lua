@@ -44,6 +44,7 @@ Skada.defaults = {
 		setstokeep = 10,
 		onlykeepbosses=false,
 		hidesolo=false,
+		hidedisables=true,
 		feed = "",
 		sets = {},
 		total = nil,
@@ -652,6 +653,18 @@ Skada.options = {
 							        		end,
 							},
 
+							disablewhenhidden = {
+							        type="toggle",
+							        name=L["Disable while hidden"],
+							        desc=L["Skada will not collect any data when automatically hidden."],
+							        order=25,
+							        get=function() return Skada.db.profile.hidedisables end,
+							        set=function()
+							        			Skada.db.profile.hidedisables = not Skada.db.profile.hidedisables
+							        			Skada:ApplySettings()
+							        		end,
+							},
+							
 							numberformat = {
 								type="select",
 								name=L["Number format"],
@@ -659,7 +672,7 @@ Skada.options = {
 								values=	function() return {[1] = L["Condensed"], [2] = L["Detailed"]} end,
 								get=function() return Skada.db.profile.numberformat end,
 								set=function(self, opt) Skada.db.profile.numberformat = opt end,
-								order=25,
+								order=26,
 							},
 							
 							datafeed = {
@@ -677,7 +690,7 @@ Skada.options = {
 											Skada.db.profile.feed = feed
 											if feed ~= "" then Skada:SetFeed(Skada:GetFeeds()[feed]) end
 										end,
-								order=26,
+								order=27,
 							},
 
 							setstokeep = {
@@ -689,7 +702,7 @@ Skada.options = {
 								step=1,
 								get=function() return Skada.db.profile.setstokeep end,
 								set=function(self, val) Skada.db.profile.setstokeep = val end,
-								order=27,
+								order=28,
 							},
 							
 						}

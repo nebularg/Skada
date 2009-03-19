@@ -536,17 +536,36 @@ function Skada:PetDebug()
 	end
 end
 
+function Skada:SetActive(enable)
+	if enable then
+		for i, win in ipairs(windows) do
+			win:Show()
+			win:SortBars()
+		end
+		if self.db.profile.hidedisables then
+			-- Note: we will re-register events here when playing with config - that's OK, right? Research it.
+			self:RegisterEvent("PLAYER_REGEN_DISABLED")
+			self:RegisterEvent("PARTY_MEMBERS_CHANGED")
+			self:RegisterEvent("RAID_ROSTER_UPDATE")
+			self:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
+			self:RegisterEvent("PLAYER_ENTERING_WORLD")
+			self:RegisterEvent("UNIT_PET")
+			
+			self:ScheduleRepeatingTimer("UpdateBars", 0.5)
+			self:ScheduleRepeatingTimer("Tick", 1)
+		end
+	else
+		for i, win in ipairs(windows) do
+			win:Hide()
+		end
+		if self.db.profile.hidedisables then
+			self:UnregisterAllEvents()
+			self:CancelAllTimers()
+		end
+	end
+end
+
 function Skada:OnEnable()
-	self:RegisterEvent("PLAYER_REGEN_DISABLED")
-	self:RegisterEvent("PARTY_MEMBERS_CHANGED")
-	self:RegisterEvent("RAID_ROSTER_UPDATE")
-	self:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
-	self:RegisterEvent("PLAYER_ENTERING_WORLD")
-	self:RegisterEvent("UNIT_PET")
-	
-	self:ScheduleRepeatingTimer("UpdateBars", 0.5)
-	self:ScheduleRepeatingTimer("Tick", 1)
-	
 	if type(CUSTOM_CLASS_COLORS) == "table" then
 		Skada.classcolors = CUSTOM_CLASS_COLORS
 	end
@@ -660,9 +679,7 @@ local function check_for_join_and_leave()
 		
 		-- Hide window if we have enabled the "Hide when solo" option.
 		if Skada.db.profile.hidesolo then
-			for i, win in ipairs(windows) do
-				win:Hide()
-			end
+			Skada:SetActive(false)
 		end
 	end
 
@@ -677,10 +694,7 @@ local function check_for_join_and_leave()
 
 		-- Show window if we have enabled the "Hide when solo" option.
 		if Skada.db.profile.hidesolo then
-			for i, win in ipairs(windows) do
-				win:Show()
-				win:SortBars()
-			end
+			Skada:SetActive(true)
 		end
 	end
 
@@ -1263,20 +1277,16 @@ function Skada:ApplySettings()
 			g.bgframe:Hide()
 		end
 		
-		if p.shown then
-			-- Don't show window if we are solo and we have enabled the "Hide when solo" option.
-			if not (self.db.profile.hidesolo and GetNumRaidMembers() == 0 and GetNumPartyMembers() == 0) then
-				win:Show()
-			else
-				win:Hide()
-			end
-		else
-			win:Hide()
-		end
-	
 		win:SortBars()
 	end
-	
+
+	-- Don't show window if we are solo and we have enabled the "Hide when solo" option.
+	if not (self.db.profile.hidesolo and GetNumRaidMembers() == 0 and GetNumPartyMembers() == 0) then
+		self:SetActive(true)
+	else
+		self:SetActive(false)
+	end
+
 	changed = true
 	self:UpdateBars()
 end
