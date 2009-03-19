@@ -831,6 +831,16 @@ function barListPrototype:GetBarOffset()
 	return self.offset
 end
 
+-- MODIFIED
+function barListPrototype:SetUseSpark(use)
+	self.usespark = use
+	if bars[self] then
+		for k, v in pairs(bars[self]) do
+			v:SetUseSpark(use)
+		end
+	end
+end
+
 -- group:SetSortFunction(group.NOOP) to disable sorting
 function barListPrototype.NOOP() end
 
@@ -1015,6 +1025,8 @@ do
 		if icon then
 			self:ShowIcon()
 		end
+		-- MODIFIED
+		self.icon:SetTexCoord(0.07,0.93,0.07,0.93);
 	
 		self.label = self.label or self:CreateFontString(nil, "OVERLAY", "ChatFontNormal")
 		self.label:SetText(text)

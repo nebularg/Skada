@@ -350,7 +350,6 @@ function Skada:CreateWindow(name, db)
 	window.bargroup:SetScript("OnMouseDown", function(self, button) if button == "RightButton" then window:RightClick() end end)
 	window.bargroup:HideIcon()
 
---	self.windowoptions.args[name] = Skada:GetWindowOptions(window)
 	self.options.args.windows.args[name] = Skada:GetWindowOptions(window)
 	
 	libwindow.RegisterConfig(window.bargroup, window.db)
@@ -373,7 +372,7 @@ function Skada:DeleteWindow(name)
 			table.remove(self.db.profile.windows, i)
 		end
 	end
-	self.windowoptions.args[name] = nil
+	self.options.args.windows.args[name] = nil
 end
 
 function Skada:Command(param)
@@ -1161,6 +1160,10 @@ function Skada:ApplySettings()
 		g:SortBars()
 	
 		-- Header
+		g.button:SetNormalFontObject(ChatFontSmall)
+		local font = g.button:GetNormalFontObject()
+		font:SetFont(media:Fetch('font', p.title.font), p.title.fontsize)
+		g.button:SetNormalFontObject(font)
 		local inset = p.title.margin
 		titlebackdrop.bgFile = media:Fetch("statusbar", p.title.texture)
 		if p.title.borderthickness > 0 then

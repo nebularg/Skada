@@ -18,7 +18,7 @@ Skada.windowdefaults = {
 	baraltcolor = {r = 0.45, g = 0.45, b = 0.8, a = 1},
 	barslocked=false,
 
-	title = {margin=0, texture="Round", bordertexture="None", borderthickness=2, color = {r=0,g=0,b=0,a=0.6}},
+	title = {font="Accidental Presidency", fontsize=11,margin=0, texture="Round", bordertexture="None", borderthickness=2, color = {r=0,g=0,b=0,a=0.6}},
 	background = {margin=0, height=150, texture="None", bordertexture="None", borderthickness=0, color = {r=0,g=0,b=0.5,a=0.5}},
 
 	reversegrowth=false,
@@ -35,7 +35,7 @@ Skada.windowdefaults = {
 
 local windefaultscopy = {}
 Skada:tcopy(windefaultscopy, Skada.windowdefaults)
-				
+
 Skada.defaults = {
 	profile = {
 		reset={instance=1, join=1, leave=1},
@@ -53,12 +53,6 @@ Skada.defaults = {
 
 		windows = {windefaultscopy},
 	}
-}
-
-Skada.windowoptions = {
-	type="group",
-	name="Windows",
-	args={},
 }
 
 function Skada:GetWindowOptions(win)
@@ -267,7 +261,37 @@ function Skada:GetWindowOptions(win)
 						        	end,
 						},
 						
-					    texture = {
+					    font = {
+					         type = 'select',
+					         dialogControl = 'LSM30_Font',
+					         name = L["Bar font"],
+					         desc = L["The font used by all bars."],
+					         values = AceGUIWidgetLSMlists.font,
+					         get = function() return db.title.font end,
+					         set = function(self,key) 
+					         			db.title.font = key
+					         			Skada:ApplySettings()
+									end,
+							order=1,
+					    },
+	
+						fontsize = {
+							type="range",
+							name=L["Bar font size"],
+							desc=L["The font size of all bars."],
+							min=7,
+							max=40,
+							step=1,
+							get=function() return db.title.fontsize end,
+							set=function(self, size)
+										db.title.fontsize = size
+					         			Skada:ApplySettings()
+									end,
+							order=2,
+						},
+						
+						
+						texture = {
 					         type = 'select',
 					         dialogControl = 'LSM30_Statusbar',
 					         name = L["Background texture"],
@@ -278,7 +302,7 @@ function Skada:GetWindowOptions(win)
 				         				db.title.texture = key
 					         			Skada:ApplySettings()
 									end,
-							order=1,
+							order=3,
 					    },						    
 					    
 					    bordertexture = {
@@ -292,7 +316,7 @@ function Skada:GetWindowOptions(win)
 				         				db.title.bordertexture = key
 					         			Skada:ApplySettings()
 									end,
-							order=2,
+							order=4,
 					    },					
 				
 						thickness = {
@@ -307,7 +331,7 @@ function Skada:GetWindowOptions(win)
 										db.title.borderthickness = val
 					         			Skada:ApplySettings()
 									end,
-							order=3,
+							order=5,
 						},
 
 						margin = {
@@ -322,7 +346,7 @@ function Skada:GetWindowOptions(win)
 										db.title.margin = val
 					         			Skada:ApplySettings()
 									end,
-							order=4,
+							order=6,
 						},	
 													
 						color = {
@@ -338,7 +362,7 @@ function Skada:GetWindowOptions(win)
 									db.title.color = {["r"] = r, ["g"] = g, ["b"] = b, ["a"] = a}
 									Skada:ApplySettings()
 								end,
-							order=5,
+							order=7,
 						},
 						
 					}

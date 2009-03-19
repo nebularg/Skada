@@ -44,9 +44,9 @@ local function log_damage(set, dmg)
 		
 		-- Add spell to player if it does not exist.
 		if not player.damagespells[dmg.spellname] then
-			player.damagespells[dmg.spellname] = {id = dmg.spellid, name = dmg.spellname, missed = 0, hit = 0, totalhits = 0, damage = 0, overkill = 0, resisted = 0, blocked = 0, absorbed = 0, critical = 0, glancing = 0, crushing = 0}
+			player.damagespells[dmg.spellname] = {id = dmg.spellid, name = dmg.spellname, hit = 0, totalhits = 0, damage = 0, critical = 0, glancing = 0, crushing = 0, ABSORB = 0, BLOCK = 0, DEFLECT = 0, DODGE= 0, EVADE = 0, IMMUNE = 0, PARRY = 0, REFLECT = 0, RESIST = 0, MISS = 0}
 		end
-		
+    		
 		-- Add to player total damage.
 		player.damage = player.damage + amount
 		
@@ -56,22 +56,12 @@ local function log_damage(set, dmg)
 		spell.totalhits = spell.totalhits + 1
 	
 		spell.damage = spell.damage + amount
-		if dmg.overkill then
-			spell.overkill = spell.overkill + dmg.overkill
-		end
-		if dmg.resisted then
-			spell.resisted = spell.resisted + dmg.resisted
-		end
-		if dmg.blocked then
-			spell.blocked = spell.blocked + dmg.blocked
-		end
-		if dmg.absorbed then
-			spell.absorbed = spell.absorbed + dmg.absorbed
-		end
 		if dmg.critical then
 			spell.critical = spell.critical + 1
 		elseif dmg.missed ~= nil then
-			spell.missed = spell.missed + 1
+			if spell[dmg.missed] ~= nil then	-- Just in case.
+				spell[dmg.missed] = spell[dmg.missed] + 1
+			end
 		elseif dmg.glancing then
 			spell.glancing = spell.glancing + 1
 		elseif dmg.crushing then
@@ -150,7 +140,7 @@ local function SwingMissed(timestamp, eventtype, srcGUID, srcName, srcFlags, dst
 		dmg.critical = nil
 		dmg.glancing = nil
 		dmg.crushing = nil
-		dmg.missed = 1
+		dmg.missed = select(1, ...)
 		
 		Skada:FixPets(dmg)
 		log_damage(Skada.current, dmg)
@@ -174,7 +164,7 @@ local function SpellMissed(timestamp, eventtype, srcGUID, srcName, srcFlags, dst
 		dmg.critical = nil
 		dmg.glancing = nil
 		dmg.crushing = nil
-		dmg.missed = 1
+		dmg.missed = missType
 		
 		Skada:FixPets(dmg)
 		log_damage(Skada.current, dmg)
@@ -316,27 +306,43 @@ function spellmod:Update(win, set)
 			if spell.critical > 0 then
 				add_detail_bar(win, L["Critical"], spell.critical, spell.totalhits)
 			end
-			if spell.missed > 0 then
-				add_detail_bar(win, L["Missed"], spell.missed, spell.totalhits)
-			end
 			if spell.glancing > 0 then
 				add_detail_bar(win, L["Glancing"], spell.glancing, spell.totalhits)
 			end
 			if spell.crushing > 0 then
 				add_detail_bar(win, L["Crushing"], spell.crushing, spell.totalhits)
 			end
-			--This bit needs a section of its own somehow. Split the bar display maybe?
-			--[[
-			if spell.resisted > 0 then
-				add_detail_bar(L["Resisted"], spell.resisted, spell.totalhits)
+			if spell.ABSORB and spell.ABSORB > 0 then
+				add_detail_bar(win, L["Absorb"], spell.ABSORB, spell.totalhits)
 			end
-			if spell.blocked > 0 then
-				add_detail_bar(L["Blocked"], spell.blocked, spell.totalhits)
+			if spell.BLOCK and spell.BLOCK > 0 then
+				add_detail_bar(win, L["Block"], spell.BLOCK, spell.totalhits)
 			end
-			if spell.absorbed > 0 then
-				add_detail_bar(L["Absorbed"], spell.absorbed, spell.totalhits)
+			if spell.DEFLECT and spell.DEFLECT > 0 then
+				add_detail_bar(win, L["Deflect"], spell.DEFLECT, spell.totalhits)
 			end
-			--]]
+			if spell.DODGE and spell.DODGE > 0 then
+				add_detail_bar(win, L["Dodge"], spell.DODGE, spell.totalhits)
+			end
+			if spell.EVADE and spell.EVADE > 0 then
+				add_detail_bar(win, L["Evade"], spell.EVADE, spell.totalhits)
+			end
+			if spell.IMMUNE and spell.IMMUNE > 0 then
+				add_detail_bar(win, L["Immune"], spell.IMMUNE, spell.totalhits)
+			end
+			if spell.MISS and spell.MISS > 0 then
+				add_detail_bar(win, L["Missed"], spell.ABSORB, spell.totalhits)
+			end
+			if spell.PARRY and spell.PARRY > 0 then
+				add_detail_bar(win, L["Parry"], spell.PARRY, spell.totalhits)
+			end
+			if spell.REFLECT and spell.REFLECT > 0 then
+				add_detail_bar(win, L["Reflect"], spell.REFLECT, spell.totalhits)
+			end
+			if spell.RESIST and spell.RESIST > 0 then
+				add_detail_bar(win, L["Resist"], spell.RESIST, spell.totalhits)
+			end
+			
 		end
 	end
 

@@ -178,6 +178,16 @@ L["Whisper"] = "Whisper"
 L["No mode or segment selected for report."] = "No mode or segment selected for report."
 L["Name of recipient"] = "Name of recipient"
 
+L["Resist"] = "Resist"
+L["Reflect"] = "Reflect"
+L["Parry"] = "Parry"
+L["Immune"] = "Immune"
+L["Evade"] = "Evade"
+L["Dodge"] = "Dodge"
+L["Deflect"] = "Deflect"
+L["Block"] = "Block"
+L["Absorb"] = "Absorb"
+
 -- SkadaDebuffs
 L["Debuff uptimes"] = true
 L["'s Debuffs"] = true

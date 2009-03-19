@@ -1,6 +1,25 @@
-1.0-17
-* Re-worked combat log event handling; should now be much more scalable.
+1.2-1
+* Moved window configuration to the main configuration.
+* Added window header font setting.
+* Made spell icons a little prettier (thanks Aezay)
+* Added displaying of miss types in Damage mode spell details.
 
+1.1-4
+* Fixed whisper reports. Hopefully the last of the "fix what I broke last weekend" versions.
+
+1.1-3
+* Fixed reporting (oops).
+
+1.1-2
+* Fixed some leftover bugs from the transition to multiple windows.
+* Now tracking DAMAGE_SHIELD events.
+* Report settings are remembered across sessions.
+
+1.1-1
+* Multiple windows.
+* New combat log event handling. Should be more scalable.
+* Report menu can now use whispers.
+* Enemy damage done/taken modes; shows a list of all enemies in a segment. Drilling down shows who did damage to or took damage from the enemy.
 
 1.0-16
 * Added Enemy damage done and Enemy damage taken modes. Shows a breakdown of damage per mob.
