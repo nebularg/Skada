@@ -16,6 +16,9 @@ Skada.current = nil
 -- The total set
 Skada.total = nil
 
+-- The last fight set
+Skada.last = nil
+
 -- Modes - these are modules, really. Modeules?
 local modes = {}
 
@@ -185,12 +188,14 @@ end
 function Window:get_selected_set()
 	if self.selectedset == "current" then
 		if Skada.current == nil then
-			return sets[1]
+			return Skada.last
 		else
 			return Skada.current
 		end
 	elseif self.selectedset == "total" then
 		return Skada.total
+	elseif self.selectedset == "last" then
+		return Skada.last
 	else
 		return sets[self.selectedset]
 	end
@@ -227,7 +232,7 @@ function Window:DisplayModes(settime)
 	self.db.set = settime
 
 	-- Find the selected set
-	if settime == "current" or settime == "total" then
+	if settime == "current" or settime == "total" or settime == "last" then
 		self.selectedset = settime
 	else
 		for i, set in ipairs(sets) do
@@ -236,6 +241,8 @@ function Window:DisplayModes(settime)
 					selfselectedset = "current"
 				elseif set.name == L["Total"] then
 					self.selectedset = "total"
+				elseif set.name == L["Last fight"] then
+					self.selectedset = "last"
 				else
 					self.selectedset = i
 				end
@@ -748,7 +755,8 @@ function Skada:Reset()
 		self.total = createSet(L["Total"])
 		self.db.profile.total = self.total
 	end
-	
+	self.last = nil
+
 	-- Delete sets that are not marked as persistent.
 	for i=table.maxn(sets), 1, -1 do
 		if not sets[i].keep then
@@ -906,6 +914,18 @@ function Skada:OpenMenu(win)
 	            			end
 	            info.checked = (window.selectedset == "current")
 	            UIDropDownMenu_AddButton(info, level)
+
+		        wipe(info)
+	            info.text = L["Last fight"]
+	            info.func = function()
+	            				window.selectedset = "last"
+	            				Skada:RemoveAllBars()
+	            				changed = true
+	            				Skada:UpdateBars()
+	            			end
+	            info.checked = (window.selectedset == "last")
+	            UIDropDownMenu_AddButton(info, level)
+	            
 		        for i, set in ipairs(sets) do
 			        wipe(info)
 		            info.text = set.name..": "..date("%H:%M",set.starttime).." - "..date("%H:%M",set.endtime)
@@ -1033,6 +1053,11 @@ function Skada:OpenMenu(win)
 	            info.text = L["Current"]
 	            info.func = function() Skada.db.profile.report.set = "current" end
 	            info.checked = (Skada.db.profile.report.set == "current")
+	            UIDropDownMenu_AddButton(info, level)
+
+	            info.text = L["Last fight"]
+	            info.func = function() Skada.db.profile.report.set = "last" end
+	            info.checked = (Skada.db.profile.report.set == "last")
 	            UIDropDownMenu_AddButton(info, level)
 	            
 		        for i, set in ipairs(sets) do
@@ -1314,9 +1339,13 @@ function Skada:Tick()
 					end
 				end
 				
+				-- Add set to sets.
 				table.insert(sets, 1, self.current)
 			end
 		end
+
+		-- Make set last set.
+		self.last = self.current
 		
 		-- Add time spent to total set as well.
 		self.total.time = self.total.time + self.current.time
@@ -1340,8 +1369,7 @@ function Skada:Tick()
 		-- Trim segments; don't touch persistent sets.
 		for i=table.maxn(sets), 1, -1 do
 			if numsets > self.db.profile.setstokeep and not sets[i].keep then
-				local t = table.remove(sets, i)
-				wipe(t)
+				table.remove(sets, i)
 				numsets = numsets - 1
 			end
 		end
@@ -1429,7 +1457,7 @@ end
 -- Mode is the name of a mode.
 function Skada:RestoreView(win, theset, themode)
 	-- Set the... set. If no such set exists, set to current.
-	if theset and type(theset) == "string" and (theset == "current" or theset == "total") then
+	if theset and type(theset) == "string" and (theset == "current" or theset == "total" or theset == "last") then
 		win.selectedset = theset
 	elseif theset and type(theset) == "number" and theset <= table.maxn(sets) then
 		win.selectedset = theset
@@ -1519,7 +1547,7 @@ end
 -- The exception is src_is_interesting, which we always check to determine combat start - I would like to get rid of this, but am not sure how.
 -- Combat start bit disabled for now.
 
--- TODO: Start looking at flags instead of using functions.
+-- TODO: Start looking at CL event flags instead of using functions.
 function Skada:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
 	local src_is_interesting = nil --self:UnitIsInteresting(srcName, srcGUID)
 	local dst_is_interesting = nil
@@ -1726,6 +1754,15 @@ function Skada:UpdateBars()
 				bar:SetColorAt(0,c.r,c.g,c.b, c.a)
 				bar:EnableMouse(true)
 				bar:SetScript("OnMouseDown", function(bar, button) if button == "LeftButton" then win:DisplayModes("current") elseif button == "RightButton" then win:RightClick() end end)
+			end
+
+			local bar = win:GetBar("last")
+			if not bar then
+				local bar = win:CreateBar("last", L["Last fight"], 1, 1)
+				local c = win:GetDefaultBarColor()
+				bar:SetColorAt(0,c.r,c.g,c.b, c.a)
+				bar:EnableMouse(true)
+				bar:SetScript("OnMouseDown", function(bar, button) if button == "LeftButton" then win:DisplayModes("last") elseif button == "RightButton" then win:RightClick() end end)
 			end
 	
 			for i, set in ipairs(sets) do

@@ -15,8 +15,8 @@ L["Skada summary"] = true
 L["opens the configuration window"] = true
 L["resets all data"] = true
 
-L["Current"] = true
-L["Total"] = true
+L["Current"] = "Current fight"
+L["Total"] = "Total"
 
 L["All data has been reset."] = true
 L["Skada: Modes"] = true
@@ -187,6 +187,8 @@ L["Dodge"] = "Dodge"
 L["Deflect"] = "Deflect"
 L["Block"] = "Block"
 L["Absorb"] = "Absorb"
+
+L["Last fight"] = "Last fight"
 
 -- SkadaDebuffs
 L["Debuff uptimes"] = true
