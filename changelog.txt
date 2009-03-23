@@ -5,7 +5,7 @@
 * Added displaying of miss types in Damage mode spell details.
 * Added a "Last fight" segment. This is kept even if you have "Only keep bosses" active. The "Current" segment shows this segment out of combat. This means you don't lose trash fights straight away when you have "Only keep bosses" on.
 * Made LibDBIcon-1.0 optional for the disembedding crowd.
-
+* Fixed background frame not displayed properly on first bar (thanks whynona2)
 
 1.1-4
 * Fixed whisper reports. Hopefully the last of the "fix what I broke last weekend" versions.

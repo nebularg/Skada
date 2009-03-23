@@ -61,9 +61,19 @@ function Skada:GetWindowOptions(win)
 	
 	local options = {
 	        type="group",
-			name=db.name,
+			name=function() return db.name end,
 	        args={
-	       		baroptions = {
+
+				rename = {
+					type="input",
+					name=L["Rename window"],
+					desc=L["Enter the name for the window."],
+					get=function() return db.name end,
+					set=function(self, val) if val ~= db.name and val ~= "" then db.name = val end end,
+					order=1,
+				},
+
+				baroptions = {
 	       			type = "group",
 	       			name = L["Bars"],
 	       			order=1,

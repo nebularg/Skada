@@ -192,6 +192,9 @@ L["Last fight"] = "Last fight"
 L["Disable while hidden"] = "Disable while hidden"
 L["Skada will not collect any data when automatically hidden."] = "Skada will not collect any data when automatically hidden."
 
+L["Rename window"] = "Rename window"
+L["Enter the name for the window."] = "Enter the name for the window."
+
 -- SkadaDebuffs
 L["Debuff uptimes"] = true
 L["'s Debuffs"] = true

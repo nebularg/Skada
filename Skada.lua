@@ -50,29 +50,117 @@ function Skada:GetWindows()
 	return windows
 end
 
-Window = {
-
-	-- The selected mode and set
-	selectedmode = nil,
-	selectedset = nil,
-
-	-- Mode and set to return to after combat.
-	restore_mode = nil,
-	restore_set = nil,
-	
-	usealt = true,
-}
+-- Our window type.
+local Window = {}
 
 local mt = {__index = Window}
 
 function Window:new()
-   return setmetatable({ }, mt)
+   return setmetatable(
+   		{
+			-- The selected mode and set
+			selectedmode = nil,
+			selectedset = nil,
+		
+			-- Mode and set to return to after combat.
+			restore_mode = nil,
+			restore_set = nil,
+			
+			usealt = true,
+			
+			-- Our dataset.
+			dataset = {},
+			
+			-- Metadata about our dataset.
+			metadata = {},
+	   	 }, mt)
 end
 
 function Window:destroy()
 	self.bargroup:Hide()
 	self.bargroup.bgframe = nil
 	self.bargroup = nil
+	self.dataset = nil
+end
+
+local function BarClick(win, bar, button)
+	for i, data in ipairs(win.dataset) do
+		if data.id == bar.id then
+			if win.metadata.click then
+				win.metadata.click(win, data.id, button)
+			elseif button == "RightButton" then
+				win:RightClick()
+			end
+			return
+		end
+	end
+end
+
+local function value_sort(a,b)
+	if a.value == nil then
+		return false
+	elseif b.value == nil then
+		return true
+	else
+		return a.value > b.value
+	end
+end
+
+-- Tells window to update the display of its dataset.
+-- TODO: This will delegate to the chosen display provider. For now, just do bars.
+function Window:UpdateDisplay()
+	-- Fetch max value if our mode has not done this itself.
+	if not self.metadata.maxvalue then
+		self.metadata.maxvalue = 0
+		for i, data in ipairs(self.dataset) do
+			if data.id and data.value > self.metadata.maxvalue then
+				self.metadata.maxvalue = data.value
+			end
+		end
+	end
+
+	-- Sort according to value.
+	table.sort(self.dataset, value_sort)
+
+	local nr = 1
+	for i, data in ipairs(self.dataset) do
+		if data.id then
+			local bar = self:GetBar(data.id)
+			if bar then
+				bar:SetMaxValue(self.metadata.maxvalue or 1)
+				bar:SetValue(data.value)
+			else
+				bar = self:CreateBar(data.id, data.label, data.value, self.metadata.maxvalue or 1, data.icon, false)
+				if data.icon then
+					bar:ShowIcon()
+				end
+				bar:EnableMouse()
+				bar.id = data.id
+				bar:SetScript("OnMouseDown", function(bar, button) BarClick(self, bar, button) end)
+				if data.color then
+					bar:SetColorAt(0, data.color.r, data.color.g, data.color.b, data.color.a or 1)
+				else
+					local color = self:GetDefaultBarColor()
+					bar:SetColorAt(0, color.r, color.g, color.b, color.a or 1)
+				end
+			end
+			if self.metadata.showspots then
+				bar:SetLabel(("%2u. %s"):format(nr, data.label))
+			else
+				bar:SetLabel(data.label)
+			end
+			bar:SetTimerLabel(data.valuetext)
+			nr = nr + 1
+		end
+	end
+	self:SortBars()
+end
+
+-- Called before dataset is updated.
+function Window:UpdateInProgress()
+	for i, data in ipairs(self.dataset) do
+		data.id = id
+	end
 end
 
 function Window:AnchorClicked(cbk, group, button)
@@ -162,7 +250,17 @@ function Window:CreateBar(name, label, value, maxvalue, icon, o)
 	return bar
 end
 
+function Window:Reset()
+	for i, data in ipairs(self.dataset) do
+		wipe(data)
+	end
+	self.metadata = {}
+end
+
 function Window:RemoveAllBars()
+	-- Clear dataset.
+	self:Reset()
+
 	self.usealt = true
 	
 	-- Reset sort function.
@@ -208,6 +306,13 @@ function Window:DisplayMode(mode)
 	self.selectedplayer = nil
 	self.selectedspell = nil
 	self.selectedmode = mode
+	
+	-- Apply mode's metadata.
+	if mode.metadata then
+		for key, value in pairs(mode.metadata) do
+			self.metadata[key] = value
+		end
+	end
 
 	-- Save for posterity.
 	self.db.mode = self.selectedmode.name
@@ -301,7 +406,7 @@ function Skada:OnInitialize()
 	media:Register("statusbar", "Round",			[[Interface\Addons\Skada\statusbar\Round]])
 
 	-- DB
-	self.db = LibStub("AceDB-3.0"):New("SkadaDB", self.defaults)
+	self.db = LibStub("AceDB-3.0"):New("SkadaDB", self.defaults, "Default")
 	LibStub("AceConfig-3.0"):RegisterOptionsTable("Skada", self.options)
 	self.optionsFrame = LibStub("AceConfigDialog-3.0"):AddToBlizOptions("Skada", "Skada")
 
@@ -547,11 +652,7 @@ function Skada:SetActive(enable)
 		if self.db.profile.hidedisables then
 			-- Note: we will re-register events here when playing with config - that's OK, right? Research it.
 			self:RegisterEvent("PLAYER_REGEN_DISABLED")
-			self:RegisterEvent("PARTY_MEMBERS_CHANGED")
-			self:RegisterEvent("RAID_ROSTER_UPDATE")
 			self:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
-			self:RegisterEvent("PLAYER_ENTERING_WORLD")
-			self:RegisterEvent("UNIT_PET")
 			
 			self:ScheduleRepeatingTimer("UpdateBars", 0.5)
 			self:ScheduleRepeatingTimer("Tick", 1)
@@ -561,13 +662,19 @@ function Skada:SetActive(enable)
 			win:Hide()
 		end
 		if self.db.profile.hidedisables then
-			self:UnregisterAllEvents()
+			self:UnregisterEvent("PLAYER_REGEN_DISABLED")
+			self:UnregisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
 			self:CancelAllTimers()
 		end
 	end
 end
 
 function Skada:OnEnable()
+	self:RegisterEvent("PLAYER_ENTERING_WORLD")
+	self:RegisterEvent("PARTY_MEMBERS_CHANGED")
+	self:RegisterEvent("RAID_ROSTER_UPDATE")
+	self:RegisterEvent("UNIT_PET")
+			
 	if type(CUSTOM_CLASS_COLORS) == "table" then
 		Skada.classcolors = CUSTOM_CLASS_COLORS
 	end
@@ -1262,7 +1369,7 @@ function Skada:ApplySettings()
 			else
 				g.bgframe:SetPoint("LEFT", g.button, "LEFT", -p.background.borderthickness, 0)
 				g.bgframe:SetPoint("RIGHT", g.button, "RIGHT", p.background.borderthickness, 0)
-				g.bgframe:SetPoint("TOP", g.button, "BOTTOM", 0, 0)
+				g.bgframe:SetPoint("TOP", g.button, "BOTTOM", 0, 5)
 			end
 			g.bgframe:Show()
 			
@@ -1724,8 +1831,14 @@ function Skada:UpdateBars()
 			
 			-- If we have a set, go on.
 			if set then
-				-- Let mode handle the rest.
+				-- Inform window that a data update will take place.
+				win:UpdateInProgress()
+			
+				-- Let mode update data.
 				win.selectedmode:Update(win, set)
+				
+				-- Let window display the data.
+				win:UpdateDisplay()
 			end
 			
 		elseif win.selectedset then

@@ -234,7 +234,7 @@ function mod:Update(win, set)
 				local color = Skada.classcolors[player.class] or win:GetDefaultBarColor()
 				bar:SetColorAt(0, color.r, color.g, color.b, color.a or 1)
 			end
-			bar:SetTimerLabel(format_threatvalue(player.value)..(", %02.1f%%"):format(player.threat / maxthreat * 100).."%")
+			bar:SetTimerLabel(format_threatvalue(player.value)..(", %02.1f"):format(player.threat / maxthreat * 100).."%")
 			bar.checked = true
 		end
 	end
