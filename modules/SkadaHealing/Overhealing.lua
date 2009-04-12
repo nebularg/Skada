@@ -7,6 +7,7 @@ local mod = Skada:NewModule("OverhealingMode")
 mod.name = L["Overhealing"]
 
 function mod:OnEnable()
+	mod.metadata = {showspots = true}
 	Skada:AddMode(self)
 end
 
@@ -33,39 +34,28 @@ function mod:GetSetSummary(set)
 end
 
 function mod:Update(win, set)
-	-- Calculate the highest damage.
-	-- How to get rid of this iteration?
-	local maxoverhealing = 0
-	for i, player in ipairs(set.players) do
-		if player.overhealing > maxoverhealing then
-			maxoverhealing = player.overhealing
-		end
-	end
-	
---	Skada:Print("maxoverhealing: "..tostring(maxoverhealing))
-	-- For each player in the set, see if we have a bar already.
-	-- If so, update values, else create bar.
+	local nr = 1
+	local max = 0
+
 	for i, player in ipairs(set.players) do
 		if player.overhealing > 0 then
-			local bar = win:GetBar(tostring(player.id))
-			if bar then
-				bar:SetMaxValue(maxoverhealing)
-				bar:SetValue(player.overhealing)
-	--			Skada:Print("updated "..player.name.." to "..tostring(player.overhealing))
-			else
-				bar = win:CreateBar(tostring(player.id), player.name, player.overhealing, maxoverhealing, nil, false)
-				bar:EnableMouse()
-				bar:SetScript("OnMouseDown", function(bar, button) if button == "RightButton" then win:RightClick() end end)
-				local color = Skada.classcolors[player.class] or win:GetDefaultBarColor()
-				bar:SetColorAt(0, color.r, color.g, color.b, color.a or 1)
-				
-	--			Skada:Print("created "..player.name.." at "..tostring(player.overhealing))
+		
+			local d = win.dataset[nr] or {}
+			win.dataset[nr] = d
+	
+			d.id = player.id
+			d.value = player.overhealing
+			d.label = player.name
+			d.valuetext = Skada:FormatNumber(player.overhealing)..(" (%02.1f%%)"):format(player.overhealing / set.overhealing * 100)
+			d.color = Skada.classcolors[player.class]
+			
+			if player.overhealing > max then
+				max = player.overhealing
 			end
-			bar:SetTimerLabel(Skada:FormatNumber(player.overhealing)..(" (%02.1f%%)"):format(player.overhealing / set.overhealing * 100))
+			nr = nr + 1
 		end
 	end
 	
-	-- Sort the possibly changed bars.
-	win:SortBars()
+	win.metadata.maxvalue = max
 end
 

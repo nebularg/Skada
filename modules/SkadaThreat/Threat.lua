@@ -92,6 +92,8 @@ function mod:OnInitialize()
 end
 
 function mod:OnEnable()
+	mod.metadata = {showspots = 1, wipestale = 1}
+
 	-- Add our feed.
 	Skada:AddFeed(L["Threat: Personal Threat"], function()
 								if Skada.current and UnitExists("target") then
@@ -112,24 +114,55 @@ end
 
 local maxthreat = 0
 
-local function add_to_threattable(name, tbl)
+-- Used as index for dataset.
+local nr = 1
+
+-- Max threat value.
+local max = 0
+
+local function add_to_threattable(win, name)
 	if name and UnitExists(name) then
 		local isTanking, status, threatpct, rawthreatpct, threatvalue = UnitDetailedThreatSituation(name, "target")
-	
+
 		if Skada.db.profile.threatraw then
 			if threatvalue then
-				local class = select(2, UnitClass(name))
-				table.insert(tbl, {["name"] = name, ["threat"] = threatvalue, ["class"] = class, ["value"] = threatvalue})
+
+				local d = win.dataset[nr] or {}
+				win.dataset[nr] = d
+				d.label = name
+				d.color =  Skada.classcolors[select(2, UnitClass(name))]
+				d.id = name
+				d.threat = threatvalue
+				if threatvalue < 0 then
+					-- Show real threat.
+					d.value = threatvalue + 410065408
+					-- Fade a little.
+					if d.color then
+						d.a = 0.5
+					end
+				else
+					d.value = threatvalue
+				end
+				
 				if threatvalue > maxthreat then
 					maxthreat = threatvalue
 				end
 			end
 		else
 			if threatpct then
-				local class = select(2, UnitClass(name))
-				table.insert(tbl, {["name"] = name, ["threat"] = threatpct, ["class"] = class, ["value"] = threatvalue})
+			
+				local d = win.dataset[nr] or {}
+				win.dataset[nr] = d
+				d.label = name
+				d.color =  Skada.classcolors[select(2, UnitClass(name))]
+				d.id = name
+				d.value = threatpct
+				d.threat = threatvalue
+				
 			end
 		end
+		
+		nr = nr + 1
 	end
 end
 
@@ -141,30 +174,24 @@ local function format_threatvalue(value)
 	end
 end
 
-local threattable = {}
 local last_warn = time()
 
 function mod:Update(win, set)
-	if not UnitExists("target") then
-		-- We have no target - wipe all threat bars.
-		win:RemoveAllBars()
-		return
-	end
+	-- Reset our counter which we use to keep track of current index in the dataset.
+	nr = 1
 	
-	-- Clear threat table
-	while table.maxn(threattable) > 0 do table.remove(threattable) end
-	
+	-- Reset out max threat value.
 	maxthreat = 0
-	
+		
 	if GetNumRaidMembers() > 0 then
 		-- We are in a raid.
 		for i = 1, 40, 1 do
 			local name, rank, subgroup, level, class, fileName, zone, online, isDead, role, isML = GetRaidRosterInfo(i);
 			if name then
-				add_to_threattable(name, threattable)
+				add_to_threattable(win, name)
 				
 				if UnitExists("raid"..i.."pet") then
-					add_to_threattable(select(1, UnitName("raid"..i.."pet")), threattable)
+					add_to_threattable(win, select(1, UnitName("raid"..i.."pet")))
 				end
 			end
 		end
@@ -173,36 +200,28 @@ function mod:Update(win, set)
 		for i = 1, 5, 1 do
 			local name = (UnitName("party"..tostring(i)))
 			if name then
-				add_to_threattable(name, threattable)
+				add_to_threattable(win, name)
 
 				if UnitExists("party"..i.."pet") then
-					add_to_threattable(select(1, UnitName("party"..i.."pet")), threattable)
+					add_to_threattable(win, select(1, UnitName("party"..i.."pet")))
 				end
 			end
 		end
 		
 		-- Don't forget ourselves.
-		add_to_threattable(UnitName("player"), threattable)
+		add_to_threattable(win, UnitName("player"))
 		
 		-- Maybe we have a pet?
 		if UnitExists("pet") then
-			add_to_threattable(UnitName("pet"), threattable)
+			add_to_threattable(win, UnitName("pet"))
 		end
 	else
 		-- We are all alone.
-		add_to_threattable(UnitName("player"), threattable)
+		add_to_threattable(win, UnitName("player"))
 		
 		-- Maybe we have a pet?
 		if UnitExists("pet") then
-			add_to_threattable(UnitName("pet"), threattable)
-		end
-	end
-
-	-- For each bar, mark bar as unchecked.
-	local bars = win:GetBars()
-	if bars then
-		for name, bar in pairs(bars) do
-			bar.checked = false
+			add_to_threattable(win, UnitName("pet"))
 		end
 	end
 
@@ -211,31 +230,24 @@ function mod:Update(win, set)
 		maxthreat = 100
 	end
 	
+	win.metadata.maxvalue = maxthreat
+	
 	local we_should_warn = false
 	
-	-- For each player in threat table, create or update bars.
-	for i, player in ipairs(threattable) do
-		if player.threat > 0 then
-			local bar = win:GetBar(player.name)
-			
-			if player.name == UnitName("player") then
-				if Skada.db.profile.modules.threattreshold and Skada.db.profile.modules.threattreshold < player.threat then
+	-- We now have a a complete threat table.
+	-- Now we need to add valuetext.
+	for i, data in ipairs(win.dataset) do
+		if data.id then
+		
+			-- Warn if this is ourselves and we are over the treshold.
+			local percent = data.value / maxthreat * 100
+			if data.label == UnitName("player") then
+				if Skada.db.profile.modules.threattreshold and Skada.db.profile.modules.threattreshold < percent then
 					we_should_warn = true
 				end
 			end
 			
-			if bar then
-				bar:SetMaxValue(maxthreat)
-				bar:SetValue(player.threat)
-			else
-				bar = win:CreateBar(player.name, player.name, player.threat, maxthreat, nil, false)
-				bar:EnableMouse()
-				bar:SetScript("OnMouseDown", function(bar, button) if button == "RightButton" then win:RightClick() end end)
-				local color = Skada.classcolors[player.class] or win:GetDefaultBarColor()
-				bar:SetColorAt(0, color.r, color.g, color.b, color.a or 1)
-			end
-			bar:SetTimerLabel(format_threatvalue(player.value)..(", %02.1f"):format(player.threat / maxthreat * 100).."%")
-			bar.checked = true
+			data.valuetext = format_threatvalue(data.threat)..(", %02.1f"):format(percent).."%"
 		end
 	end
 	
@@ -254,17 +266,6 @@ function mod:Update(win, set)
 		last_warn = time()
 	end
 	
-	-- Remove all unchecked bars.
-	if bars then
-		for name, bar in pairs(bars) do
-			if not bar.checked then
-				win:RemoveBar(bar)
-			end
-		end	
-	end
-	
-	-- Sort the possibly changed bars.
-	win:SortBars()
 end
 
 -- Shamelessly copied from Omen - thanks!

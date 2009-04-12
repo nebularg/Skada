@@ -195,6 +195,10 @@ L["Skada will not collect any data when automatically hidden."] = "Skada will no
 L["Rename window"] = "Rename window"
 L["Enter the name for the window."] = "Enter the name for the window."
 
+L["Bar display"] = "Bar display"
+L["Display system"] = "Display system"
+L["Choose the system to be used for displaying data in this window."] = "Choose the system to be used for displaying data in this window."
+
 -- SkadaDebuffs
 L["Debuff uptimes"] = true
 L["'s Debuffs"] = true

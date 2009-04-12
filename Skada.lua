@@ -1,8 +1,7 @@
-Skada = LibStub("AceAddon-3.0"):NewAddon("Skada", "AceConsole-3.0", "AceEvent-3.0", "AceTimer-3.0", "SpecializedLibBars-1.0")
+Skada = LibStub("AceAddon-3.0"):NewAddon("Skada", "AceConsole-3.0", "AceEvent-3.0", "AceTimer-3.0")
 local L = LibStub("AceLocale-3.0"):GetLocale("Skada", false)
 local ldb = LibStub:GetLibrary("LibDataBroker-1.1")
 local icon = LibStub("LibDBIcon-1.0", true)
-local libwindow = LibStub("LibWindow-1.1")
 local media = LibStub("LibSharedMedia-3.0")
 
 local dataobj = ldb:NewDataObject("Skada", {label = "Skada", type = "data source", icon = "Interface\\Icons\\Spell_Lightning_LightningBolt01", text = "n/a"})
@@ -15,9 +14,6 @@ Skada.current = nil
 
 -- The total set
 Skada.total = nil
-
--- The last fight set
-Skada.last = nil
 
 -- Modes - these are modules, really. Modeules?
 local modes = {}
@@ -40,14 +36,25 @@ local selectedfeed = nil
 -- A list of data feeds available. Modules add to it.
 local feeds = {}
 
--- Determines if the GetDefaultColor functions returns the alternate color.
-local usealt = true
+-- Disabled flag.
+local disabled = false
 
 -- Our windows.
 local windows = {}
 
+-- Our display providers.
+Skada.displays = {}
+
 function Skada:GetWindows()
 	return windows
+end
+
+local function find_mode(name)
+	for i, mode in ipairs(modes) do
+		if mode.name == name then
+			return mode
+		end
+	end
 end
 
 -- Our window type.
@@ -73,37 +80,102 @@ function Window:new()
 			
 			-- Metadata about our dataset.
 			metadata = {},
+			
+			-- Our display provider.
+			display = nil,
 	   	 }, mt)
 end
 
+function Window:AddOptions()
+	local db = self.db
+	
+	local options = {
+	        type="group",
+			name=function() return db.name end,
+	        args={
+
+				rename = {
+					type="input",
+					name=L["Rename window"],
+					desc=L["Enter the name for the window."],
+					get=function() return db.name end,
+					set=function(win, val) if val ~= db.name and val ~= "" then db.name = val end end,
+					order=1,
+				},
+				
+				display = {
+					type="select",
+					name=L["Display system"],
+					desc=L["Choose the system to be used for displaying data in this window."],
+					values=	function()
+								local list = {}
+								for name, display in pairs(Skada.displays) do
+									list[name] = display.name
+								end
+								return list
+							end,
+					get=function()
+						return db.display end,
+					set=function(i, display)
+							self:SetDisplay(display)
+						end,
+					order=21,
+				},
+				
+	        }
+	}
+	
+	options.args.switchoptions = {
+		type = "group",
+		name = L["Mode switching"],
+		order=4,
+		args = {
+								
+			modeincombat = {
+				type="select",
+				name=L["Combat mode"],
+				desc=L["Automatically switch to set 'Current' and this mode when entering combat."],
+				values=	function()
+							local modes = {}
+							modes[""] = L["None"]
+							for i, mode in ipairs(Skada:GetModes()) do
+								modes[mode.name] = mode.name
+							end
+							return modes
+						end,
+				get=function() return db.modeincombat end,
+				set=function(win, mode) db.modeincombat = mode end,
+				order=21,
+			},
+			
+			returnaftercombat = {
+				type="toggle",
+               	name=L["Return after combat"],
+             			desc=L["Return to the previous set and mode after combat ends."],
+                order=22,
+     			        get=function() return db.returnaftercombat end,
+         			    set=function() db.returnaftercombat = not db.returnaftercombat end,
+         			    disabled=function() return db.returnaftercombat == nil end,
+			},
+		}
+	}
+	
+	self.display:AddDisplayOptions(self, options.args)
+
+	Skada.options.args.windows.args[self.db.name] = options
+end
+
 function Window:destroy()
-	self.bargroup:Hide()
-	self.bargroup.bgframe = nil
-	self.bargroup = nil
 	self.dataset = nil
+	
+	self.display:Destroy(self)
 end
 
-local function BarClick(win, bar, button)
-	for i, data in ipairs(win.dataset) do
-		if data.id == bar.id then
-			if win.metadata.click then
-				win.metadata.click(win, data.id, button)
-			elseif button == "RightButton" then
-				win:RightClick()
-			end
-			return
-		end
-	end
-end
-
-local function value_sort(a,b)
-	if a.value == nil then
-		return false
-	elseif b.value == nil then
-		return true
-	else
-		return a.value > b.value
-	end
+function Window:SetDisplay(name)
+	self.db.display = name
+	self.display = Skada.displays[self.db.display]
+	
+	self:AddOptions()
 end
 
 -- Tells window to update the display of its dataset.
@@ -118,175 +190,48 @@ function Window:UpdateDisplay()
 			end
 		end
 	end
-
-	-- Sort according to value.
-	table.sort(self.dataset, value_sort)
-
-	local nr = 1
-	for i, data in ipairs(self.dataset) do
-		if data.id then
-			local bar = self:GetBar(data.id)
-			if bar then
-				bar:SetMaxValue(self.metadata.maxvalue or 1)
-				bar:SetValue(data.value)
-			else
-				bar = self:CreateBar(data.id, data.label, data.value, self.metadata.maxvalue or 1, data.icon, false)
-				if data.icon then
-					bar:ShowIcon()
-				end
-				bar:EnableMouse()
-				bar.id = data.id
-				bar:SetScript("OnMouseDown", function(bar, button) BarClick(self, bar, button) end)
-				if data.color then
-					bar:SetColorAt(0, data.color.r, data.color.g, data.color.b, data.color.a or 1)
-				else
-					local color = self:GetDefaultBarColor()
-					bar:SetColorAt(0, color.r, color.g, color.b, color.a or 1)
-				end
-			end
-			if self.metadata.showspots then
-				bar:SetLabel(("%2u. %s"):format(nr, data.label))
-			else
-				bar:SetLabel(data.label)
-			end
-			bar:SetTimerLabel(data.valuetext)
-			nr = nr + 1
-		end
-	end
-	self:SortBars()
+	
+	self.display:Update(self)
 end
 
 -- Called before dataset is updated.
 function Window:UpdateInProgress()
 	for i, data in ipairs(self.dataset) do
-		data.id = id
+		data.id = nil
 	end
 end
 
-function Window:AnchorClicked(cbk, group, button)
-	if IsShiftKeyDown() then
-		Skada:OpenMenu()
-	elseif button == "RightButton" then
-		self:RightClick()
-	end
-end
-
-function Window:AnchorMoved(cbk, group, x, y)
-	libwindow.SavePosition(self.bargroup)
-end
-				
 function Window:Show()
-	self.bargroup:Show()
+	self.display:Show(self)
 end
 
 function Window:Hide()
-	self.bargroup:Hide()
+	self.display:Hide(self)
 end
 					
 function Window:IsShown()
-	return self.bargroup:IsShown()
-end
-	
-function Window:SortBars()
-	self.bargroup:SortBars()
-end
-
-function Window:GetBars()
-	return self.bargroup:GetBars()
+	return self.display:IsShown(self)
 end
 						
-function Window:getNumberOfBars()
-	local bars = self.bargroup:GetBars()
-	local n = 0
-	for i, bar in pairs(bars) do n = n + 1 end
-	return n
-end
-
-function Window:OnMouseWheel(frame, direction)
-	if direction == 1 and self.bargroup:GetBarOffset() > 0 then
-		self.bargroup:SetBarOffset(self.bargroup:GetBarOffset() - 1)
-	elseif direction == -1 and ((self:getNumberOfBars() - self.bargroup:GetMaxBars() - self.bargroup:GetBarOffset()) > 0) then
-		self.bargroup:SetBarOffset(self.bargroup:GetBarOffset() + 1)
-	end
-end
-
-function Window:GetDefaultBarColorOne()
-	return self.db.barcolor
-end
-
-function Window:GetDefaultBarColorTwo()
-	return self.db.baraltcolor
-end
-
-function Window:GetDefaultBarColor()
-	self.usealt = not self.usealt
-	if self.usealt then
-		return self.db.baraltcolor
-	else
-		return self.db.barcolor
-	end
-end
-
-function Window:GetBarGroup()
-	return self.bargroup
-end
-
-function Window:SetSortFunction(func)
-	self.bargroup:SetSortFunction(func)
-end
-
-function Window:GetBar(name)
-	return self.bargroup:GetBar(name)
-end
-
-function Window:RemoveBar(bar)
-	self.bargroup:RemoveBar(bar)
-end
-
-function Window:CreateBar(name, label, value, maxvalue, icon, o)
-	local bar = self.bargroup:NewCounterBar(name, label, value, maxvalue, icon, o)
-	bar:EnableMouseWheel(true)
-	bar:SetScript("OnMouseWheel", function(f, d) self:OnMouseWheel(f, d) end)
-	return bar
-end
-
 function Window:Reset()
 	for i, data in ipairs(self.dataset) do
 		wipe(data)
 	end
-	self.metadata = {}
 end
 
-function Window:RemoveAllBars()
+function Window:Wipe()
 	-- Clear dataset.
 	self:Reset()
-
-	self.usealt = true
 	
-	-- Reset sort function.
-	self.bargroup:SetSortFunction(nil)
-	
-	-- Reset scroll offset.
-	self.bargroup:SetBarOffset(0)
-	
-	-- Remove the bars.
-	local bars = self.bargroup:GetBars()
-	if bars then
-		for i, bar in pairs(bars) do
-			bar:Hide()
-			self.bargroup:RemoveBar(bar)
-		end
-	end
-	
-	-- Clean up.
-	self.bargroup:SortBars()
+	-- Clear display.
+	self.display:Wipe(self)
 end
 								
 -- If selectedset is "current", returns current set if we are in combat, otherwise returns the last set.
 function Window:get_selected_set()
 	if self.selectedset == "current" then
 		if Skada.current == nil then
-			return Skada.last
+			return sets[1]
 		else
 			return Skada.current
 		end
@@ -301,11 +246,16 @@ end
 
 -- Sets up the mode view.
 function Window:DisplayMode(mode)
-	self:RemoveAllBars()
+	-- Save a reference to the previous mode.
+	self.lastmode = self.selectedmode
+
+	self:Wipe()
 
 	self.selectedplayer = nil
 	self.selectedspell = nil
 	self.selectedmode = mode
+
+	self.metadata = {}
 	
 	-- Apply mode's metadata.
 	if mode.metadata then
@@ -320,16 +270,26 @@ function Window:DisplayMode(mode)
 	self.bargroup.button:SetText(mode.name)
 
 	changed = true
-	Skada:UpdateBars()
+	Skada:UpdateDisplay()
+end
+
+local function click_on_mode(win, data, button)
+	if button == "LeftButton" then
+		local mode = find_mode(data.id)
+		win:DisplayMode(mode)
+	elseif button == "RightButton" then
+		win:RightClick()
+	end
 end
 
 -- Sets up the mode list.
 function Window:DisplayModes(settime)
-	self:RemoveAllBars()
+	self:Wipe()
 
 	self.selectedplayer = nil
-	self.selectedspell = nil
 	self.selectedmode = nil
+
+	self.metadata = {}
 
 	self.bargroup.button:SetText(L["Skada: Modes"])
 
@@ -337,17 +297,15 @@ function Window:DisplayModes(settime)
 	self.db.set = settime
 
 	-- Find the selected set
-	if settime == "current" or settime == "total" or settime == "last" then
+	if settime == "current" or settime == "total" then
 		self.selectedset = settime
 	else
 		for i, set in ipairs(sets) do
-			if set.starttime == settime then
+			if tostring(set.starttime) == settime then
 				if set.name == L["Current"] then
-					selfselectedset = "current"
+					self.selectedset = "current"
 				elseif set.name == L["Total"] then
 					self.selectedset = "total"
-				elseif set.name == L["Last fight"] then
-					self.selectedset = "last"
 				else
 					self.selectedset = i
 				end
@@ -355,25 +313,45 @@ function Window:DisplayModes(settime)
 		end
 	end
 
+	self.metadata.click = click_on_mode
+	self.metadata.maxvalue = 1
+	self.metadata.sortfunc = function(a,b) return a.name < b.name end
+
 	changed = true
-	Skada:UpdateBars()
+	Skada:UpdateDisplay()
+end
+
+local function click_on_set(win, data, button)
+	if button == "LeftButton" then
+		win:DisplayModes(data.id)
+	elseif button == "RightButton" then
+		win:RightClick() 
+	end
 end
 
 -- Sets up the set list.
 function Window:DisplaySets()
-	self:RemoveAllBars()
+	self:Wipe()
 	
-	self.selectedspell = nil
+	self.metadata = {}
+	
 	self.selectedplayer = nil
 	self.selectedmode = nil
 	self.selectedset = nil
 
 	self.bargroup.button:SetText(L["Skada: Fights"])
+
+	self.metadata.click = click_on_set
+	self.metadata.maxvalue = 1
+--	self.metadata.sortfunc = function(a,b) return a.name < b.name end
 	
 	changed = true
-	Skada:UpdateBars()
+	Skada:UpdateDisplay()
 end
 
+-- Default "right-click" behaviour in case no special click function is defined:
+-- 1) Go to modes list if we are in a mode.
+-- 2) Go to set list.
 function Window:RightClick(group, button)
 	if self.selectedmode then
 		self:DisplayModes(self.selectedset)
@@ -419,10 +397,6 @@ function Skada:OnInitialize()
 	self.db.RegisterCallback(self, "OnProfileCopied", "ReloadSettings")
 	self.db.RegisterCallback(self, "OnProfileReset", "ReloadSettings")
 
-	-- Window config.
---	LibStub("AceConfig-3.0"):RegisterOptionsTable("Skada-Windows", self.windowoptions)
---	self.windowFrame = LibStub("AceConfigDialog-3.0"):AddToBlizOptions("Skada-Windows", "Windows", "Skada")
-	
 	self:ReloadSettings()
 end
 
@@ -448,25 +422,15 @@ function Skada:CreateWindow(name, db)
 	window.db = db
 	window.db.name = name
 	
-	-- Re-use bargroup if it exists.
-	window.bargroup = self:GetBarGroup(name)
-	if window.bargroup then
-		-- Clear callbacks.
-		window.bargroup.callbacks = LibStub:GetLibrary("CallbackHandler-1.0"):New(window.bargroup)
-	else
-		window.bargroup = self:NewBarGroup(name, nil, window.db.barwidth, window.db.barheight, "SkadaBarWindow"..name)
-	end
-	window.bargroup.RegisterCallback(window, "AnchorMoved")
-	window.bargroup.RegisterCallback(window, "AnchorClicked")
-	window.bargroup:EnableMouse(true)
-	window.bargroup:SetScript("OnMouseDown", function(self, button) if button == "RightButton" then window:RightClick() end end)
-	window.bargroup:HideIcon()
-
-	self.options.args.windows.args[name] = Skada:GetWindowOptions(window)
+	-- Set the window's display and call it's Create function.
+	window:SetDisplay(window.db.display)
 	
-	libwindow.RegisterConfig(window.bargroup, window.db)
-
+	window.display:Create(window)
+	
 	table.insert(windows, window)
+	
+	-- Set initial view, set list.
+	window:DisplaySets()
 
 	self:ApplySettings()
 end
@@ -530,14 +494,6 @@ function Skada:Command(param)
 	end
 end
 
-local function find_mode(name)
-	for i, mode in ipairs(modes) do
-		if mode.name == name then
-			return mode
-		end
-	end
-end
-
 local function sendchat(msg, chan, chantype)
 	if chantype == "self" then
 		-- To self.
@@ -554,9 +510,6 @@ local function sendchat(msg, chan, chantype)
 	end
 end
 
--- I refuse to acknowledge that I have written this.
--- Ideally we want modes to be display system agnostic, so that we can simply
--- ask the chosen mode to print its contents as a table instead of bars. But for now...
 function Skada:Report(channel, chantype, report_mode_name, report_set, max)
 
 	if(chantype == "channel") then
@@ -580,7 +533,7 @@ function Skada:Report(channel, chantype, report_mode_name, report_set, max)
 		win.selectedmode = report_mode
 		
 		changed = true
-		self:UpdateBars()
+		self:UpdateDisplay()
 
 		local bars = win:GetBars()
 		local list = {}
@@ -613,7 +566,7 @@ function Skada:Report(channel, chantype, report_mode_name, report_set, max)
 			win:DisplaySets()
 		end
 		changed = true
-		self:UpdateBars()
+		self:UpdateDisplay()
 	else
 		self:Print("Reporting requires a window to be present.")
 	end
@@ -647,24 +600,14 @@ function Skada:SetActive(enable)
 	if enable then
 		for i, win in ipairs(windows) do
 			win:Show()
-			win:SortBars()
 		end
-		if self.db.profile.hidedisables then
-			-- Note: we will re-register events here when playing with config - that's OK, right? Research it.
-			self:RegisterEvent("PLAYER_REGEN_DISABLED")
-			self:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
-			
-			self:ScheduleRepeatingTimer("UpdateBars", 0.5)
-			self:ScheduleRepeatingTimer("Tick", 1)
-		end
+		disabled = false
 	else
 		for i, win in ipairs(windows) do
 			win:Hide()
 		end
 		if self.db.profile.hidedisables then
-			self:UnregisterEvent("PLAYER_REGEN_DISABLED")
-			self:UnregisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
-			self:CancelAllTimers()
+			disabled = true
 		end
 	end
 end
@@ -674,6 +617,11 @@ function Skada:OnEnable()
 	self:RegisterEvent("PARTY_MEMBERS_CHANGED")
 	self:RegisterEvent("RAID_ROSTER_UPDATE")
 	self:RegisterEvent("UNIT_PET")
+	self:RegisterEvent("PLAYER_REGEN_DISABLED")
+	self:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
+	
+	self:ScheduleRepeatingTimer("UpdateDisplay", 0.5)
+	self:ScheduleRepeatingTimer("Tick", 1)
 			
 	if type(CUSTOM_CLASS_COLORS) == "table" then
 		Skada.classcolors = CUSTOM_CLASS_COLORS
@@ -849,7 +797,6 @@ function Skada:ToggleWindow()
 		else
 			win.db.shown = true
 			win:Show()
-			win:SortBars()
 		end
 	end
 end
@@ -864,7 +811,7 @@ local function createSet(setname)
 end
 
 function Skada:Reset()
-	self:RemoveAllBars()
+	self:Wipe()
 	
 	pets = {}
 	self:CheckPets()
@@ -887,7 +834,7 @@ function Skada:Reset()
 		end
 	end
 	changed = true
-	self:UpdateBars()
+	self:UpdateDisplay()
 	self:Print(L["All data has been reset."])
 	collectgarbage("collect")
 end
@@ -901,9 +848,9 @@ function Skada:DeleteSet(set)
 			wipe(table.remove(sets, i))
 		end
 	end
-	self:RemoveAllBars()
+	self:Wipe()
 	changed = true
-	self:UpdateBars()
+	self:UpdateDisplay()
 end
 	
 -- Open a menu. Supply a window to tailor it to that window, else generic.
@@ -1021,9 +968,9 @@ function Skada:OpenMenu(win)
 	            info.text = L["Total"]
 	            info.func = function()
 	            				window.selectedset = "total"
-	            				Skada:RemoveAllBars()
+	            				Skada:Wipe()
 	            				changed = true
-	            				Skada:UpdateBars()
+	            				Skada:UpdateDisplay()
 	            			end
 	            info.checked = (window.selectedset == "total")
 	            UIDropDownMenu_AddButton(info, level)
@@ -1031,32 +978,21 @@ function Skada:OpenMenu(win)
 	            info.text = L["Current"]
 	            info.func = function()
 	            				window.selectedset = "current"
-	            				Skada:RemoveAllBars()
+	            				Skada:Wipe()
 	            				changed = true
-	            				Skada:UpdateBars()
+	            				Skada:UpdateDisplay()
 	            			end
 	            info.checked = (window.selectedset == "current")
 	            UIDropDownMenu_AddButton(info, level)
 
-		        wipe(info)
-	            info.text = L["Last fight"]
-	            info.func = function()
-	            				window.selectedset = "last"
-	            				Skada:RemoveAllBars()
-	            				changed = true
-	            				Skada:UpdateBars()
-	            			end
-	            info.checked = (window.selectedset == "last")
-	            UIDropDownMenu_AddButton(info, level)
-	            
 		        for i, set in ipairs(sets) do
 			        wipe(info)
 		            info.text = set.name..": "..date("%H:%M",set.starttime).." - "..date("%H:%M",set.endtime)
 		            info.func = function() 
 		            				window.selectedset = i
-		            				Skada:RemoveAllBars()
+		            				Skada:Wipe()
 		            				changed = true
-		            				Skada:UpdateBars()
+		            				Skada:UpdateDisplay()
 		            			end
 		            info.checked = (window.selectedset == set.starttime)
 		            UIDropDownMenu_AddButton(info, level)
@@ -1091,9 +1027,9 @@ function Skada:OpenMenu(win)
 		            info.text = set.name..": "..date("%H:%M",set.starttime).." - "..date("%H:%M",set.endtime)
 		            info.func = function() 
 		            				set.keep = not set.keep
-		            				Skada:RemoveAllBars()
+		            				Skada:Wipe()
 		            				changed = true
-		            				Skada:UpdateBars()
+		            				Skada:UpdateDisplay()
 		            			end
 		            info.checked = set.keep
 		            UIDropDownMenu_AddButton(info, level)
@@ -1178,11 +1114,6 @@ function Skada:OpenMenu(win)
 	            info.checked = (Skada.db.profile.report.set == "current")
 	            UIDropDownMenu_AddButton(info, level)
 
-	            info.text = L["Last fight"]
-	            info.func = function() Skada.db.profile.report.set = "last" end
-	            info.checked = (Skada.db.profile.report.set == "last")
-	            UIDropDownMenu_AddButton(info, level)
-	            
 		        for i, set in ipairs(sets) do
 		            info.text = set.name..": "..date("%H:%M",set.starttime).." - "..date("%H:%M",set.endtime)
 		            info.func = function() Skada.db.profile.report.set = i end
@@ -1259,18 +1190,13 @@ function Skada:ReloadSettings()
 	windows = {}
 
 	-- Re-create windows
-	-- Note: as this can be called from a profile change as well as login, re-use windows when possible.
+	-- As this can be called from a profile change as well as login, re-use windows when possible.
 	for i, win in ipairs(self.db.profile.windows) do
 		self:CreateWindow(win.name, win)
 	end
 
 	self.total = self.db.profile.total
 	sets = self.db.profile.sets
-	
-	-- Restore window position.
-	for i, win in ipairs(windows) do
-		libwindow.RestorePosition(win.bargroup)
-	end
 	
 	-- Minimap button.
 	if icon and not icon:IsRegistered("Skada") then
@@ -1282,128 +1208,27 @@ function Skada:ReloadSettings()
 	self:ApplySettings()
 end
 
-local titlebackdrop = {}
-local windowbackdrop = {}
-
 -- Applies settings to things like the bar window.
 function Skada:ApplySettings()
 	for i, win in ipairs(windows) do
-		local g = win.bargroup
-		local p = win.db
-		g:ReverseGrowth(p.reversegrowth)
-		g:SetOrientation(p.barorientation)
-		g:SetHeight(p.barheight)
-		g:SetWidth(p.barwidth)
-		g:SetTexture(media:Fetch('statusbar', p.bartexture))
-		g:SetFont(media:Fetch('font', p.barfont), p.barfontsize)
-		g:SetSpacing(p.barspacing)
-		g:UnsetAllColors()
-		g:SetColorAt(0,p.barcolor.r,p.barcolor.g,p.barcolor.b, p.barcolor.a)
-		g:SetMaxBars(p.barmax)
-		if p.barslocked then
-			g:Lock()
-		else
-			g:Unlock()
-		end
-		g:SortBars()
-	
-		-- Header
-		g.button:SetNormalFontObject(ChatFontSmall)
-		local font = g.button:GetNormalFontObject()
-		font:SetFont(media:Fetch('font', p.title.font), p.title.fontsize)
-		g.button:SetNormalFontObject(font)
-		local inset = p.title.margin
-		titlebackdrop.bgFile = media:Fetch("statusbar", p.title.texture)
-		if p.title.borderthickness > 0 then
-			titlebackdrop.edgeFile = media:Fetch("border", p.title.bordertexture)
-		else
-			titlebackdrop.edgeFile = nil
-		end
-		titlebackdrop.tile = false
-		titlebackdrop.tileSize = 0
-		titlebackdrop.edgeSize = p.title.borderthickness
-		titlebackdrop.insets = {left = inset, right = inset, top = inset, bottom = inset}
-		g.button:SetBackdrop(titlebackdrop)
-		local color = p.title.color
-		g.button:SetBackdropColor(color.r, color.g, color.b, color.a or 1)
-		
-		if p.enabletitle then
-			g:ShowAnchor()
-		else
-			g:HideAnchor()
-		end
-		
-		-- Window
-		if p.enablebackground then
-			if g.bgframe == nil then
-				g.bgframe = CreateFrame("Frame", nil, g)
-				g.bgframe:SetFrameStrata("BACKGROUND")
-				g.bgframe:EnableMouse()
-				g.bgframe:EnableMouseWheel()
-				g.bgframe:SetScript("OnMouseDown", function(frame, btn) if btn == "RightButton" then win:RightClick() end end)
-				g.bgframe:SetScript("OnMouseWheel", win.OnMouseWheel)
-			end
-	
-			local inset = p.background.margin
-			windowbackdrop.bgFile = media:Fetch("statusbar", p.background.texture)
-			if p.background.borderthickness > 0 then
-				windowbackdrop.edgeFile = media:Fetch("border", p.background.bordertexture)
-			else
-				windowbackdrop.edgeFile = nil
-			end
-			windowbackdrop.tile = false
-			windowbackdrop.tileSize = 0
-			windowbackdrop.edgeSize = p.background.borderthickness
-			windowbackdrop.insets = {left = inset, right = inset, top = inset, bottom = inset}
-			g.bgframe:SetBackdrop(windowbackdrop)
-			local color = p.background.color
-			g.bgframe:SetBackdropColor(color.r, color.g, color.b, color.a or 1)
-			g.bgframe:SetWidth(g:GetWidth() + (p.background.borderthickness * 2))
-			g.bgframe:SetHeight(p.background.height)
-	
-			g.bgframe:ClearAllPoints()
-			if p.reversegrowth then
-				g.bgframe:SetPoint("LEFT", g.button, "LEFT", -p.background.borderthickness, 0)
-				g.bgframe:SetPoint("RIGHT", g.button, "RIGHT", p.background.borderthickness, 0)
-				g.bgframe:SetPoint("BOTTOM", g.button, "TOP", 0, 0)
-			else
-				g.bgframe:SetPoint("LEFT", g.button, "LEFT", -p.background.borderthickness, 0)
-				g.bgframe:SetPoint("RIGHT", g.button, "RIGHT", p.background.borderthickness, 0)
-				g.bgframe:SetPoint("TOP", g.button, "BOTTOM", 0, 5)
-			end
-			g.bgframe:Show()
-			
-			-- Calculate max number of bars to show if our height is not dynamic.
-			if p.background.height > 0 then
-				local maxbars = math.floor(p.background.height / math.max(1, p.barheight + p.barspacing))
-				g:SetMaxBars(maxbars)
-			else
-				-- Adjust background height according to current bars.
-				self:AdjustBackgroundHeight(win)
-			end
-			
-		elseif g.bgframe then
-			g.bgframe:Hide()
-		end
-		
-		win:SortBars()
+		win.display:ApplySettings(win)
 	end
 
 	-- Don't show window if we are solo and we have enabled the "Hide when solo" option.
-	if not (self.db.profile.hidesolo and GetNumRaidMembers() == 0 and GetNumPartyMembers() == 0) then
-		self:SetActive(true)
-	else
+	if self.db.profile.hidesolo and GetNumRaidMembers() == 0 and GetNumPartyMembers() == 0 then
 		self:SetActive(false)
+	else
+		self:SetActive(true)
 	end
 
 	changed = true
-	self:UpdateBars()
+	self:UpdateDisplay()
 end
 
 -- Set a data feed as selectedfeed.
 function Skada:SetFeed(feed)
 	selectedfeed = feed
-	self:UpdateBars()
+	self:UpdateDisplay()
 end
 
 -- Iterates over all players in a set and adds to the "time" variable
@@ -1439,7 +1264,7 @@ end
 -- check if anyone in raid is in combat; if so, close up shop.
 -- We can not simply rely on PLAYER_REGEN_ENABLED since it is fired if we die and the fight continues.
 function Skada:Tick()
-	if self.current and not InCombatLockdown() and not UnitIsDead("player") and not IsRaidInCombat() then
+	if not disabled and self.current and not InCombatLockdown() and not UnitIsDead("player") and not IsRaidInCombat() then
 	
 		-- Save current set unless this a trivial set, or if we have the Only keep boss fights options on, and no boss in fight.
 		-- A set is trivial if we have no mob name saved, or if total time for set is not more than 5 seconds.
@@ -1494,7 +1319,7 @@ function Skada:Tick()
 		end
 		
 		for i, win in ipairs(windows) do
-			win:RemoveAllBars()
+			win:Wipe()
 			changed = true
 		
 			-- Auto-switch back to previous set/mode.
@@ -1509,21 +1334,21 @@ function Skada:Tick()
 			end
 		end
 
-		self:UpdateBars()
+		self:UpdateDisplay()
 
 	end
 end
 
 function Skada:PLAYER_REGEN_DISABLED()
 	-- Start a new set if we are not in one already.
-	if not self.current then
+	if not disabled and not self.current then
 		self:StartCombat()
 	end
 end
 
 function Skada:StartCombat()
 	-- Remove old bars.
-	self:RemoveAllBars()
+	self:Wipe()
 	
 	-- Create a new current set.
 	self.current = createSet(L["Current"])
@@ -1561,13 +1386,13 @@ function Skada:StartCombat()
 	
 	-- Force immediate update.
 	changed = true
-	self:UpdateBars()
+	self:UpdateDisplay()
 end
 
 -- Simply calls the same function on all windows.
-function Skada:RemoveAllBars()
+function Skada:Wipe()
 	for i, win in ipairs(windows) do
-		win:RemoveAllBars()
+		win:Wipe()
 	end
 end
 
@@ -1601,8 +1426,10 @@ function Skada:RestoreView(win, theset, themode)
 		if mymode then
 			win:DisplayMode(mymode)
 		else
-			win:DisplayModes(selectedset)
+			win:DisplayModes(win.selectedset)
 		end
+	else
+		win:DisplayModes(win.selectedset)
 	end
 end
 
@@ -1668,6 +1495,10 @@ end
 
 -- TODO: Start looking at CL event flags instead of using functions.
 function Skada:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
+	if disabled then
+		return
+	end
+	
 	local src_is_interesting = nil --self:UnitIsInteresting(srcName, srcGUID)
 	local dst_is_interesting = nil
 	local src_is_interesting_nopets = nil
@@ -1809,7 +1640,7 @@ function dataobj:OnClick(button)
 	end
 end
 
-function Skada:UpdateBars()
+function Skada:UpdateDisplay()
 	-- Update data feed.
 	-- This is done even if our set has not changed, since for example DPS changes even though the data does not.
 	-- Does not update feed text if nil.
@@ -1820,7 +1651,8 @@ function Skada:UpdateBars()
 		end
 	end
 	
-	if not changed then
+	-- Return if we have not changed anything, and we are not in combat.
+	if not changed and not self.current then
 		return
 	end
 
@@ -1835,7 +1667,11 @@ function Skada:UpdateBars()
 				win:UpdateInProgress()
 			
 				-- Let mode update data.
-				win.selectedmode:Update(win, set)
+				if win.selectedmode.Update then
+					win.selectedmode:Update(win, set)
+				else
+					self:Print("Mode "..win.selectedmode.name.." does not have an Update function!")
+				end
 				
 				-- Let window display the data.
 				win:UpdateDisplay()
@@ -1846,87 +1682,67 @@ function Skada:UpdateBars()
 			
 			-- View available modes.
 			for i, mode in ipairs(modes) do
-				local bar = win:GetBar(mode.name)
-				if not bar then
-					bar = win:CreateBar(mode.name, mode.name, 1, 1)
-					local c = win:GetDefaultBarColor()
-					bar:SetColorAt(0,c.r,c.g,c.b, c.a)
-					bar:EnableMouse(true)
-					bar:SetScript("OnMouseDown", function(bar, button) if button == "LeftButton" then win:DisplayMode(mode) elseif button == "RightButton" then win:RightClick() end end)
-				end
+				
+				local d = win.dataset[i] or {}
+				win.dataset[i] = d
+				
+				d.id = mode.name
+				d.label = mode.name
+				d.value = 1
 				if set and mode.GetSetSummary ~= nil then
-					bar:SetTimerLabel(mode:GetSetSummary(set))
+					d.valuetext = mode:GetSetSummary(set)
 				end
-			end
-			
-			win:SetSortFunction(function(a,b) return a.name < b.name end)
-			win:SortBars()
-		else
-			-- View available sets.
-			local bar = self:GetBar("total")
-			if not bar then
-				local bar = win:CreateBar("total", L["Total"], 1, 1)
-				local c = win:GetDefaultBarColor()
-				bar:SetColorAt(0,c.r,c.g,c.b, c.a)
-				bar:EnableMouse(true)
-				bar:SetScript("OnMouseDown", function(bar, button) if button == "LeftButton" then win:DisplayModes("total") elseif button == "RightButton" then win:RightClick() end end)
-			end
-	
-			local bar = win:GetBar("current")
-			if not bar then
-				local bar = win:CreateBar("current", L["Current"], 1, 1)
-				local c = win:GetDefaultBarColor()
-				bar:SetColorAt(0,c.r,c.g,c.b, c.a)
-				bar:EnableMouse(true)
-				bar:SetScript("OnMouseDown", function(bar, button) if button == "LeftButton" then win:DisplayModes("current") elseif button == "RightButton" then win:RightClick() end end)
 			end
 
-			local bar = win:GetBar("last")
-			if not bar then
-				local bar = win:CreateBar("last", L["Last fight"], 1, 1)
-				local c = win:GetDefaultBarColor()
-				bar:SetColorAt(0,c.r,c.g,c.b, c.a)
-				bar:EnableMouse(true)
-				bar:SetScript("OnMouseDown", function(bar, button) if button == "LeftButton" then win:DisplayModes("last") elseif button == "RightButton" then win:RightClick() end end)
-			end
+			-- Tell window to sort by our data order. Our modes are in alphabetical order already.
+			win.metadata.ordersort = true
+			
+			-- Let window display the data.
+			win:UpdateDisplay()
+		else
+			-- View available sets.
+			local nr = 1
+			local d = win.dataset[nr] or {}
+			win.dataset[nr] = d
+			
+			d.id = "total"
+			d.label = L["Total"]
+			d.value = 1
+			
+			nr = nr + 1
+			local d = win.dataset[nr] or {}
+			win.dataset[nr] = d
+			
+			d.id = "current"
+			d.label = L["Current"]
+			d.value = 1
 	
 			for i, set in ipairs(sets) do
-			
-				local bar = win:GetBar(tostring(set.starttime))
-				if not bar then
-					local bar = win:CreateBar(tostring(set.starttime), set.name, 1, 1)
-					bar:SetTimerLabel(date("%H:%M",set.starttime).." - "..date("%H:%M",set.endtime))
-					local c = win:GetDefaultBarColor()
-					bar:SetColorAt(0,c.r,c.g,c.b, c.a)
-					bar:EnableMouse(true)
-					if set.keep then
-						bar:SetFont(nil,nil,"OUTLINE")
-					end
-					bar:SetScript("OnMouseDown", function(bar, button) if button == "LeftButton" then win:DisplayModes(set.starttime) elseif button == "RightButton" then win:RightClick() end end)
+				nr = nr + 1
+				local d = win.dataset[nr] or {}
+				win.dataset[nr] = d
+				
+				d.id = tostring(set.starttime)
+				d.label = set.name
+				d.valuetext = date("%H:%M",set.starttime).." - "..date("%H:%M",set.endtime)
+				d.value = 1
+				if set.keep then
+					d.emphathize = true
 				end
 				
+				nr = nr + 1
 			end
+			
+			win.metadata.ordersort = true
+			
+			-- Let window display the data.
+			win:UpdateDisplay()
 		end
 		
-		-- Adjust our background frame if background height is dynamic.
-		if win.bargroup.bgframe and win.db.background.height == 0 then
-			self:AdjustBackgroundHeight(win)
-		end
 	end
 	
 	-- Mark as unchanged.
 	changed = false
-end
-
-function Skada:AdjustBackgroundHeight(win)
-	local numbars = 0
-	if win:GetBars() ~= nil then
-		for name, bar in pairs(win:GetBars()) do if bar:IsShown() then numbars = numbars + 1 end end
-		local height = numbars * (win.db.barheight + win.db.barspacing) + win.db.background.borderthickness
-		if win.bargroup.bgframe:GetHeight() ~= height then
-			win.bargroup.bgframe:SetHeight(height)
-		end
-	end
 end
 		
 function Skada:GetModes()
@@ -1990,13 +1806,13 @@ function Skada:AddMode(mode)
 	end
 	
 	-- Sort modes.
-	table.sort(modes, function(a, b) return a.name > b.name end)
+	table.sort(modes, function(a, b) return a.name < b.name end)
 	
 	-- Remove all bars and start over to get ordering right.
 	-- Yes, this all sucks - the problem with this and the above is that I don't know when
 	-- all modules are loaded. :/
 	for i, win in ipairs(windows) do
-		win:RemoveAllBars()
+		win:Wipe()
 		changed = true
 	end
 end

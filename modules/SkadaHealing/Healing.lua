@@ -63,54 +63,49 @@ local function getHPS(set, player)
 	return player.healing / math.max(1,totaltime)
 end
 
-function mod:Update(win, set)
-	-- Calculate the highest damage.
-	-- How to get rid of this iteration?
-	local maxhealing = 0
-	for i, player in ipairs(set.players) do
-		if player.healing > maxhealing then
-			maxhealing = player.healing
-		end
+local function click_on_player(win, data, button)
+	if button == "LeftButton" then
+		playermod.playerid = data.id
+		playermod.name = data.label..L["'s Healing"]
+		win:DisplayMode(playermod)
+	elseif button == "RightButton" then
+		win:RightClick()
 	end
-	
-	-- Sort players according to healing done.
-	table.sort(set.players, function(a,b) return a.healing > b.healing end)
-	
---	Skada:Print("maxhealing: "..tostring(maxhealing))
-	-- For each player in the set, see if we have a bar already.
-	-- If so, update values, else create bar.
+end
+
+function mod:Update(win, set)
+	local nr = 1
+	local max = 0
+
 	for i, player in ipairs(set.players) do
 		if player.healing > 0 then
-			local bar = win:GetBar(tostring(player.id))
-			if bar then
-				bar:SetMaxValue(maxhealing)
-				bar:SetValue(player.healing)
-	--			Skada:Print("updated "..player.name.." to "..tostring(player.healing))
-			else
-				bar = win:CreateBar(tostring(player.id), player.name, player.healing, maxhealing, nil, false)
-				bar:EnableMouse()
-				bar:SetScript("OnMouseDown", function(bar, button)
-												if button == "LeftButton" then
-													playermod.playerid = player.id
-													playermod.name = player.name..L["'s Healing"]
-													win:DisplayMode(playermod)
-												elseif button == "RightButton" then
-													win:RightClick()
-												end
-											end)
-				local color = Skada.classcolors[player.class] or win:GetDefaultBarColor()
-				bar:SetColorAt(0, color.r, color.g, color.b, color.a or 1)
-				
-	--			Skada:Print("created "..player.name.." at "..tostring(player.healing))
-			end
-			bar:SetLabel(("%2u. %s"):format(i, player.name))
+			
 			local hps = getHPS(set, player)
-			bar:SetTimerLabel(Skada:FormatNumber(player.healing)..(" (%02.1f, %02.1f%%)"):format(hps, player.healing / set.healing * 100))
+			
+			local d = win.dataset[nr] or {}
+			win.dataset[nr] = d
+			
+			d.id = player.id
+			d.label = player.name
+			d.value = player.healing
+			d.valuetext = Skada:FormatNumber(player.healing)..(" (%02.1f, %02.1f%%)"):format(hps, player.healing / set.healing * 100)
+			d.color = Skada.classcolors[player.class]
+			
+			if player.healing > max then
+				max = player.healing
+			end
+			
+			nr = nr + 1
 		end
 	end
 	
-	-- Sort the possibly changed bars.
-	win:SortBars()
+	win.metadata.maxvalue = max
+end
+
+local function spell_click(win, data, button)
+	if button == "RightButton" then
+		win:DisplayMode(mod)
+	end
 end
 
 -- Detail view of a player.
@@ -118,48 +113,37 @@ function playermod:Update(win, set)
 	-- View spells for this player.
 		
 	local player = Skada:find_player(set, self.playerid)
+	local nr = 1
+	local max = 0
 	
 	if player then
-		local maxvalue = 0
-		for spellname, spell in pairs(player.healingspells) do
-			if spell.healing > maxvalue then
-				maxvalue = spell.healing
-			end
-		end
 		
 		for spellname, spell in pairs(player.healingspells) do
-				
-			local bar = win:GetBar(spellname)
-			if bar then
-				bar:SetMaxValue(maxvalue)
-				bar:SetValue(spell.healing)
-			else
-				local icon = select(3, GetSpellInfo(spell.id))
-				local color = win:GetDefaultBarColor()
+		
+			local d = win.dataset[nr] or {}
+			win.dataset[nr] = d
 			
-				bar = win:CreateBar(spellname, spell.name, spell.healing, maxvalue, icon, false)
-				bar:SetColorAt(0, color.r, color.g, color.b, color.a)
-				bar:ShowTimerLabel()
-				bar:EnableMouse(true)
-				bar:SetScript("OnMouseDown",function(bar, button)
-												if button == "RightButton" then
-													win:DisplayMode(mod)
-												end
-											end)
-				if icon then
-					bar:ShowIcon()
-				end
+			d.id = spell.id
+			d.label = spell.name
+			d.value = spell.healing
+			d.valuetext = Skada:FormatNumber(spell.healing)..(" (%02.1f%%)"):format(spell.healing / player.healing * 100)
+			d.icon = select(3, GetSpellInfo(spell.id))
+			
+			if spell.healing > max then
+				max = spell.healing
 			end
-			bar:SetTimerLabel(Skada:FormatNumber(spell.healing)..(" (%02.1f%%)"):format(spell.healing / player.healing * 100))
 			
+			nr = nr + 1
 		end
 	end
 	
-	-- Sort the possibly changed bars.
-	win:SortBars()
+	win.metadata.maxvalue = max
 end
 
 function mod:OnEnable()
+	mod.metadata		= {showspots = true, click = click_on_player}
+	playermod.metadata	= {click = spell_click}
+
 	Skada:RegisterForCL(SpellHeal, 'SPELL_HEAL', {src_is_interesting = true})
 	Skada:RegisterForCL(SpellHeal, 'SPELL_PERIODIC_HEAL', {src_is_interesting = true})
 

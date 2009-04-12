@@ -31,6 +31,8 @@ Skada.windowdefaults = {
 	
 	set = "current",
 	mode = nil,
+	
+	display = "bar",
 }
 
 local windefaultscopy = {}
@@ -50,11 +52,54 @@ Skada.defaults = {
 		total = nil,
 
 		modules = {},
+		columns = {},
 		report = {mode = "Damage", set = "current", channel = "Say", chantype = "preset", number = 10},
 
 		windows = {windefaultscopy},
 	}
 }
+
+-- Returns column configuration options for a mode.
+function Skada:GetColumnOptions(mod)
+	local db = self.db.profile.columns
+	
+	if mod.metadata and mod.metadata.columns then
+		local cols = {
+	        type="group",
+			name="Columns",
+	        args={
+	        	
+					defaultvalues = {
+					        type="toggle",
+					        name="Default",
+					        get=function() return db[mod.name] end,
+					        set=function() 
+					        		db[mod.name] = not db[mod.name]
+				         			Skada:ApplySettings()
+					        	end,
+					},
+					        	
+	        	},
+		}
+		
+		for colname, value in ipairs(mod.metadata.columns) do
+			local c = mod.name.."_"..colname
+			local col = {
+			        type="toggle",
+			        name=colname,
+			        get=function() return db[c] end,
+			        set=function() 
+			        		db[c] = not db[c]
+		         			Skada:ApplySettings()
+			        	end,
+			}
+			cols.args[c] = col
+		end
+		
+		return cols
+	end
+	
+end
 
 function Skada:GetWindowOptions(win)
 	local db = win.db
@@ -587,7 +632,7 @@ Skada.options = {
 	        		resetoptions = {
 	        			type = "group",
 	        			name = L["Data resets"],
-	        			order=3,
+	        			order=2,
 						args = {
 
 							resetinstance = {
@@ -627,7 +672,7 @@ Skada.options = {
 	        		generaloptions = {
 	        			type = "group",
 	        			name = L["General options"],
-	        			order=5,
+	        			order=3,
 						args = {
 							
 							mmbutton = {
@@ -717,6 +762,8 @@ Skada.options = {
 							
 						}
 	        		},
+	        		
+	        		
 	        }
 	        
 }

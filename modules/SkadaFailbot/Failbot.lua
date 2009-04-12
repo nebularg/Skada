@@ -10,14 +10,6 @@ local fail_events = fail:GetSupportedEvents()
 
 mod.name = L["Fails"]
 
-function mod:OnEnable()
-	Skada:AddMode(self)
-end
-
-function mod:OnDisable()
-	Skada:RemoveMode(self)
-end
-
 function mod:AddToTooltip(set, tooltip)
  	GameTooltip:AddDoubleLine(L["Fails"], set.fails, 1,1,1)
 end
@@ -76,43 +68,45 @@ for _, event in ipairs(fail_events) do
 	fail:RegisterCallback(event, onFail)
 end
 
-function mod:Update(win, set)
-	-- Calculate the highest number.
-	-- How to get rid of this iteration?
-	local maxfails = 0
-	for i, player in ipairs(set.players) do
-		if player.fails > maxfails then
-			maxfails = player.fails
-		end
+local function click_on_player(win, data, button)
+	if button == "LeftButton" then
+		playermod.playerid = data.id
+		playermod.name = data.label..L["'s Fails"]
+		win:DisplayMode(playermod)
+	elseif button == "RightButton" then 
+		win:RightClick()
 	end
-	
-	-- For each player in the set, see if we have a bar already.
-	-- If so, update values, else create bar.
+end
+
+function mod:Update(win, set)
+
+	local nr = 1
+	local max = 0
 	for i, player in ipairs(set.players) do
 		if player.fails > 0 then
-			local bar = win:GetBar(tostring(player.id))
-			if bar then
-				bar:SetMaxValue(maxfails)
-				bar:SetValue(player.fails)
-			else
-				bar = win:CreateBar(tostring(player.id), player.name, player.fails, maxfails, nil, false)
-				bar:EnableMouse()
-				bar:SetScript("OnMouseDown", function(bar, button) 
-												if button == "LeftButton" then
-													playermod.playerid = player.id
-													playermod.name = player.name..L["'s Fails"]
-													win:DisplayMode(playermod)
-											 elseif button == "RightButton" then win:RightClick() end end)
-				local color = Skada.classcolors[player.class] or win:GetDefaultBarColor()
-				bar:SetColorAt(0, color.r, color.g, color.b, color.a or 1)
-				
+		
+			local d = win.dataset[nr] or {}
+			win.dataset[nr] = d
+			
+			d.id = player.id
+			d.value = player.fails
+			d.label = player.name
+			d.color = Skada.classcolors[player.class]
+			d.valuetext = tostring(player.fails)
+			
+			if player.fails > max then
+				max = player.fails
 			end
-			bar:SetTimerLabel(tostring(player.fails))
 		end
 	end
 		
-	-- Sort the possibly changed bars.
-	win:SortBars()
+	win.metadata.maxvalue = max
+end
+
+local function fail_click(win, data, button)
+	if button == "RightButton" then
+		win:DisplayMode(mod)
+	end
 end
 
 -- Detail view of a player.
@@ -120,32 +114,32 @@ function playermod:Update(win, set)
 	-- View spells for this player.
 		
 	local player = Skada:find_player(set, self.playerid)
-	local color = win:GetDefaultBarColor()
-	
+	local nr = 1
 	if player then
 		for event, fails in pairs(player.failevents) do
-				
-			local bar = win:GetBar(event)
-			if bar then
-				bar:SetMaxValue(player.fails)
-				bar:SetValue(fails)
-			else
-				bar = win:CreateBar(event, event, fails, player.fails, nil, false)
-				bar:SetColorAt(0, color.r, color.g, color.b, color.a)
-				bar:ShowTimerLabel()
-				bar:EnableMouse(true)
-				bar:SetScript("OnMouseDown",function(bar, button)
-												if button == "RightButton" then
-													win:DisplayMode(mod)
-												end
-											end)
-			end
-			bar:SetTimerLabel(fails)
 			
+			local d = win.dataset[nr] or {}
+			win.dataset[nr] = d
+			
+			d.id = event
+			d.value = fails
+			d.label = event
+			d.valuetext = fails
+			
+			nr = nr + 1
 		end
 	end
 	
-	-- Sort the possibly changed bars.
-	win:SortBars()
+	win.metadata.maxvalue = player.fails
 end
 
+function mod:OnEnable()
+	mod.metadata = {click = click_on_player, showspots = true}
+	playermod.metadata = {click = fail_click}
+
+	Skada:AddMode(self)
+end
+
+function mod:OnDisable()
+	Skada:RemoveMode(self)
+end

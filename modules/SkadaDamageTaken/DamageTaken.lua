@@ -58,47 +58,46 @@ local function SwingDamage(timestamp, eventtype, srcGUID, srcName, srcFlags, dst
 	log_damage_taken(Skada.total, dmg)
 end
 
-function mod:Update(win, set)
-	-- Calculate the highest damage.
-	-- How to get rid of this iteration?
-	local maxdamagetaken = 0
-	for playerid, player in pairs(set.players) do
-		if player.damagetaken > maxdamagetaken then
-			maxdamagetaken = player.damagetaken
-		end
+local function click_on_player(win, data, button)
+	if button == "LeftButton" then
+		playermod.playerid = data.id
+		playermod.name = data.label..L["'s Damage taken"]
+		win:DisplayMode(playermod)
+	elseif button == "RightButton" then
+		win:RightClick()
 	end
+end
+
+function mod:Update(win, set)
+	local max = 0
 	
---	Skada:Print("maxhealing: "..tostring(maxhealing))
-	-- For each player in the set, see if we have a bar already.
-	-- If so, update values, else create bar.
+	local nr = 1
 	for i, player in ipairs(set.players) do
 		if player.damagetaken > 0 then
-			local bar = win:GetBar(tostring(playerid))
-			if bar then
-				bar:SetMaxValue(maxdamagetaken)
-				bar:SetValue(player.damagetaken)
-			else
-				bar = win:CreateBar(tostring(player.id), player.name, player.damagetaken, maxdamagetaken, nil, false)
-				bar:EnableMouse()
-				bar:SetScript("OnMouseDown", function(bar, button)
-												if button == "LeftButton" then
-													playermod.playerid = player.id
-													playermod.name = player.name..L["'s Damage taken"]
-													win:DisplayMode(playermod)
-												elseif button == "RightButton" then
-													win:RightClick()
-												end
-											end)
-				local color = Skada.classcolors[player.class] or win:GetDefaultBarColor()
-				bar:SetColorAt(0, color.r, color.g, color.b, color.a or 1)
-			end
-			bar:SetTimerLabel(Skada:FormatNumber(player.damagetaken)..(" (%02.1f%%)"):format(player.damagetaken / set.damagetaken * 100))
+			local d = win.dataset[nr] or {}
+			win.dataset[nr] = d
+
+			d.label = player.name
+			d.value = player.damagetaken
+			d.valuetext = Skada:FormatNumber(player.damagetaken)..(" (%02.1f%%)"):format(player.damagetaken / set.damagetaken * 100)
+			d.id = player.id
+			d.color = Skada.classcolors[player.class]
 			
+			if player.damagetaken > max then
+				max = player.damagetaken
+			end
+			nr = nr + 1
 		end
 	end
 	
 	-- Sort the possibly changed bars.
-	win:SortBars()
+	win.metadata.maxvalue = max
+end
+
+local function spell_click(win, data, button)
+	if button == "RightButton" then
+		win:DisplayMode(mod)
+	end
 end
 
 -- Detail view of a player.
@@ -107,39 +106,31 @@ function playermod:Update(win, set)
 		
 	local player = Skada:find_player(set, self.playerid)
 	
+	local nr = 1
 	if player then
 		for spellname, spell in pairs(player.damagetakenspells) do
 				
-			local bar = win:GetBar(spellname)
-			if bar then
-				bar:SetMaxValue(player.damagetaken)
-				bar:SetValue(spell.damage)
-			else
-				local icon = select(3, GetSpellInfo(spell.id))
-				bar = win:CreateBar(tostring(spellname), spell.name, spell.damage, player.damagetaken, icon, false)
-				local color = win:GetDefaultBarColor()
-				bar:SetColorAt(0, color.r, color.g, color.b, color.a)
-				bar:ShowTimerLabel()
-				bar:EnableMouse(true)
-				bar:SetScript("OnMouseDown",function(bar, button)
-												if button == "RightButton" then
-													win:DisplayMode(mod)
-												end
-											end)
-				if icon then
-					bar:ShowIcon()
-				end
-			end
-			bar:SetTimerLabel(Skada:FormatNumber(spell.damage)..(" (%02.1f%%)"):format(spell.damage / player.damagetaken * 100))
+			local d = win.dataset[nr] or {}
+			win.dataset[nr] = d
 			
+			d.label = spellname
+			d.value = spell.damage
+			d.icon = select(3, GetSpellInfo(spell.id))
+			d.id = spellname
+			d.valuetext = Skada:FormatNumber(spell.damage)..(" (%02.1f%%)"):format(spell.damage / player.damagetaken * 100)
+			
+			nr = nr + 1
 		end
 	end
 	
 	-- Sort the possibly changed bars.
-	win:SortBars()
+	win.metadata.maxvalue = player.damagetaken
 end
 
 function mod:OnEnable()
+	playermod.metadata = {click = spell_click}
+	mod.metadata = {click = click_on_player, showspots = true}
+
 	Skada:RegisterForCL(SpellDamage, 'SPELL_DAMAGE', {dst_is_interesting_nopets = true})
 	Skada:RegisterForCL(SpellDamage, 'SPELL_PERIODIC_DAMAGE', {dst_is_interesting_nopets = true})
 	Skada:RegisterForCL(SpellDamage, 'SPELL_BUILDING_DAMAGE', {dst_is_interesting_nopets = true})

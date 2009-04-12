@@ -10,6 +10,9 @@ local spellmod = Skada:NewModule("Damage spell details")
 mod.name = L["Damage"]
 dpsmod.name = L["DPS"]
 
+-- Used to track where to go back to, Damage or DPS mode.
+local lastmod = nil
+
 local function getDPS(set, player)
 	local totaltime = Skada:PlayerActiveTime(set, player)
 	
@@ -172,23 +175,11 @@ local function SpellMissed(timestamp, eventtype, srcGUID, srcName, srcFlags, dst
 	end
 end
 
-local function show_player_view(id)
-	if button == "LeftButton" then
-		playermod.name = player.name..L["'s Damage"]
-		playermod.playerid = player.id
-		win:DisplayMode(playermod)
-	elseif button == "RightButton" then
-		win:RightClick()
-	end
-end
-
 -- Called when user clicks on a data row.
-function mod_click(win, id, button)
+function mod_click(win, data, button)
 	if button == "LeftButton" then
-		local player = Skada:find_player(win:get_selected_set(), id)
-		
-		playermod.name = player.name..L["'s Damage"]
-		playermod.playerid = player.id
+		playermod.name = data.label..L["'s Damage"]
+		playermod.playerid = data.id
 		win:DisplayMode(playermod)
 	elseif button == "RightButton" then
 		win:RightClick()
@@ -197,6 +188,8 @@ end
 
 -- Damage overview.
 function mod:Update(win, set)
+	lastmod = mod
+
 	-- Max value.
 	local max = 0
  
@@ -224,19 +217,14 @@ function mod:Update(win, set)
 	win.metadata.maxvalue = max
 end
 
-local function player_click(win, id, button)
+local function player_click(win, data, button)
 	if button == "LeftButton" then
 		local player = Skada:find_player(win:get_selected_set(), playermod.playerid)
-		for i, spell in pairs(player.damagespells) do
-			if spell.id == id then
-				spellmod.spellname = spell.name
-				spellmod.name = player.name..L["'s "]..spell.name
-				win:DisplayMode(spellmod)
-				return
-			end
-		end
+		spellmod.spellname = data.label
+		spellmod.name = player.name..L["'s "]..data.label
+		win:DisplayMode(spellmod)
 	elseif button == "RightButton" then
-		win:DisplayMode(mod)
+		win:DisplayMode(lastmod)
 	end
 end
 
@@ -272,12 +260,6 @@ function playermod:Update(win, set)
 	win.metadata.maxvalue = max
 end
 
-function spell_click(win, id, button)
-	if button == "RightButton" then
-		win:DisplayMode(playermod)
-	end
-end
-
 local function add_detail_bar(win, nr, title, value)
 	local d = win.dataset[nr] or {}
 	win.dataset[nr] = d
@@ -286,6 +268,12 @@ local function add_detail_bar(win, nr, title, value)
 	d.label = title
 	d.id = title
 	d.valuetext = ("%u (%02.1f%%)"):format(value, value / win.metadata.maxvalue * 100)
+end
+
+local function spell_click(win, data, button)
+	if button == "RightButton" then
+		win:DisplayMode(playermod)
+	end
 end
 
 function spellmod:Update(win, set)
@@ -351,7 +339,10 @@ function dpsmod:GetSetSummary(set)
 end
 
 function dpsmod:Update(win, set)
+	lastmod = dpsmod
+
 	local max = 0
+	local nr = 1
 	
 	for i, player in ipairs(set.players) do
 		local dps = getDPS(set, player)
@@ -363,10 +354,12 @@ function dpsmod:Update(win, set)
 			d.id = player.id
 			d.value = dps
 			d.color = Skada.classcolors[player.class]
-			d.valuetext = ("%02.1f"):format(player.dps)
+			d.valuetext = ("%02.1f"):format(dps)
 			if dps > max then
 				max = dps
 			end
+			
+			nr = nr + 1
 		end
 	end
 	
@@ -374,20 +367,10 @@ function dpsmod:Update(win, set)
 end
 
 function mod:OnEnable()
-	playermod.metadata = {
-					click = player_click,
-					}
-	mod.metadata = {
-					showspots = true,
-					click = mod_click,
-					columns = {["Damage done"] = "damage", ["DPS"] = "dps", ["Damage percent"] = "percent"},
-					}
-	dpsmod.metadata = {
-					click = mod_click,
-					}
-	spellmod.metadata = {
-					click = spell_click,
-					}
+	dpsmod.metadata = 		{showspots = true, click = mod_click}
+	playermod.metadata = 	{click = player_click}
+	mod.metadata = 			{showspots = true, click = mod_click}
+	spellmod.metadata = 	{click = spell_click}
 
 	Skada:RegisterForCL(SpellDamage, 'DAMAGE_SHIELD', {src_is_interesting = true})
 	Skada:RegisterForCL(SpellDamage, 'SPELL_DAMAGE', {src_is_interesting = true})

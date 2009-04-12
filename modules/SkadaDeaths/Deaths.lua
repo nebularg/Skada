@@ -82,55 +82,56 @@ local function Resurrect(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGU
 	log_resurrect(Skada.current, dstGUID, dstName)
 end
 
-local function sort_by_ts(a,b)
-	return a.ts > b.ts
+local function click_on_player(win, data, button)
+	if button == "LeftButton" then
+		deathlog.playerid = data.id
+		deathlog.name = data.label..L["'s Death"]
+		win:DisplayMode(deathlog)
+	elseif button == "RightButton" then
+		win:RightClick()
+	end 
 end
 
 -- Death meter.
 function mod:Update(win, set)
-
-	-- Calculate the highest number.
-	-- How to get rid of this iteration?
-	local maxdeaths = 0
-	for i, player in ipairs(set.players) do
-		if player.deaths > maxdeaths then
-			maxdeaths = player.deaths
-		end
-	end
+	local nr = 1
+	local max = 0
 	
-	-- For each player in the set, see if we have a bar already.
-	-- If so, update values, else create bar.
 	for i, player in ipairs(set.players) do
 		if player.deaths > 0 then
-			local bar = win:GetBar(tostring(player.id))
-			if bar then
-				bar:SetMaxValue(maxdeaths)
-				bar:SetValue(player.deaths)
+		
+			local d = win.dataset[nr] or {}
+			win.dataset[nr] = d
+			
+			d.id = player.id
+			d.value = player.deathts
+			if player.deaths > 1 then
+				d.label = player.name.." ("..player.deaths..")"
 			else
-				local label = player.name
-				if player.deaths > 1 then
-					label = label.." ("..player.deaths..")"
-				end
-				bar = win:CreateBar(tostring(player.id), label, player.deaths, maxdeaths, nil, false)
-				bar.ts = player.deathts
-				bar:EnableMouse()
-				bar:SetScript("OnMouseDown", function(bar, button)
-												if button == "LeftButton" then
-													deathlog.playerid = player.id
-													deathlog.name = player.name..L["'s Death"]
-													win:DisplayMode(deathlog)
-												elseif button == "RightButton" then win:RightClick() end end)
-				local color = Skada.classcolors[player.class] or win:GetDefaultBarColor()
-				bar:SetColorAt(0, color.r, color.g, color.b, color.a or 1)
+				d.label = player.name
 			end
-			bar:SetTimerLabel(date("%H:%M:%S", player.deathts))
+			d.color = Skada.classcolors[player.class]
+			d.valuetext = date("%H:%M:%S", player.deathts)
+			if player.deathts > max then
+				max = player.deathts
+			end
+			
+			nr = nr + 1
 		end
 	end
 	
-	-- Sort the possibly changed bars.
-	win:SetSortFunction(sort_by_deathts)
-	win:SortBars()
+	win.metadata.maxvalue = max
 end
+
+
+local function hit_click(win, data, button)
+	if button == "RightButton" then
+		win:DisplayMode(mod)
+	end
+end
+
+local green = {r = 0, g = 255, b = 0, a = 1}
+local red = {r = 255, g = 0, b = 0, a = 1}
 
 -- Death log.
 function deathlog:Update(win, set)
@@ -139,46 +140,48 @@ function deathlog:Update(win, set)
 	if player then
 		-- Find the max amount
 		local maxhit = 0
-		for i, log in ipairs(player.deathlog) do
-			if math.abs(log.amount) > maxhit then
-				maxhit = math.abs(log.amount)
-			end
-		end
+		local nr = 1
 		
 		for i, log in ipairs(player.deathlog) do
 			local diff = tonumber(log.ts) - tonumber(player.deathts)
 			-- Ignore hits older than 30s before death.
 			if diff > -30 then
-				local bar = win:GetBar("log"..i)
-				if bar then
-					bar:SetMaxValue(maxhit)
-					bar:SetValue(math.abs(log.amount))
-				else
-					local icon = select(3, GetSpellInfo(log.spellid))
-					bar = win:CreateBar("log"..i, log.spellname, math.abs(log.amount), maxhit, icon, false)
-					bar.ts = log.ts
-					bar:EnableMouse()
-					bar:SetScript("OnMouseDown", function(bar, button) if button == "RightButton" then win:DisplayMode(mod) end end)
-					if log.amount > 0 then
-						bar:SetColorAt(0, 0, 255, 0, 1)
-					else
-						bar:SetColorAt(0, 255, 0, 0, 1)
-					end
-					if icon then
-						bar:ShowIcon()
-					end
+			
+				local d = win.dataset[nr] or {}
+				win.dataset[nr] = d
+				
+				d.id = nr
+				d.label = log.spellname
+				d.ts = log.ts
+				d.value = math.abs(log.amount)
+				d.icon = select(3, GetSpellInfo(log.spellid))
+				d.valuetext = Skada:FormatNumber(log.amount)..", "..("%2.3f"):format(diff)
+				
+				if d.value > maxhit then
+					maxhit = d.value
 				end
-				bar:SetTimerLabel(Skada:FormatNumber(log.amount)..", "..("%2.3f"):format(diff))
+				
+				if log.amount > 0 then
+					d.color = green
+				else
+					d.color = red
+				end
+				
+				nr = nr + 1
 			end
 		end
 		
-		-- Use our special sort function and sort.
-		win:SetSortFunction(sort_by_ts)
-		win:SortBars()
+		win.metadata.maxvalue = maxhiyt
+		
+		-- Use our special sort function.
+		win.metadata.sortfunc = sort_by_ts
 	end
 end
 
 function mod:OnEnable()
+	mod.metadata = {click = click_on_player}
+	deathlog.metadata = {click = hit_click}
+
 	Skada:RegisterForCL(UnitDied, 'UNIT_DIED', {dst_is_interesting_nopets = true})
 	
 	Skada:RegisterForCL(SpellDamage, 'SPELL_DAMAGE', {dst_is_interesting_nopets = true})

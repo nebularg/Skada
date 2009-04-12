@@ -61,40 +61,32 @@ local function SpellInterrupt(timestamp, eventtype, srcGUID, srcName, srcFlags, 
 end
 
 function mod:Update(win, set)
-	-- Calculate the highest number.
-	-- How to get rid of this iteration?
-	local maxdispells = 0
+	local max = 0
+	local nr = 1
+	
 	for i, player in ipairs(set.players) do
-		if player.dispells > maxdispells then
-			maxdispells = player.dispells
+		if player.dispells > 0 then
+		
+			local d = win.dataset[nr] or {}
+			win.dataset[nr] = d
+			d.value = player.dispells
+			d.label = player.name
+			d.color = Skada.classcolors[player.class]
+			d.id = player.id
+			d.valuetext = tostring(player.dispells)
+			if player.dispells > max then
+				max = player.dispells
+			end
+			nr = nr + 1
 		end
 	end
 	
-	-- For each player in the set, see if we have a bar already.
-	-- If so, update values, else create bar.
-	for i, player in ipairs(set.players) do
-		if player.dispells > 0 then
-			local bar = win:GetBar(tostring(player.id))
-			if bar then
-				bar:SetMaxValue(maxdispells)
-				bar:SetValue(player.dispells)
-			else
-				bar = win:CreateBar(tostring(player.id), player.name, player.dispells, maxdispells, nil, false)
-				bar:EnableMouse()
-				bar:SetScript("OnMouseDown", function(bar, button) if button == "RightButton" then win:RightClick() end end)
-				local color = Skada.classcolors[player.class] or win:GetDefaultBarColor()
-				bar:SetColorAt(0, color.r, color.g, color.b, color.a or 1)
-				
-			end
-			bar:SetTimerLabel(tostring(player.dispells))
-		end
-	end
-		
-	-- Sort the possibly changed bars.
-	win:SortBars()
+	win.metadata.maxvalue = max
 end
 
 function mod:OnEnable()
+	mod.metadata = {showspots = true}
+	
 	Skada:RegisterForCL(SpellDispel, 'SPELL_DISPEL', {src_is_interesting = true})
 	Skada:RegisterForCL(SpellInterrupt, 'SPELL_INTERRUPT', {src_is_interesting = true})
 	

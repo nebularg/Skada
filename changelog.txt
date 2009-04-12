@@ -3,9 +3,10 @@
 * Added window header font setting.
 * Made spell icons a little prettier (thanks Aezay)
 * Added displaying of miss types in Damage mode spell details.
-* Added a "Last fight" segment. This is kept even if you have "Only keep bosses" active. The "Current" segment shows this segment out of combat. This means you don't lose trash fights straight away when you have "Only keep bosses" on.
+* Fixed "Only keep bosses" options so that last fight is still displayed even if it is not a boss fight.
 * Made LibDBIcon-1.0 optional for the disembedding crowd.
 * Fixed background frame not displayed properly on first bar (thanks whynona2)
+* Major changes in backend. Modes no longer have anything to do with the display of data. Currently there is only the traditional bar display system used by most damage meters, but implementing a new system should be fairly trivial.
 
 1.1-4
 * Fixed whisper reports. Hopefully the last of the "fix what I broke last weekend" versions.

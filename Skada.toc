@@ -31,5 +31,6 @@ locale\deDE.lua
 Skada.lua
 Options.lua
 Bosses.lua
+BarDisplay.lua
 
 modules.xml

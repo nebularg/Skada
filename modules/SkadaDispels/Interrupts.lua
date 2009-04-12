@@ -37,34 +37,26 @@ function mod:AddSetAttributes(set)
 end
 
 function mod:Update(win, set)
-	-- Calculate the highest number.
-	local maxvalue = 0
+	local max = 0
+	local nr = 1
 	for i, player in ipairs(set.players) do
-		if player.interrupts > maxvalue then
-			maxvalue = player.interrupts
+		if player.interrupts > 0 then
+		
+			local d = win.dataset[nr] or {}
+			win.dataset[nr] = d
+			
+			d.value = player.interrupts
+			d.label = player.name
+			d.valuetext = tostring(player.interrupts)
+			d.id = player.id
+			d.color = Skada.classcolors[player.class]
+			if player.interrupts > max then
+				max = player.interrupts
+			end
+			
+			nr = nr + 1
 		end
 	end
 	
-	-- For each player in the set, see if we have a bar already.
-	-- If so, update values, else create bar.
-	for i, player in ipairs(set.players) do
-		if player.interrupts > 0 then
-			local bar = win:GetBar(tostring(player.id))
-			if bar then
-				bar:SetMaxValue(maxvalue)
-				bar:SetValue(player.interrupts)
-			else
-				bar = win:CreateBar(tostring(player.id), player.name, player.interrupts, maxvalue, nil, false)
-				bar:EnableMouse()
-				bar:SetScript("OnMouseDown", function(bar, button) if button == "RightButton" then win:RightClick() end end)
-				local color = Skada.classcolors[player.class] or win:GetDefaultBarColor()
-				bar:SetColorAt(0, color.r, color.g, color.b, color.a or 1)
-				
-			end
-			bar:SetTimerLabel(tostring(player.interrupts))
-		end
-	end
-		
-	-- Sort the possibly changed bars.
-	win:SortBars()
+	win.metadata.maxvalue = max
 end

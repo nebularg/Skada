@@ -110,96 +110,90 @@ local function len(t)
 	return l
 end
 
+local function click_on_player(win, data, button)
+	if button == "LeftButton" then
+		auramod.playerid = data.id
+		auramod.name = data.label..L["'s Debuffs"]
+		win:DisplayMode(auramod)
+	elseif button == "RightButton" then
+		win:RightClick()
+	end
+end
+											
 function mod:Update(win, set)
-	-- For each player in the set, see if we have a bar already.
-	-- If so, update values, else create bar.
+	local nr = 1
+	local max = 0
+
 	for i, player in ipairs(set.players) do
-		local nr = len(player.auras)
-		if nr > 0 then
+		local auras = len(player.auras)
+		if auras > 0 then
 			-- Calculate player max possible uptime.
 			local maxtime = Skada:PlayerActiveTime(set, player)
 			
 			-- Now divide by the number of spells to get the average uptime.
-			--Skada:Print(uptime.." divided on "..nr.." spells = "..(uptime / nr))
-			local uptime = player.uptime / nr
+			local uptime = player.uptime / auras
 			
-			if uptime then
-				
-				local bar = win:GetBar(tostring(player.id))
-				if bar then
-					bar:SetMaxValue(maxtime)
-					bar:SetValue(uptime)
-				else
-					bar = win:CreateBar(tostring(player.id), player.name, uptime, maxtime, nil, false)
-					bar:EnableMouse()
-					bar:SetScript("OnMouseDown", function(bar, button)
-													if button == "LeftButton" then
-														auramod.playerid = player.id
-														auramod.name = player.name..L["'s Debuffs"]
-														win:DisplayMode(auramod)
-													elseif button == "RightButton" then
-														win:RightClick()
-													end
-												end)
-					local color = Skada.classcolors[player.class] or win:GetDefaultBarColor()
-					bar:SetColorAt(0, color.r, color.g, color.b, color.a or 1)
-				end
-				bar:SetTimerLabel(("%02.1f%% / %u"):format(uptime / maxtime * 100, nr))
+			local d = win.dataset[nr] or {}
+			win.dataset[nr] = d
+			
+			d.id = player.id
+			d.value = uptime
+			d.label = player.name
+			d.valuetext = ("%02.1f%% / %u"):format(uptime / maxtime * 100, auras)
+			d.color = Skada.classcolors[player.class]
+
+			if uptime > max then
+				max = uptime
 			end
+			
+			nr = nr + 1
 		end
 	end
-		
-	-- Sort the possibly changed bars.
-	win:SortBars()
+	
+	win.metadata.maxvalue = max
+end
+
+local function aura_click(win, data, button)
+	if button == "RightButton" then
+		win:DisplayMode(mod)
+	end
 end
 
 -- Detail view of a player.
 function auramod:Update(win, set)
 	-- View spells for this player.
-		
+	local nr = 1
+	local max = 0
 	local player = Skada:find_player(set, self.playerid)
 	
 	if player then
 		-- Calculate player max possible uptime.
 		local maxtime = Skada:PlayerActiveTime(set, player)
 		
+		win.metadata.maxvalue = maxtime
 		for spellname, spell in pairs(player.auras) do
 			
 			local uptime = spell.uptime
+
+			local d = win.dataset[nr] or {}
+			win.dataset[nr] = d
 			
-			local bar = win:GetBar(spellname)
-			--self:Print("max: "..tostring(player.damage))
-			--self:Print(spell.name..": "..tostring(spell.damage))
-			if bar then
-				bar:SetMaxValue(maxtime)
-				bar:SetValue(uptime)
-			else
-				local icon = select(3, GetSpellInfo(spell.id))
-				local color = win:GetDefaultBarColor()
+			d.id = spell.name
+			d.value = uptime
+			d.label = spell.name
+			d.icon = select(3, GetSpellInfo(spell.id))
+			d.valuetext = ("(%02.1f%%)"):format(uptime / maxtime * 100)
 			
-				bar = win:CreateBar(spellname, spell.name, uptime, maxtime, icon, false)
-				bar:SetColorAt(0, color.r, color.g, color.b, color.a)
-				bar:ShowTimerLabel()
-				bar:EnableMouse(true)
-				bar:SetScript("OnMouseDown",function(bar, button)
-												if button == "RightButton" then
-													win:DisplayMode(mod)
-												end
-											end)
-				if icon then
-					bar:ShowIcon()
-				end
-			end
-			bar:SetTimerLabel(("(%02.1f%%)"):format(uptime / maxtime * 100))
-			
+			nr = nr + 1
 		end
 	end
 	
-	-- Sort the possibly changed bars.
-	win:SortBars()
 end
 
 function mod:OnEnable()
+	mod.metadata = {showspots = 1, click = click_on_player}
+	auramod.metadata = {click = aura_click}
+
 	Skada:RegisterForCL(AuraApplied, 'SPELL_AURA_APPLIED', {src_is_interesting = true})
 	Skada:RegisterForCL(AuraRemoved, 'SPELL_AURA_REMOVED', {src_is_interesting = true})
 	
