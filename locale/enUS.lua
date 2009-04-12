@@ -199,6 +199,12 @@ L["Bar display"] = "Bar display"
 L["Display system"] = "Display system"
 L["Choose the system to be used for displaying data in this window."] = "Choose the system to be used for displaying data in this window."
 
+L["Hides HPS from the Healing modes."] = "Hides HPS from the Healing modes."
+L["Do not show HPS"] = "Do not show HPS"
+
+L["Do not show DPS"] = "Do not show DPS"
+L["Hides DPS from the Damage mode."] = "Hides DPS from the Damage mode."
+
 -- SkadaDebuffs
 L["Debuff uptimes"] = true
 L["'s Debuffs"] = true

@@ -15,6 +15,9 @@ Skada.current = nil
 -- The total set
 Skada.total = nil
 
+-- The last set
+Skada.last = nil
+
 -- Modes - these are modules, really. Modeules?
 local modes = {}
 
@@ -47,6 +50,25 @@ Skada.displays = {}
 
 function Skada:GetWindows()
 	return windows
+end
+
+-- explode(seperator, string)
+local function explode(d,p)
+  local t, ll
+  t={}
+  ll=0
+  if(#p == 1) then return p end
+    while true do
+      l=string.find(p,d,ll+1,true) -- find the next d in the string
+      if l~=nil then -- if "not not" found then..
+        table.insert(t, string.sub(p,ll,l-1)) -- Save it in our array.
+        ll=l+1 -- save just after where we found it for searching next time.
+      else
+        table.insert(t, string.sub(p,ll)) -- Save what's left in our array.
+        break -- Break at end, as it should be, according to the lua manual.
+      end
+    end
+  return t
 end
 
 local function find_mode(name)
@@ -226,22 +248,10 @@ function Window:Wipe()
 	-- Clear display.
 	self.display:Wipe(self)
 end
-								
+
 -- If selectedset is "current", returns current set if we are in combat, otherwise returns the last set.
 function Window:get_selected_set()
-	if self.selectedset == "current" then
-		if Skada.current == nil then
-			return sets[1]
-		else
-			return Skada.current
-		end
-	elseif self.selectedset == "total" then
-		return Skada.total
-	elseif self.selectedset == "last" then
-		return Skada.last
-	else
-		return sets[self.selectedset]
-	end
+	return Skada:find_set(self.selectedset)
 end
 
 -- Sets up the mode view.
@@ -423,7 +433,7 @@ function Skada:CreateWindow(name, db)
 	window.db.name = name
 	
 	-- Set the window's display and call it's Create function.
-	window:SetDisplay(window.db.display)
+	window:SetDisplay(window.db.display or "bar")
 	
 	window.display:Create(window)
 	
@@ -462,35 +472,30 @@ function Skada:Command(param)
 		self:ToggleWindow()
 	elseif param == "config" then
 		self:OpenOptions()
-	--[[
 	elseif param:sub(1,6) == "report" then
 		param = param:sub(7)
 		local chan = "say"
 		local max = 0
 		local chantype = "preset"
-		for word in param:gmatch("[%a%d]+") do
-			if word == "raid" or word == "guild" or word == "party" or word == "officer" then
-				chantype = "preset"
-				chan = word
-			elseif word == "self" then
-				chantype = "self"
-			elseif tonumber(word) ~= nil then
-				max = tonumber(word)
-			elseif select(1, GetChannelName(word)) > 0 then
-				chan = word
-				chantype = "CHANNEL"
-			else
-				chan = word
-				chantype = "WHISPER"
-			end
+		
+		local words = explode(" ", param)
+		
+		local chan = words[2] or "say"
+		local report_mode_name = words[3] or L["Damage"]
+		local max = tonumber(words[4] or 10)
+		
+		-- Sanity checks.
+		if chan and (chan == "say" or chan == "guild" or chan == "raid" or chan == "party" or chan == "officer") and (report_mode_name and find_mode(report_mode_name)) then
+			self:Report(chan, "preset", report_mode_name, "current", max)
+		else
+			self:Print("Usage:")
+			self:Print(("%-20s"):format("/skada report [raid|guild|party|officer|say] [mode] [max lines]"))
 		end
-		self:Report(chan, chantype, max)
-	--]]
 	else
 		self:Print("Usage:")
-		self:Print(("%-20s %-s"):format("/skada report",L["reports the active mode"]))
-		self:Print(("%-20s %-s"):format("/skada reset",L["resets all data"]))
-		self:Print(("%-20s %-s"):format("/skada config",L["opens the configuration window"]))
+		self:Print(("%-20s"):format("/skada report [raid|guild|party|officer|say] [mode] [max lines]"))
+		self:Print(("%-20s"):format("/skada reset"))
+		self:Print(("%-20s"):format("/skada config"))
 	end
 end
 
@@ -510,7 +515,7 @@ local function sendchat(msg, chan, chantype)
 	end
 end
 
-function Skada:Report(channel, chantype, report_mode_name, report_set, max)
+function Skada:Report(channel, chantype, report_mode_name, report_set_name, max)
 
 	if(chantype == "channel") then
 		local list = {GetChannelList()}
@@ -523,52 +528,33 @@ function Skada:Report(channel, chantype, report_mode_name, report_set, max)
 	end
 
 	local report_mode = find_mode(report_mode_name)
-
-	local win = win or windows[1]
-	if win then
-		local old_mode = win.selectedmode
-		local old_set = win.selectedset
-		
-		win.selectedset = report_set
-		win.selectedmode = report_mode
-		
-		changed = true
-		self:UpdateDisplay()
-
-		local bars = win:GetBars()
-		local list = {}
-		
-		for name, bar in pairs(bars) do table.insert(list, bar)	end
-
-		-- Sort our temporary table according to value.
-		table.sort(list, function(a,b) return a.value > b.value end)
+	local report_set = Skada:find_set(report_set_name)
+	if report_set == nil then
+		return
+	end
+	-- Create a temporary fake window.
+	local report_table = {metadata = {}, dataset = {}}
 	
-		-- Title
-		local set = win:get_selected_set()
-		local endtime = set.endtime or time()
-		sendchat(string.format(L["Skada report on %s for %s, %s to %s:"], win.selectedmode.name, set.name, date("%X",set.starttime), date("%X",endtime)), channel, chantype)
+	-- Tell our mode to populate our dataset.
+	report_mode:Update(report_table, report_set)
+	
+	-- Sort our temporary table according to value.
+	table.sort(report_table.dataset, function(a,b) return a.value > b.value end)
+	
+	-- Title
+	local endtime = report_set.endtime or time()
+	sendchat(string.format(L["Skada report on %s for %s, %s to %s:"], report_mode.name, report_set.name, date("%X",report_set.starttime), date("%X",endtime)), channel, chantype)
 		
-		-- For each active bar, print label and timer value.
-		for i, bar in ipairs(list) do
-			sendchat(("%s   %s"):format(bar:GetLabel(), bar:GetTimerLabel()), channel, chantype)
-			if i == max or (max == 0 and i == win.db.barmax) then
-				break
-			end
-		end
-		
-		-- Switch back to previous mode. Can you say "ugly"?
-		if old_set then
-			win.selectedset = old_set
-			if old_mode then
-				win.selectedmode = old_mode
-			end
+	-- For each item in dataset, print label and valuetext.
+	for i, data in ipairs(report_table.dataset) do
+		if report_mode.metadata and report_mode.metadata.showspots then
+			sendchat(("%2u. %s   %s"):format(i, data.label, data.valuetext), channel, chantype)
 		else
-			win:DisplaySets()
+			sendchat(("%s   %s"):format(data.label, data.valuetext), channel, chantype)
 		end
-		changed = true
-		self:UpdateDisplay()
-	else
-		self:Print("Reporting requires a window to be present.")
+		if i == max then
+			break
+		end
 	end
 	
 end
@@ -1430,6 +1416,23 @@ function Skada:RestoreView(win, theset, themode)
 		end
 	else
 		win:DisplayModes(win.selectedset)
+	end
+end
+
+-- If set is "current", returns current set if we are in combat, otherwise returns the last set.
+function Skada:find_set(s)
+	if s == "current" then
+		if Skada.current ~= nil then
+			return Skada.current
+		elseif Skada.last ~= nil then
+			return Skada.last
+		else
+			return sets[1]
+		end
+	elseif s == "total" then
+		return Skada.total
+	else
+		return sets[s]
 	end
 end
 

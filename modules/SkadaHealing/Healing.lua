@@ -88,7 +88,11 @@ function mod:Update(win, set)
 			d.id = player.id
 			d.label = player.name
 			d.value = player.healing
-			d.valuetext = Skada:FormatNumber(player.healing)..(" (%02.1f, %02.1f%%)"):format(hps, player.healing / set.healing * 100)
+			if Skada.db.profile.modules.healingnohps or true then
+				d.valuetext = Skada:FormatNumber(player.healing)..(" (%02.1f%%)"):format(player.healing / set.healing * 100)
+			else
+				d.valuetext = Skada:FormatNumber(player.healing)..(" (%02.1f, %02.1f%%)"):format(hps, player.healing / set.healing * 100)
+			end
 			d.color = Skada.classcolors[player.class]
 			
 			if player.healing > max then
@@ -182,4 +186,29 @@ function mod:AddSetAttributes(set)
 		set.healing = 0
 		set.overhealing = 0
 	end
+end
+
+
+local opts = {
+	healingoptions = {
+		type="group",
+		name=L["Healing"],
+		args={
+
+			showdps = {
+				type = "toggle",
+				name = L["Do not show HPS"],
+				desc = L["Hides HPS from the Healing modes."],
+				get = function() return Skada.db.profile.modules.healingnohps end,
+				set = function() Skada.db.profile.modules.healingnohps = not Skada.db.profile.modules.healingnohps end,
+				order=2,
+			},
+					
+		},
+	}
+}
+
+function mod:OnInitialize()
+	-- Add our options.
+	table.insert(Skada.options.plugins, opts)
 end

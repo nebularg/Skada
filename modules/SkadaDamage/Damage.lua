@@ -203,7 +203,13 @@ function mod:Update(win, set)
 			local d = win.dataset[nr] or {}
 			win.dataset[nr] = d
 			d.label = player.name
-			d.valuetext = Skada:FormatNumber(player.damage)..(" (%02.1f, %02.1f%%)"):format(dps, player.damage / set.damage * 100)
+			
+			if Skada.db.profile.modules.damagenodps then
+				d.valuetext = Skada:FormatNumber(player.damage)..(" (%02.1f%%)"):format(player.damage / set.damage * 100)
+			else
+				d.valuetext = Skada:FormatNumber(player.damage)..(" (%02.1f, %02.1f%%)"):format(dps, player.damage / set.damage * 100)
+			end
+			
 			d.value = player.damage
 			d.id = player.id
 			d.color = Skada.classcolors[player.class]
@@ -440,3 +446,26 @@ function mod:AddSetAttributes(set)
 	end
 end
 
+local opts = {
+	damageoptions = {
+		type="group",
+		name=L["Damage"],
+		args={
+
+			showdps = {
+				type = "toggle",
+				name = L["Do not show DPS"],
+				desc = L["Hides DPS from the Damage mode."],
+				get = function() return Skada.db.profile.modules.damagenodps end,
+				set = function() Skada.db.profile.modules.damagenodps = not Skada.db.profile.modules.damagenodps end,
+				order=2,
+			},
+					
+		},
+	}
+}
+
+function mod:OnInitialize()
+	-- Add our options.
+	table.insert(Skada.options.plugins, opts)
+end
