@@ -8,7 +8,9 @@
 * Fixed background frame not displayed properly on first bar (thanks whynona2)
 * Major changes in backend. Modes no longer have anything to do with the display of data. Currently there is only the traditional bar display system used by most damage meters, but implementing a new system should be fairly trivial.
 * Added options to hiude DPS/HPS in damage and healing modes. Temporary solution which should be replaced with a generic field selection at some point.
-* Fixed bar display's background frame to use background instead of statusbars (thanks ethancentaurai).
+* Bar display: Fixed background frame to use background instead of statusbars (thanks ethancentaurai).
+* Bar display: Added options to enable or disable class colors for bars and for bar text.
+* Bar display: Fixed issue with SharedMedia media not being available right away.
 
 1.1-4
 * Fixed whisper reports. Hopefully the last of the "fix what I broke last weekend" versions.

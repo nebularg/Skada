@@ -421,6 +421,10 @@ function Skada:OnInitialize()
 	self.db.RegisterCallback(self, "OnProfileReset", "ReloadSettings")
 
 	self:ReloadSettings()
+	
+	-- Instead of listening for callbacks on SharedMedia we simply wait a few seconds and then re-apply settings
+	-- to catch any missing media. Lame? Yes.
+	self:ScheduleTimer("ApplySettings", 2)
 end
 
 function Skada:tcopy(to, from)

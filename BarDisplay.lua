@@ -147,6 +147,7 @@ function mod:Update(win)
 					local color = Skada.classcolors[data.class]
 					if color then
 						bar.label:SetTextColor(color.r, color.g, color.b, color.a or 1)
+						bar.timerLabel:SetTextColor(color.r, color.g, color.b, color.a or 1)
 					end
 				end
 			end
