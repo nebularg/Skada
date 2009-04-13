@@ -47,7 +47,7 @@ function mod:Update(win, set)
 			d.value = player.overhealing
 			d.label = player.name
 			d.valuetext = Skada:FormatNumber(player.overhealing)..(" (%02.1f%%)"):format(player.overhealing / set.overhealing * 100)
-			d.color = Skada.classcolors[player.class]
+			d.class = player.class
 			
 			if player.overhealing > max then
 				max = player.overhealing

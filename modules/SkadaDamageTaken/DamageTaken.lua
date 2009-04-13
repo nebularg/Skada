@@ -81,7 +81,7 @@ function mod:Update(win, set)
 			d.value = player.damagetaken
 			d.valuetext = Skada:FormatNumber(player.damagetaken)..(" (%02.1f%%)"):format(player.damagetaken / set.damagetaken * 100)
 			d.id = player.id
-			d.color = Skada.classcolors[player.class]
+			d.class = player.class
 			
 			if player.damagetaken > max then
 				max = player.damagetaken

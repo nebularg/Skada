@@ -193,7 +193,7 @@ function doneplayers:Update(win, set)
 						d.label = player.name
 						d.value = player.done
 						d.valuetext = Skada:FormatNumber(player.done)..(" (%02.1f%%)"):format(player.done / mob.done * 100)
-						d.color = Skada.classcolors[player.class]
+						d.class = player.class
 						
 						if player.done > max then
 							max = player.done
@@ -239,7 +239,7 @@ function takenplayers:Update(win, set)
 						d.label = player.name
 						d.value = player.taken
 						d.valuetext = Skada:FormatNumber(player.taken)..(" (%02.1f%%)"):format(player.taken / mob.taken * 100)
-						d.color = Skada.classcolors[player.class] 
+						d.class = player.class
 						
 						if player.taken > max then
 							max = player.taken

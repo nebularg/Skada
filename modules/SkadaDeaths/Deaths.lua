@@ -110,7 +110,7 @@ function mod:Update(win, set)
 			else
 				d.label = player.name
 			end
-			d.color = Skada.classcolors[player.class]
+			d.class = player.class
 			d.valuetext = date("%H:%M:%S", player.deathts)
 			if player.deathts > max then
 				max = player.deathts

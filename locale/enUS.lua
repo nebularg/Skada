@@ -205,6 +205,11 @@ L["Do not show HPS"] = "Do not show HPS"
 L["Do not show DPS"] = "Do not show DPS"
 L["Hides DPS from the Damage mode."] = "Hides DPS from the Damage mode."
 
+L["Class color bars"] = "Class color bars"
+L["When possible, bars will be colored according to player class."] = "When possible, bars will be colored according to player class."
+L["Class color text"] = "Class color text"
+L["When possible, bar text will be colored according to player class."] = "When possible, bar text will be colored according to player class."
+
 -- SkadaDebuffs
 L["Debuff uptimes"] = true
 L["'s Debuffs"] = true

@@ -71,7 +71,7 @@ function mod:Update(win, set)
 			win.dataset[nr] = d
 			d.value = player.dispells
 			d.label = player.name
-			d.color = Skada.classcolors[player.class]
+			d.class = player.class
 			d.id = player.id
 			d.valuetext = tostring(player.dispells)
 			if player.dispells > max then

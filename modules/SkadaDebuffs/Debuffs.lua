@@ -140,7 +140,7 @@ function mod:Update(win, set)
 			d.value = uptime
 			d.label = player.name
 			d.valuetext = ("%02.1f%% / %u"):format(uptime / maxtime * 100, auras)
-			d.color = Skada.classcolors[player.class]
+			d.class = player.class
 
 			if uptime > max then
 				max = uptime

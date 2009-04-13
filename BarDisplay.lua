@@ -133,9 +133,21 @@ function mod:Update(win)
 				bar:SetScript("OnMouseDown", function(bar, button) BarClick(win, data, button) end)
 				if data.color then
 					bar:SetColorAt(0, data.color.r, data.color.g, data.color.b, data.color.a or 1)
+				elseif data.class and win.db.classcolorbars then
+					local color = Skada.classcolors[data.class]
+					if color then
+						bar:SetColorAt(0, color.r, color.g, color.b, color.a or 1)
+					end
 				else
 					local color = win.db.barcolor
 					bar:SetColorAt(0, color.r, color.g, color.b, color.a or 1)
+				end
+				
+				if data.class and win.db.classcolortext then
+					local color = Skada.classcolors[data.class]
+					if color then
+						bar.label:SetTextColor(color.r, color.g, color.b, color.a or 1)
+					end
 				end
 			end
 			
@@ -182,7 +194,7 @@ function mod:Update(win)
 		local bars = win.bargroup:GetBars()
 		for name, bar in pairs(bars) do
 			if not bar.checked then
-				win:RemoveBar(bar)
+				win.bargroup:RemoveBar(bar)
 			end
 		end
 	end
@@ -322,7 +334,7 @@ function mod:ApplySettings(win)
 		end
 
 		local inset = p.background.margin
-		windowbackdrop.bgFile = media:Fetch("statusbar", p.background.texture)
+		windowbackdrop.bgFile = media:Fetch("background", p.background.texture)
 		if p.background.borderthickness > 0 then
 			windowbackdrop.edgeFile = media:Fetch("border", p.background.bordertexture)
 		else
@@ -372,7 +384,7 @@ end
 
 function mod:AddDisplayOptions(win, options)
 	local db = win.db
-	
+
 	options.baroptions = {
 		type = "group",
 		name = L["Bars"],
@@ -495,18 +507,6 @@ function mod:AddDisplayOptions(win, options)
 				order=17,
 			},
 			
-			barslocked = {
-			        type="toggle",
-			        name=L["Lock window"],
-			        desc=L["Locks the bar window in place."],
-			        order=18,
-			        get=function() return db.barslocked end,
-			        set=function() 
-			        		db.barslocked = not db.barslocked
-		         			Skada:ApplySettings()
-			        	end,
-			},
-
 			reversegrowth = {
 			        type="toggle",
 			        name=L["Reverse bar growth"],
@@ -550,9 +550,33 @@ function mod:AddDisplayOptions(win, options)
 					end,
 				order=21,
 			},
+
+			classcolorbars = {
+			        type="toggle",
+			        name=L["Class color bars"],
+			        desc=L["When possible, bars will be colored according to player class."],
+			        order=30,
+			        get=function() return db.classcolorbars end,
+			        set=function() 
+			        		db.classcolorbars = not db.classcolorbars
+		         			Skada:ApplySettings()
+			        	end,
+			},
+
+			classcolortext = {
+			        type="toggle",
+			        name=L["Class color text"],
+			        desc=L["When possible, bar text will be colored according to player class."],
+			        order=30,
+			        get=function() return db.classcolortext end,
+			        set=function() 
+			        		db.classcolortext = not db.classcolortext
+		         			Skada:ApplySettings()
+			        	end,
+			},
 			
 		}
-  		}
+	}
    	
     options.titleoptions = {
 		type = "group",
@@ -699,10 +723,10 @@ function mod:AddDisplayOptions(win, options)
 			
 		    texture = {
 		         type = 'select',
-		         dialogControl = 'LSM30_Statusbar',
+		         dialogControl = 'LSM30_Background',
 		         name = L["Background texture"],
 		         desc = L["The texture used as the background."],
-		         values = AceGUIWidgetLSMlists.statusbar,
+		         values = AceGUIWidgetLSMlists.background,
 		         get = function() return db.background.texture end,
 		         set = function(win,key)
 	         				db.background.texture = key

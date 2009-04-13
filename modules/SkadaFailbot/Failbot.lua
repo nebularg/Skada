@@ -91,7 +91,7 @@ function mod:Update(win, set)
 			d.id = player.id
 			d.value = player.fails
 			d.label = player.name
-			d.color = Skada.classcolors[player.class]
+			d.class = player.class
 			d.valuetext = tostring(player.fails)
 			
 			if player.fails > max then

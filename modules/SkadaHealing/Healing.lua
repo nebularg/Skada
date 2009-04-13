@@ -93,7 +93,7 @@ function mod:Update(win, set)
 			else
 				d.valuetext = Skada:FormatNumber(player.healing)..(" (%02.1f, %02.1f%%)"):format(hps, player.healing / set.healing * 100)
 			end
-			d.color = Skada.classcolors[player.class]
+			d.class = player.class
 			
 			if player.healing > max then
 				max = player.healing

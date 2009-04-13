@@ -144,6 +144,19 @@ function Window:AddOptions()
 					order=21,
 				},
 				
+				locked = {
+				       type="toggle",
+				       name=L["Lock window"],
+				       desc=L["Locks the bar window in place."],
+				       order=18,
+				       get=function() return db.barslocked end,
+				       set=function() 
+				       		db.barslocked = not db.barslocked
+				       			Skada:ApplySettings()
+				       	end,
+				}
+
+				
 	        }
 	}
 	

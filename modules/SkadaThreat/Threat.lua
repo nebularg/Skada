@@ -130,7 +130,7 @@ local function add_to_threattable(win, name)
 				local d = win.dataset[nr] or {}
 				win.dataset[nr] = d
 				d.label = name
-				d.color =  Skada.classcolors[select(2, UnitClass(name))]
+				d.class = select(2, UnitClass(name))
 				d.id = name
 				d.threat = threatvalue
 				if threatvalue < 0 then

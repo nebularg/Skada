@@ -212,7 +212,7 @@ function mod:Update(win, set)
 			
 			d.value = player.damage
 			d.id = player.id
-			d.color = Skada.classcolors[player.class]
+			d.class = player.class
 			if player.damage > max then
 				max = player.damage
 			end
@@ -359,7 +359,7 @@ function dpsmod:Update(win, set)
 			d.label = player.name
 			d.id = player.id
 			d.value = dps
-			d.color = Skada.classcolors[player.class]
+			d.class = player.class
 			d.valuetext = ("%02.1f"):format(dps)
 			if dps > max then
 				max = dps

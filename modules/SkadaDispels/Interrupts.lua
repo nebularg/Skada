@@ -49,7 +49,7 @@ function mod:Update(win, set)
 			d.label = player.name
 			d.valuetext = tostring(player.interrupts)
 			d.id = player.id
-			d.color = Skada.classcolors[player.class]
+			d.class = player.class
 			if player.interrupts > max then
 				max = player.interrupts
 			end
