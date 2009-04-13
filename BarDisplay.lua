@@ -96,6 +96,10 @@ local function bar_order_sort(a,b)
 	return a and b and a.order and b.order and a.order < b.order
 end
 
+local function bar_order_reverse_sort(a,b)
+	return a and b and a.order and b.order and a.order < b.order
+end
+
 -- Called by Skada windows when the display should be updated to match the dataset.
 function mod:Update(win)
 	-- Sort if we are showing spots with "showspots".
@@ -207,7 +211,11 @@ function mod:Update(win)
 
 	-- Sort by the order in the data table if we are using "ordersort".
 	if win.metadata.ordersort then
-		win.bargroup:SetSortFunction(bar_order_sort)
+		if win.db.reversegrowth then
+			win.bargroup:SetSortFunction(bar_order_reverse_sort)
+		else
+			win.bargroup:SetSortFunction(bar_order_sort)
+		end
 		win.bargroup:SortBars(bar_order_sort)
 	else
 		win.bargroup:SetSortFunction(nil)
@@ -236,6 +244,10 @@ end
 
 function mod:AnchorMoved(cbk, group, x, y)
 	libwindow.SavePosition(group)
+end
+
+function mod:SetTitle(win, title)
+	win.bargroup.button:SetText(title)
 end
 				
 function mod:Show(win)

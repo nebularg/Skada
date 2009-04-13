@@ -32,5 +32,7 @@ Skada.lua
 Options.lua
 Bosses.lua
 BarDisplay.lua
+#LDBDisplay.lua
+#TextDisplay.lua
 
 modules.xml

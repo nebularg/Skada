@@ -207,10 +207,20 @@ function Window:destroy()
 end
 
 function Window:SetDisplay(name)
-	self.db.display = name
-	self.display = Skada.displays[self.db.display]
-	
-	self:AddOptions()
+	-- Don't do anything if nothing actually changed.
+	if name ~= self.db.display or self.display == nil then
+		if self.display then
+			-- Destroy old display.
+			self.display:Destroy(self)
+		end
+		
+		-- Set new display.
+		self.db.display = name
+		self.display = Skada.displays[self.db.display]
+		
+		-- Add options. Replaces old options.
+		self:AddOptions()
+	end
 end
 
 -- Tells window to update the display of its dataset.
@@ -290,7 +300,7 @@ function Window:DisplayMode(mode)
 	-- Save for posterity.
 	self.db.mode = self.selectedmode.name
 
-	self.bargroup.button:SetText(mode.name)
+	self.display:SetTitle(self, mode.name)
 
 	changed = true
 	Skada:UpdateDisplay()
@@ -314,7 +324,7 @@ function Window:DisplayModes(settime)
 
 	self.metadata = {}
 
-	self.bargroup.button:SetText(L["Skada: Modes"])
+	self.display:SetTitle(self, L["Skada: Modes"])
 
 	-- Save for posterity.
 	self.db.set = settime
@@ -362,7 +372,7 @@ function Window:DisplaySets()
 	self.selectedmode = nil
 	self.selectedset = nil
 
-	self.bargroup.button:SetText(L["Skada: Fights"])
+	self.display:SetTitle(self, L["Skada: Fights"])
 
 	self.metadata.click = click_on_set
 	self.metadata.maxvalue = 1

@@ -846,6 +846,24 @@ function barListPrototype.NOOP() end
 
 do
 	local values = {}
+
+	-- MODIFIED (for reverse growth)
+	local function sortFuncReverse(a, b)
+		if a.isTimer ~= b.isTimer then
+			return a.isTimer
+		end
+
+		local apct, bpct = a.value / a.maxValue, b.value / b.maxValue
+		if apct == bpct then
+			if a.maxValue == b.maxValue then
+				return a.name < b.name
+			else
+				return a.maxValue < b.maxValue
+			end
+		else
+			return apct < bpct
+		end
+	end
 	local function sortFunc(a, b)
 		if a.isTimer ~= b.isTimer then
 			return a.isTimer
@@ -861,8 +879,7 @@ do
 		else
 			return apct > bpct
 		end
-	end
-	function barListPrototype:SortBars()
+	end	function barListPrototype:SortBars()
 		local lastBar = self.button:IsVisible() and self.button or self
 		local ct = 0
 		if not bars[self] then return end
@@ -875,8 +892,14 @@ do
 		for i = ct + 1, #values do
 			values[i] = nil
 		end
-		table_sort(values, self.sortFunc or sortFunc)
-
+		
+		-- MODIFIED (for reverse growth)
+		if self.growup then
+			table_sort(values, self.sortFunc or sortFuncReverse)
+		else
+			table_sort(values, self.sortFunc or sortFunc)
+		end
+		
 		local orientation = self.orientation
 		local vertical = orientation % 2 == 0
 		local growup = self.growup
