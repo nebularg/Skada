@@ -1,4 +1,4 @@
-## Interface: 30000
+## Interface: 30100
 ## Title: Skada |r[|caaedc99fFailbot|r]
 ## Notes: Adds a Failbot mode and data collection to Skada.
 ## Author: Zarnivoop

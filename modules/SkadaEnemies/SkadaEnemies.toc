@@ -1,4 +1,4 @@
-## Interface: 30000
+## Interface: 30100
 ## Title: Skada |r[|caaedc99fEnemies|r]
 ## Notes: Adds Enemy damage done/taken modes and data collection to Skada.
 ## Author: Zarnivoop

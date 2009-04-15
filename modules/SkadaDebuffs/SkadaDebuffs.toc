@@ -1,4 +1,4 @@
-## Interface: 30000
+## Interface: 30100
 ## Title: Skada |r[|caaedc99fDebuffs Uptime|r]
 ## Notes: Adds a Debuffs uptime mode and data collection to Skada.
 ## Author: Zarnivoop
