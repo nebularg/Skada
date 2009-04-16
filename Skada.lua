@@ -3,6 +3,7 @@ local L = LibStub("AceLocale-3.0"):GetLocale("Skada", false)
 local ldb = LibStub:GetLibrary("LibDataBroker-1.1")
 local icon = LibStub("LibDBIcon-1.0", true)
 local media = LibStub("LibSharedMedia-3.0")
+local boss = LibStub("LibBossIDs-1.0")
 
 local dataobj = ldb:NewDataObject("Skada", {label = "Skada", type = "data source", icon = "Interface\\Icons\\Spell_Lightning_LightningBolt01", text = "n/a"})
 
@@ -1602,7 +1603,7 @@ function Skada:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID,
 
 	if self.current and srcName and srcGUID ~= dstGUID and dstName and src_is_interesting and (eventtype == 'SPELL_DAMAGE' or eventtype == 'SPELL_PERIODIC_DAMAGE' or eventtype == 'SPELL_BUILDING_DAMAGE' or eventtype == 'RANGE_DAMAGE' or eventtype == "SWING_DAMAGE") then
 		-- Store mob name for set name. For now, just save first unfriendly name available, or first boss available.
-		if not self.current.gotboss and self.bossIDs[tonumber(dstGUID:sub(9, 12), 16)] then
+		if not self.current.gotboss and boss.BossIDs[tonumber(dstGUID:sub(9, 12), 16)] then
 			self.current.mobname = dstName
 			self.current.gotboss = true
 		elseif not self.current.mobname then
