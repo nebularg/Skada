@@ -4,6 +4,7 @@
 ## Author: Zarnivoop
 ## Version: 1.0
 ## Dependencies: Skada
+## OptionalDeps: LibFail-1.0
 
 LibFail-1.0\lib.xml
 Failbot.lua
