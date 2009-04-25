@@ -14,5 +14,6 @@
 <Script file="modules\SkadaDispels\Dispels.lua"/>
 <Script file="modules\SkadaDispels\Interrupts.lua"/>
 <Script file="modules\SkadaEnemies\Enemies.lua"/>
+<Script file="modules\SkadaPower\Power.lua"/>
 <!--@end-debug@--> 
 </Ui>

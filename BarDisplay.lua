@@ -82,6 +82,24 @@ local function BarClick(win, data, button)
 	end
 end
 
+local function BarEnter(win, data)
+	if Skada.db.profile.tooltips and win.metadata.tooltip then
+	    GameTooltip:SetOwner(win.bargroup, "ANCHOR_NONE")
+	    GameTooltip:SetPoint("TOPLEFT", win.bargroup, "TOPRIGHT")
+	    GameTooltip:ClearLines()
+		
+		win.metadata.tooltip(win, data, GameTooltip)
+		
+	    GameTooltip:Show()
+	end
+end
+
+local function BarLeave(win, data)
+	if Skada.db.profile.tooltips and win.metadata.tooltip then
+		GameTooltip:Hide()
+	end
+end
+
 local function value_sort(a,b)
 	if not a or a.value == nil then
 		return false
@@ -134,6 +152,8 @@ function mod:Update(win)
 				end
 				bar:EnableMouse()
 				bar.id = data.id
+				bar:SetScript("OnEnter", function(bar) BarEnter(win, data) end)
+				bar:SetScript("OnLeave", function(bar) BarLeave(win, data) end)
 				bar:SetScript("OnMouseDown", function(bar, button) BarClick(win, data, button) end)
 				if data.color then
 					bar:SetColorAt(0, data.color.r, data.color.g, data.color.b, data.color.a or 1)

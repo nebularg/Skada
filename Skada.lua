@@ -937,6 +937,12 @@ function Skada:OpenMenu(win)
 	        UIDropDownMenu_AddButton(info, level)
 
 	        wipe(info)
+	        info.text = L["Reset"]
+	        info.func = function() Skada:Reset() end
+	        info.notCheckable = 1
+	        UIDropDownMenu_AddButton(info, level)
+	        
+	        wipe(info)
 	        info.text = L["Configure"]
 	        info.func = function() Skada:OpenOptions() end
 	        info.notCheckable = 1

@@ -167,7 +167,9 @@ local function add_to_threattable(win, name)
 end
 
 local function format_threatvalue(value)
-	if value >= 100000 then
+	if value == nil then
+		return "0"
+	elseif value >= 100000 then
 		return ("%2.1fk"):format(value / 100000)
 	else
 		return ("%d"):format(value / 100)
@@ -239,15 +241,20 @@ function mod:Update(win, set)
 	for i, data in ipairs(win.dataset) do
 		if data.id then
 		
-			-- Warn if this is ourselves and we are over the treshold.
-			local percent = data.value / maxthreat * 100
-			if data.label == UnitName("player") then
-				if Skada.db.profile.modules.threattreshold and Skada.db.profile.modules.threattreshold < percent then
-					we_should_warn = true
+			if data.threat and data.threat > 0 then
+				-- Warn if this is ourselves and we are over the treshold.
+				local percent = data.value / maxthreat * 100
+				if data.label == UnitName("player") then
+					if Skada.db.profile.modules.threattreshold and Skada.db.profile.modules.threattreshold < percent then
+						we_should_warn = true
+					end
 				end
+				
+				data.valuetext = format_threatvalue(data.threat)..(", %02.1f"):format(percent).."%"
+			else
+				data.id = nil
 			end
 			
-			data.valuetext = format_threatvalue(data.threat)..(", %02.1f"):format(percent).."%"
 		end
 	end
 	

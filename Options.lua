@@ -47,6 +47,7 @@ Skada.defaults = {
 		icon = {hide = false, radius = 80, minimapPos = 195},
 		numberformat=1,
 		setstokeep = 10,
+		tooltips=true,
 		onlykeepbosses=false,
 		hidesolo=false,
 		hidedisables=true,
@@ -690,11 +691,20 @@ Skada.options = {
 							        	end,
 							},
 
+							tooltips = {
+							        type="toggle",
+							        name=L["Show tooltips"],
+							        desc=L["Shows tooltips with extra information in some modes."],
+							        order=24,
+							        get=function() return not Skada.db.profile.tooltips end,
+							        set=function() Skada.db.profile.tooltips = not Skada.db.profile.tooltips end,
+							},
+							
 							onlykeepbosses = {
 							        type="toggle",
 							        name=L["Only keep boss fighs"],
 							        desc=L["Boss fights will be kept with this on, and non-boss fights are discarded."],
-							        order=23,
+							        order=25,
 							        get=function() return Skada.db.profile.onlykeepbosses end,
 							        set=function() Skada.db.profile.onlykeepbosses = not Skada.db.profile.onlykeepbosses end,
 							},
@@ -703,7 +713,7 @@ Skada.options = {
 							        type="toggle",
 							        name=L["Hide when solo"],
 							        desc=L["Hides Skada's window when not in a party or raid."],
-							        order=24,
+							        order=26,
 							        get=function() return Skada.db.profile.hidesolo end,
 							        set=function()
 							        			Skada.db.profile.hidesolo = not Skada.db.profile.hidesolo
@@ -715,7 +725,7 @@ Skada.options = {
 							        type="toggle",
 							        name=L["Disable while hidden"],
 							        desc=L["Skada will not collect any data when automatically hidden."],
-							        order=25,
+							        order=27,
 							        get=function() return Skada.db.profile.hidedisables end,
 							        set=function()
 							        			Skada.db.profile.hidedisables = not Skada.db.profile.hidedisables
@@ -730,7 +740,7 @@ Skada.options = {
 								values=	function() return {[1] = L["Condensed"], [2] = L["Detailed"]} end,
 								get=function() return Skada.db.profile.numberformat end,
 								set=function(self, opt) Skada.db.profile.numberformat = opt end,
-								order=26,
+								order=28,
 							},
 							
 							datafeed = {
@@ -748,7 +758,7 @@ Skada.options = {
 											Skada.db.profile.feed = feed
 											if feed ~= "" then Skada:SetFeed(Skada:GetFeeds()[feed]) end
 										end,
-								order=27,
+								order=29,
 							},
 
 							setstokeep = {
@@ -760,7 +770,7 @@ Skada.options = {
 								step=1,
 								get=function() return Skada.db.profile.setstokeep end,
 								set=function(self, val) Skada.db.profile.setstokeep = val end,
-								order=28,
+								order=30,
 							},
 							
 						}

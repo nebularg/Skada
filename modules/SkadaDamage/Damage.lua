@@ -58,6 +58,14 @@ local function log_damage(set, dmg)
 		
 		spell.totalhits = spell.totalhits + 1
 	
+		if spell.max == nil or amount > spell.max then
+			spell.max = amount
+		end
+		
+		if spell.min == nil or amount < spell.min then
+			spell.min = amount
+		end
+		
 		spell.damage = spell.damage + amount
 		if dmg.critical then
 			spell.critical = spell.critical + 1
@@ -234,6 +242,21 @@ local function player_click(win, data, button)
 	end
 end
 
+local function player_tooltip(win, data, tooltip)
+	local player = Skada:find_player(win:get_selected_set(), playermod.playerid)
+	if player then
+		local spell = player.damagespells[data.label]
+		if spell then
+			tooltip:AddLine(player.name.." - "..spell.name)
+			if spell.max and spell.min then
+				tooltip:AddDoubleLine("Minimum hit:", Skada:FormatNumber(spell.min), 255,255,255,255,255,255)
+				tooltip:AddDoubleLine("Maximum hit:", Skada:FormatNumber(spell.max), 255,255,255,255,255,255)
+			end
+			tooltip:AddDoubleLine("Average hit: ", Skada:FormatNumber(spell.damage / spell.totalhits), 255,255,255,255,255,255)
+		end
+	end
+end
+
 -- Detail view of a player.
 function playermod:Update(win, set)
 	-- View spells for this player.
@@ -374,7 +397,7 @@ end
 
 function mod:OnEnable()
 	dpsmod.metadata = 		{showspots = true, click = mod_click}
-	playermod.metadata = 	{click = player_click}
+	playermod.metadata = 	{click = player_click, tooltip = player_tooltip}
 	mod.metadata = 			{showspots = true, click = mod_click}
 	spellmod.metadata = 	{click = spell_click}
 

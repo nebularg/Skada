@@ -210,6 +210,11 @@ L["When possible, bars will be colored according to player class."] = "When poss
 L["Class color text"] = "Class color text"
 L["When possible, bar text will be colored according to player class."] = "When possible, bar text will be colored according to player class."
 
+L["Reset"] = "Reset"
+L["Show tooltips"] = "Show tooltips"
+L["Mana gained"] = "Mana gained"
+L["Shows tooltips with extra information in some modes."] = "Shows tooltips with extra information in some modes."
+
 -- SkadaDebuffs
 L["Debuff uptimes"] = true
 L["'s Debuffs"] = true

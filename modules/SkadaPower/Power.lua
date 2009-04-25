@@ -2,7 +2,8 @@ local L = LibStub("AceLocale-3.0"):GetLocale("Skada", false)
 
 local Skada = Skada
 
-local mod = Skada:NewModule("PowerGainedMode")
+local mod = Skada:NewModule("ManaGained")
+local playermod = Skada:NewModule("ManaGainedPlayerView")
 
 mod.name = L["Mana gained"]
 
@@ -21,7 +22,7 @@ local function log_gain(set, gain)
 		end
 	
 		-- Add to player total.
-		player.power[gain.type].amount = player.gains[gain.type].amount + gain.amount
+		player.power[gain.type].amount = player.power[gain.type].amount + gain.amount
 		
 		-- Also add to set total gain.
 		set.power[gain.type] = set.power[gain.type] + gain.amount
@@ -31,7 +32,7 @@ local function log_gain(set, gain)
 			player.power[gain.type].spells[gain.spellname] = 0
 		end
 		
-		player.power[gain.type].spells[gain.spellname] = player.power[gain.type].spells[gain.spellname] + amount
+		player.power[gain.type].spells[gain.spellname] = player.power[gain.type].spells[gain.spellname] + gain.amount
 	end
 end
 
@@ -43,14 +44,14 @@ local function SpellEnergize(timestamp, eventtype, srcGUID, srcName, srcFlags, d
 	-- Healing
 	local spellId, spellName, spellSchool, samount, powerType = ...
 	
-	heal.playerid = srcGUID
-	heal.playername = srcName
-	heal.spellid = spellId
-	heal.spellname = spellName
-	heal.amount = samount
-	heal.type = tonumber(powerType)
+	gain.playerid = srcGUID
+	gain.playername = srcName
+	gain.spellid = spellId
+	gain.spellname = spellName
+	gain.amount = samount
+	gain.type = tonumber(powerType)
 	
-	Skada:FixPets(heal)
+	Skada:FixPets(gain)
 	log_gain(Skada.current, gain)
 	log_gain(Skada.total, gain)
 end
@@ -148,7 +149,7 @@ function mod:AddToTooltip(set, tooltip)
 end
 
 function mod:GetSetSummary(set)
-	return Skada:FormatNumber(set.power[MANA])
+	return Skada:FormatNumber(set.power[MANA] or 0)
 end
 
 -- Called by Skada when a new player is added to a set.
