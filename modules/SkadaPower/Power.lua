@@ -28,11 +28,11 @@ local function log_gain(set, gain)
 		set.power[gain.type] = set.power[gain.type] + gain.amount
 		
 		-- Create spell if it does not exist.
-		if not player.power[gain.type].spells[gain.spellname] then
-			player.power[gain.type].spells[gain.spellname] = 0
+		if not player.power[gain.type].spells[gain.spellid] then
+			player.power[gain.type].spells[gain.spellid] = 0
 		end
 		
-		player.power[gain.type].spells[gain.spellname] = player.power[gain.type].spells[gain.spellname] + gain.amount
+		player.power[gain.type].spells[gain.spellid] = player.power[gain.type].spells[gain.spellid] + gain.amount
 	end
 end
 
@@ -78,7 +78,7 @@ function mod:Update(win, set)
 			
 			d.id = player.id
 			d.label = player.name
-			d.value = player.power[MANA]
+			d.value = player.power[MANA].amount
 			d.valuetext = Skada:FormatNumber(player.power[MANA].amount)
 			d.class = player.class
 			
@@ -109,19 +109,21 @@ function playermod:Update(win, set)
 	
 	if player then
 		
-		for spellname, spell in pairs(player.power[MANA].spells) do
+		for spellid, amount in pairs(player.power[MANA].spells) do
 		
+			local name, rank, icon, cost, isFunnel, powerType, castTime, minRange, maxRange = GetSpellInfo(spellid)
+
 			local d = win.dataset[nr] or {}
 			win.dataset[nr] = d
 			
-			d.id = spell.id
-			d.label = spell.name
-			d.value = spell.amount
-			d.valuetext = Skada:FormatNumber(spell.amount)..(" (%02.1f%%)"):format(spell.amount / player.power[MANA].amount * 100)
-			d.icon = select(3, GetSpellInfo(spell.id))
+			d.id = spellid
+			d.label = name
+			d.value = amount
+			d.valuetext = Skada:FormatNumber(amount)..(" (%02.1f%%)"):format(amount / player.power[MANA].amount * 100)
+			d.icon = icon
 			
-			if spell.amount > max then
-				max = spell.amount
+			if amount > max then
+				max = amount
 			end
 			
 			nr = nr + 1

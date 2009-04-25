@@ -142,6 +142,8 @@ function deathlog:Update(win, set)
 		local maxhit = 0
 		local nr = 1
 		
+		table.sort(player.deathlog, function(a,b) return a and b and a.ts and b.ts and a.ts < b.ts end)
+		
 		for i, log in ipairs(player.deathlog) do
 			local diff = tonumber(log.ts) - tonumber(player.deathts)
 			-- Ignore hits older than 30s before death.
@@ -172,15 +174,12 @@ function deathlog:Update(win, set)
 		end
 		
 		win.metadata.maxvalue = maxhiyt
-		
-		-- Use our special sort function.
-		win.metadata.sortfunc = sort_by_ts
 	end
 end
 
 function mod:OnEnable()
 	mod.metadata = {click = click_on_player}
-	deathlog.metadata = {click = hit_click}
+	deathlog.metadata = {click = hit_click, ordersort = true}
 
 	Skada:RegisterForCL(UnitDied, 'UNIT_DIED', {dst_is_interesting_nopets = true})
 	
