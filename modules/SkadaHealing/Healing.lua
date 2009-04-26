@@ -80,17 +80,16 @@ function mod:Update(win, set)
 	for i, player in ipairs(set.players) do
 		if player.healing > 0 then
 			
-			local hps = getHPS(set, player)
-			
 			local d = win.dataset[nr] or {}
 			win.dataset[nr] = d
 			
 			d.id = player.id
 			d.label = player.name
 			d.value = player.healing
-			if Skada.db.profile.modules.healingnohps or true then
+			if Skada.db.profile.modules.healingnohps then
 				d.valuetext = Skada:FormatNumber(player.healing)..(" (%02.1f%%)"):format(player.healing / set.healing * 100)
 			else
+				local hps = getHPS(set, player)
 				d.valuetext = Skada:FormatNumber(player.healing)..(" (%02.1f, %02.1f%%)"):format(hps, player.healing / set.healing * 100)
 			end
 			d.class = player.class
