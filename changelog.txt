@@ -1,3 +1,16 @@
+1.2-4
+* Added Russian translation (incomplete, someone finish it please).
+
+
+1.2-3
+* Added a reset command to the menu.
+* Added a mana regen mode, part of a new SkadaPower module.
+* Added optional tooltips showing min/max/average hit for Damage mode.
+* Failbot and boss libraries are now kept up to date.
+
+1.2-2
+* 3.1 compatible.
+
 1.2-1
 * Moved window configuration to the main configuration.
 * Added window header font setting.

@@ -868,7 +868,7 @@ function Skada:DeleteSet(set)
 end
 	
 -- Open a menu. Supply a window to tailor it to that window, else generic.
-function Skada:OpenMenu(win)
+function Skada:OpenMenu(window)
 	if not self.skadamenu then
 		self.skadamenu = CreateFrame("Frame", "SkadaMenu")
 	end
@@ -1766,8 +1766,6 @@ function Skada:UpdateDisplay()
 				if set.keep then
 					d.emphathize = true
 				end
-				
-				nr = nr + 1
 			end
 			
 			win.metadata.ordersort = true
