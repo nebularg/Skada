@@ -565,7 +565,7 @@ function Skada:Report(channel, chantype, report_mode_name, report_set_name, max,
 			return
 		end
 		-- Create a temporary fake window.
-		local report_table = {metadata = {}, dataset = {}}
+		report_table = {metadata = {}, dataset = {}}
 		
 		-- Tell our mode to populate our dataset.
 		report_mode:Update(report_table, report_set)
@@ -913,7 +913,7 @@ function Skada:OpenMenu(window)
 	        UIDropDownMenu_AddButton(info, level)
 
 			-- Can't report if we are not in a mode.
-			if window and window.selectedmode then
+			if not window or (window or window.selectedmode) then
 		        wipe(info)
 		        info.text = L["Report"]
 		        info.hasArrow = 1
