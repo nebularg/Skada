@@ -1,4 +1,5 @@
 1.2-5
+* The report command, when used on a window, will now always use that window's current view.
 * Bar display: shift-clicking on background or bars will now open the menu.
 
 1.2-4

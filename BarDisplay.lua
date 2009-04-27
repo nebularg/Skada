@@ -76,7 +76,7 @@ end
 
 local function BarClick(win, data, button)
 	if IsShiftKeyDown() then
-		Skada:OpenMenu()
+		Skada:OpenMenu(win)
 	elseif win.metadata.click then
 		win.metadata.click(win, data, button)
 	elseif button == "RightButton" then
@@ -258,7 +258,7 @@ end
 
 function mod:AnchorClicked(cbk, group, button)
 	if IsShiftKeyDown() then
-		Skada:OpenMenu()
+		Skada:OpenMenu(group.win)
 	elseif button == "RightButton" then
 		group.win:RightClick()
 	end
@@ -366,7 +366,7 @@ function mod:ApplySettings(win)
 			g.bgframe:EnableMouseWheel()
 			g.bgframe:SetScript("OnMouseDown", function(frame, btn) 
 													if IsShiftKeyDown() then
-														Skada:OpenMenu()
+														Skada:OpenMenu(win)
 													elseif btn == "RightButton" then 
 														win:RightClick()
 													end

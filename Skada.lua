@@ -543,7 +543,7 @@ local function sendchat(msg, chan, chantype)
 	end
 end
 
-function Skada:Report(channel, chantype, report_mode_name, report_set_name, max)
+function Skada:Report(channel, chantype, report_mode_name, report_set_name, max, window)
 
 	if(chantype == "channel") then
 		local list = {GetChannelList()}
@@ -555,19 +555,30 @@ function Skada:Report(channel, chantype, report_mode_name, report_set_name, max)
 		end
 	end
 
-	local report_mode = find_mode(report_mode_name)
-	local report_set = Skada:find_set(report_set_name)
-	if report_set == nil then
-		return
+	local report_table
+	local report_set
+	local report_mode
+	if not window then
+		report_mode = find_mode(report_mode_name)
+		report_set = Skada:find_set(report_set_name)
+		if report_set == nil then
+			return
+		end
+		-- Create a temporary fake window.
+		local report_table = {metadata = {}, dataset = {}}
+		
+		-- Tell our mode to populate our dataset.
+		report_mode:Update(report_table, report_set)
+	else
+		report_table = window
+		report_set = window:get_selected_set()
+		report_mode = window.selectedmode
 	end
-	-- Create a temporary fake window.
-	local report_table = {metadata = {}, dataset = {}}
 	
-	-- Tell our mode to populate our dataset.
-	report_mode:Update(report_table, report_set)
-	
-	-- Sort our temporary table according to value.
-	table.sort(report_table.dataset, function(a,b) return a.value > b.value end)
+	-- Sort our temporary table according to value unless ordersort is set.
+	if not report_table.metadata.ordersort then
+		table.sort(report_table.dataset, function(a,b) return a and b and a.value and b.value and a.value > b.value end)
+	end
 	
 	-- Title
 	local endtime = report_set.endtime or time()
@@ -901,12 +912,15 @@ function Skada:OpenMenu(window)
 	        info.notCheckable = 1
 	        UIDropDownMenu_AddButton(info, level)
 
-	        wipe(info)
-	        info.text = L["Report"]
-	        info.hasArrow = 1
-	        info.value = "report"
-	        info.notCheckable = 1
-	        UIDropDownMenu_AddButton(info, level)
+			-- Can't report if we are not in a mode.
+			if window and window.selectedmode then
+		        wipe(info)
+		        info.text = L["Report"]
+		        info.hasArrow = 1
+		        info.value = "report"
+		        info.notCheckable = 1
+		        UIDropDownMenu_AddButton(info, level)
+		    end
 	        
 	        wipe(info)
 	        info.text = L["Delete segment"]
@@ -1055,19 +1069,21 @@ function Skada:OpenMenu(window)
 		            UIDropDownMenu_AddButton(info, level)
 		        end
 		    elseif UIDROPDOWNMENU_MENU_VALUE == "report" then
-		        wipe(info)
-		        info.text = L["Mode"]
-		        info.hasArrow = 1
-		        info.value = "modes"
-		        info.notCheckable = 1
-		        UIDropDownMenu_AddButton(info, level)
-
-		        wipe(info)
-		        info.hasArrow = 1
-		        info.value = "segment"
-		        info.notCheckable = 1
-		        info.text = L["Segment"]
-		        UIDropDownMenu_AddButton(info, level)
+		    	if not window then
+			        wipe(info)
+			        info.text = L["Mode"]
+			        info.hasArrow = 1
+			        info.value = "modes"
+			        info.notCheckable = 1
+			        UIDropDownMenu_AddButton(info, level)
+	
+			        wipe(info)
+			        info.hasArrow = 1
+			        info.value = "segment"
+			        info.notCheckable = 1
+			        info.text = L["Segment"]
+			        UIDropDownMenu_AddButton(info, level)
+			    end
 		        
 		        wipe(info)
 		        info.text = L["Channel"]
@@ -1098,12 +1114,12 @@ function Skada:OpenMenu(window)
 															hideOnEscape = 1, 
 															OnAccept = 	function()
 																			Skada.db.profile.report.channel = getglobal(this:GetParent():GetName().."EditBox"):GetText()
-																			Skada:Report(Skada.db.profile.report.channel, Skada.db.profile.report.chantype, Skada.db.profile.report.mode, Skada.db.profile.report.set, Skada.db.profile.report.number)
+																			Skada:Report(Skada.db.profile.report.channel, Skada.db.profile.report.chantype, Skada.db.profile.report.mode, Skada.db.profile.report.set, Skada.db.profile.report.number, window)
 																		end,
 														}
 										StaticPopup_Show("SkadaReportDialog")
 									else
-										Skada:Report(Skada.db.profile.report.channel, Skada.db.profile.report.chantype, Skada.db.profile.report.mode, Skada.db.profile.report.set, Skada.db.profile.report.number)
+										Skada:Report(Skada.db.profile.report.channel, Skada.db.profile.report.chantype, Skada.db.profile.report.mode, Skada.db.profile.report.set, Skada.db.profile.report.number, window)
 									end
 								else
 									Skada:Print(L["No mode or segment selected for report."])
