@@ -1,6 +1,10 @@
+1.2-5
+* Bar display: shift-clicking on background or bars will now open the menu.
+
 1.2-4
 * Added Russian translation (incomplete, someone finish it please).
-
+* Fixed HPS not showing.
+* Fixed segment list skipping segments.
 
 1.2-3
 * Added a reset command to the menu.

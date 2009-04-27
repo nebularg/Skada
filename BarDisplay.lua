@@ -75,7 +75,9 @@ function mod:Wipe(win)
 end
 
 local function BarClick(win, data, button)
-	if win.metadata.click then
+	if IsShiftKeyDown() then
+		Skada:OpenMenu()
+	elseif win.metadata.click then
 		win.metadata.click(win, data, button)
 	elseif button == "RightButton" then
 		win:RightClick()
@@ -362,7 +364,13 @@ function mod:ApplySettings(win)
 			g.bgframe:SetFrameStrata("BACKGROUND")
 			g.bgframe:EnableMouse()
 			g.bgframe:EnableMouseWheel()
-			g.bgframe:SetScript("OnMouseDown", function(frame, btn) if btn == "RightButton" then win:RightClick() end end)
+			g.bgframe:SetScript("OnMouseDown", function(frame, btn) 
+													if IsShiftKeyDown() then
+														Skada:OpenMenu()
+													elseif btn == "RightButton" then 
+														win:RightClick()
+													end
+												end)
 			g.bgframe:SetScript("OnMouseWheel", win.OnMouseWheel)
 		end
 
