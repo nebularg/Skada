@@ -219,6 +219,7 @@ L["Average hit:"] = "Average hit:"
 L["Maximum hit:"] = "Maximum hit:"
 L["Minimum hit:"] = "Minimum hit:"
 L["Absorbs"] = "Absorbs"
+L["'s Absorbs"] = "'s Absorbs"
 
 -- SkadaDebuffs
 L["Debuff uptimes"] = true
