@@ -249,10 +249,10 @@ local function player_tooltip(win, data, tooltip)
 		if spell then
 			tooltip:AddLine(player.name.." - "..spell.name)
 			if spell.max and spell.min then
-				tooltip:AddDoubleLine("Minimum hit:", Skada:FormatNumber(spell.min), 255,255,255,255,255,255)
-				tooltip:AddDoubleLine("Maximum hit:", Skada:FormatNumber(spell.max), 255,255,255,255,255,255)
+				tooltip:AddDoubleLine(L["Minimum hit:"], Skada:FormatNumber(spell.min), 255,255,255,255,255,255)
+				tooltip:AddDoubleLine(L["Maximum hit:"], Skada:FormatNumber(spell.max), 255,255,255,255,255,255)
 			end
-			tooltip:AddDoubleLine("Average hit: ", Skada:FormatNumber(spell.damage / spell.totalhits), 255,255,255,255,255,255)
+			tooltip:AddDoubleLine(L["Average hit:"], Skada:FormatNumber(spell.damage / spell.totalhits), 255,255,255,255,255,255)
 		end
 	end
 end

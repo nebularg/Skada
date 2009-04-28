@@ -215,6 +215,11 @@ L["Show tooltips"] = "Show tooltips"
 L["Mana gained"] = "Mana gained"
 L["Shows tooltips with extra information in some modes."] = "Shows tooltips with extra information in some modes."
 
+L["Average hit:"] = "Average hit:"
+L["Maximum hit:"] = "Maximum hit:"
+L["Minimum hit:"] = "Minimum hit:"
+L["Absorbs"] = "Absorbs"
+
 -- SkadaDebuffs
 L["Debuff uptimes"] = true
 L["'s Debuffs"] = true
