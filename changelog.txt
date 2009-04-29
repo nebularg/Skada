@@ -1,3 +1,9 @@
+1.2-6
+* Added an Absorbs mode. Note that this mode is not and can not be made to be accurate at this time.
+* Fixed report function not giving enough lines.
+* Fixed Failbot mode not showing enough lines.
+* Moved LibFail-1.0 dependency to main addon (affects nolib and svn users).
+
 1.2-5
 * The report command, when used on a window, will now always use that window's current view.
 * Bar display: shift-clicking on background or bars will now open the menu.
