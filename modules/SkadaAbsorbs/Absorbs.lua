@@ -149,6 +149,8 @@ local AbsorbSpellDuration =
 	[55019] = 12, -- Sonic Shield (one of these too ought to be wrong)
 	-- Misc
 	[40322] = 30, -- Teron's Vengeful Spirit Ghost - Spirit Shield
+	
+	[62606] = 10, -- Savage Defense (Druid, absorb 25% of AP after a crit)
 }
 
 local shields = {}
