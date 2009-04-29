@@ -577,21 +577,26 @@ function Skada:Report(channel, chantype, report_mode_name, report_set_name, max,
 	
 	-- Sort our temporary table according to value unless ordersort is set.
 	if not report_table.metadata.ordersort then
-		table.sort(report_table.dataset, function(a,b) return a and b and a.value and b.value and a.value > b.value end)
+		table.sort(report_table.dataset, function(a,b) return a and b and a.id and b.id and a.value > b.value end)
 	end
 	
 	-- Title
 	local endtime = report_set.endtime or time()
 	sendchat(string.format(L["Skada report on %s for %s, %s to %s:"], report_mode.name, report_set.name, date("%X",report_set.starttime), date("%X",endtime)), channel, chantype)
-		
+	
+	Skada:Print("max is "..max)
 	-- For each item in dataset, print label and valuetext.
+	local nr = 1
 	for i, data in ipairs(report_table.dataset) do
-		if report_mode.metadata and report_mode.metadata.showspots then
-			sendchat(("%2u. %s   %s"):format(i, data.label, data.valuetext), channel, chantype)
-		else
-			sendchat(("%s   %s"):format(data.label, data.valuetext), channel, chantype)
+		if data.id then
+			if report_mode.metadata and report_mode.metadata.showspots then
+				sendchat(("%2u. %s   %s"):format(nr, data.label, data.valuetext), channel, chantype)
+			else
+				sendchat(("%s   %s"):format(data.label, data.valuetext), channel, chantype)
+			end
+			nr = nr + 1
 		end
-		if i == max then
+		if nr > max then
 			break
 		end
 	end
