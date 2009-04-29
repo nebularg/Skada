@@ -97,6 +97,8 @@ function mod:Update(win, set)
 			if player.fails > max then
 				max = player.fails
 			end
+			
+			nr = nr + 1
 		end
 	end
 		
