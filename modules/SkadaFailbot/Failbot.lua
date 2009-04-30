@@ -49,6 +49,7 @@ local function onFail(event, who, fatal)
 		else
 			player.failevents[event] = 1
 		end
+		Skada.current.fails = Skada.current.fails + 1
 	end
 	
 	if Skada.total then
@@ -61,6 +62,7 @@ local function onFail(event, who, fatal)
 		else
 			player.failevents[event] = 1
 		end
+		Skada.total.fails = Skada.total.fails + 1
 	end
 end
 
