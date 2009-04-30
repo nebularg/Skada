@@ -1,3 +1,8 @@
+1.2-7
+* Added TPS to Threat mode. Optional, by default on.
+* Threat mode now shows target as title.
+* Fixed misses being reported as minimum hit in tooltip.
+
 1.2-6
 * Added an Absorbs mode. Note that this mode is not and can not be made to be accurate at this time.
 * Fixed report function not giving enough lines.

@@ -221,6 +221,8 @@ L["Minimum hit:"] = "Minimum hit:"
 L["Absorbs"] = "Absorbs"
 L["'s Absorbs"] = "'s Absorbs"
 
+L["Do not show TPS"] = "Do not show TPS"
+
 -- SkadaDebuffs
 L["Debuff uptimes"] = true
 L["'s Debuffs"] = true

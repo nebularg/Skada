@@ -81,6 +81,14 @@ local opts = {
 				set = function() Skada.db.profile.modules.threatraw = not Skada.db.profile.modules.threatraw end,
 				order=2,
 			},
+			
+			hidetps = {
+				type = "toggle",
+				name = L["Do not show TPS"],
+				get = function() return Skada.db.profile.modules.hidetps end,
+				set = function() Skada.db.profile.modules.hidetps = not Skada.db.profile.modules.hidetps end,
+				order=2,
+			},
 					
 		},
 	}
@@ -176,10 +184,21 @@ local function format_threatvalue(value)
 	end
 end
 
+local function getTPS(threatvalue)
+	if Skada.current then
+		local totaltime = time() - Skada.current.starttime
+		
+		return format_threatvalue(threatvalue / math.max(1,totaltime))
+	else
+		-- If we are not in combat and have no active set, we are screwed, since we have no time reference.
+		return "0"
+	end
+end
+
 local last_warn = time()
 
 function mod:Update(win, set)
-	if UnitExists("target") then
+	if UnitExists("target") and not UnitIsFriend("player", "target") then
 		-- Set window title.
 		win.metadata.title = UnitName("target")
 	
@@ -254,7 +273,11 @@ function mod:Update(win, set)
 						end
 					end
 					
-					data.valuetext = format_threatvalue(data.threat)..(", %02.1f"):format(percent).."%"
+					if Skada.db.profile.modules.hidetps then
+						data.valuetext = format_threatvalue(data.threat)..(", %02.1f%%"):format(percent)
+					else
+						data.valuetext = format_threatvalue(data.threat)..(" ("..getTPS(data.threat)..", %02.1f%%)"):format(percent)
+					end
 				else
 					data.id = nil
 				end
