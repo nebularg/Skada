@@ -62,7 +62,7 @@ local function log_damage(set, dmg)
 			spell.max = amount
 		end
 		
-		if spell.min == nil or amount < spell.min then
+		if (spell.min == nil or amount < spell.min) and not dmg.missed then
 			spell.min = amount
 		end
 		

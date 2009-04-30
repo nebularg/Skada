@@ -301,7 +301,7 @@ function Window:DisplayMode(mode)
 	-- Save for posterity.
 	self.db.mode = self.selectedmode.name
 
-	self.display:SetTitle(self, mode.name)
+	self.metadata.title = mode.name
 
 	changed = true
 	Skada:UpdateDisplay()
@@ -325,7 +325,7 @@ function Window:DisplayModes(settime)
 
 	self.metadata = {}
 
-	self.display:SetTitle(self, L["Skada: Modes"])
+	self.metadata.title = L["Skada: Modes"]
 
 	-- Save for posterity.
 	self.db.set = settime
@@ -373,7 +373,7 @@ function Window:DisplaySets()
 	self.selectedmode = nil
 	self.selectedset = nil
 
-	self.display:SetTitle(self, L["Skada: Fights"])
+	self.metadata.title = L["Skada: Fights"]
 
 	self.metadata.click = click_on_set
 	self.metadata.maxvalue = 1

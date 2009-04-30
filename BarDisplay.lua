@@ -122,6 +122,9 @@ end
 
 -- Called by Skada windows when the display should be updated to match the dataset.
 function mod:Update(win)
+	-- Set title.
+	win.bargroup.button:SetText(win.metadata.title)
+
 	-- Sort if we are showing spots with "showspots".
 	if win.metadata.showspots then
 		table.sort(win.dataset, value_sort)
@@ -268,10 +271,6 @@ function mod:AnchorMoved(cbk, group, x, y)
 	libwindow.SavePosition(group)
 end
 
-function mod:SetTitle(win, title)
-	win.bargroup.button:SetText(title)
-end
-				
 function mod:Show(win)
 	win.bargroup:Show()
 	win.bargroup:SortBars()

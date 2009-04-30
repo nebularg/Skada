@@ -179,100 +179,106 @@ end
 local last_warn = time()
 
 function mod:Update(win, set)
-	-- Reset our counter which we use to keep track of current index in the dataset.
-	nr = 1
+	if UnitExists("target") then
+		-- Set window title.
+		win.metadata.title = UnitName("target")
 	
-	-- Reset out max threat value.
-	maxthreat = 0
+		-- Reset our counter which we use to keep track of current index in the dataset.
+		nr = 1
 		
-	if GetNumRaidMembers() > 0 then
-		-- We are in a raid.
-		for i = 1, 40, 1 do
-			local name, rank, subgroup, level, class, fileName, zone, online, isDead, role, isML = GetRaidRosterInfo(i);
-			if name then
-				add_to_threattable(win, name)
-				
-				if UnitExists("raid"..i.."pet") then
-					add_to_threattable(win, select(1, UnitName("raid"..i.."pet")))
-				end
-			end
-		end
-	elseif GetNumPartyMembers() > 0 then
-		-- We are in a party.
-		for i = 1, 5, 1 do
-			local name = (UnitName("party"..tostring(i)))
-			if name then
-				add_to_threattable(win, name)
-
-				if UnitExists("party"..i.."pet") then
-					add_to_threattable(win, select(1, UnitName("party"..i.."pet")))
-				end
-			end
-		end
-		
-		-- Don't forget ourselves.
-		add_to_threattable(win, UnitName("player"))
-		
-		-- Maybe we have a pet?
-		if UnitExists("pet") then
-			add_to_threattable(win, UnitName("pet"))
-		end
-	else
-		-- We are all alone.
-		add_to_threattable(win, UnitName("player"))
-		
-		-- Maybe we have a pet?
-		if UnitExists("pet") then
-			add_to_threattable(win, UnitName("pet"))
-		end
-	end
-
-	-- If we are going by raw threat we got the max threat from above; otherwise it's always 100.
-	if not Skada.db.profile.threatraw then
-		maxthreat = 100
-	end
-	
-	win.metadata.maxvalue = maxthreat
-	
-	local we_should_warn = false
-	
-	-- We now have a a complete threat table.
-	-- Now we need to add valuetext.
-	for i, data in ipairs(win.dataset) do
-		if data.id then
-		
-			if data.threat and data.threat > 0 then
-				-- Warn if this is ourselves and we are over the treshold.
-				local percent = data.value / maxthreat * 100
-				if data.label == UnitName("player") then
-					if Skada.db.profile.modules.threattreshold and Skada.db.profile.modules.threattreshold < percent then
-						we_should_warn = true
+		-- Reset out max threat value.
+		maxthreat = 0
+			
+		if GetNumRaidMembers() > 0 then
+			-- We are in a raid.
+			for i = 1, 40, 1 do
+				local name, rank, subgroup, level, class, fileName, zone, online, isDead, role, isML = GetRaidRosterInfo(i);
+				if name then
+					add_to_threattable(win, name)
+					
+					if UnitExists("raid"..i.."pet") then
+						add_to_threattable(win, select(1, UnitName("raid"..i.."pet")))
 					end
 				end
-				
-				data.valuetext = format_threatvalue(data.threat)..(", %02.1f"):format(percent).."%"
-			else
-				data.id = nil
+			end
+		elseif GetNumPartyMembers() > 0 then
+			-- We are in a party.
+			for i = 1, 5, 1 do
+				local name = (UnitName("party"..tostring(i)))
+				if name then
+					add_to_threattable(win, name)
+	
+					if UnitExists("party"..i.."pet") then
+						add_to_threattable(win, select(1, UnitName("party"..i.."pet")))
+					end
+				end
 			end
 			
+			-- Don't forget ourselves.
+			add_to_threattable(win, UnitName("player"))
+			
+			-- Maybe we have a pet?
+			if UnitExists("pet") then
+				add_to_threattable(win, UnitName("pet"))
+			end
+		else
+			-- We are all alone.
+			add_to_threattable(win, UnitName("player"))
+			
+			-- Maybe we have a pet?
+			if UnitExists("pet") then
+				add_to_threattable(win, UnitName("pet"))
+			end
 		end
-	end
 	
-	-- Warn
-	if we_should_warn and time() - last_warn > 2 then
-		if Skada.db.profile.modules.threatflash then
-			self:Flash()
-		end
-		if Skada.db.profile.modules.threatshake then
-			self:Shake()
-		end
-		if Skada.db.profile.modules.threatsound then
-			PlaySoundFile(media:Fetch("sound", Skada.db.profile.modules.threatsoundname)) 
+		-- If we are going by raw threat we got the max threat from above; otherwise it's always 100.
+		if not Skada.db.profile.threatraw then
+			maxthreat = 100
 		end
 		
-		last_warn = time()
+		win.metadata.maxvalue = maxthreat
+		
+		local we_should_warn = false
+		
+		-- We now have a a complete threat table.
+		-- Now we need to add valuetext.
+		for i, data in ipairs(win.dataset) do
+			if data.id then
+			
+				if data.threat and data.threat > 0 then
+					-- Warn if this is ourselves and we are over the treshold.
+					local percent = data.value / maxthreat * 100
+					if data.label == UnitName("player") then
+						if Skada.db.profile.modules.threattreshold and Skada.db.profile.modules.threattreshold < percent then
+							we_should_warn = true
+						end
+					end
+					
+					data.valuetext = format_threatvalue(data.threat)..(", %02.1f"):format(percent).."%"
+				else
+					data.id = nil
+				end
+				
+			end
+		end
+		
+		-- Warn
+		if we_should_warn and time() - last_warn > 2 then
+			if Skada.db.profile.modules.threatflash then
+				self:Flash()
+			end
+			if Skada.db.profile.modules.threatshake then
+				self:Shake()
+			end
+			if Skada.db.profile.modules.threatsound then
+				PlaySoundFile(media:Fetch("sound", Skada.db.profile.modules.threatsoundname)) 
+			end
+			
+			last_warn = time()
+		end
+	else
+		win.metadata.title = self.name
 	end
-	
 end
 
 -- Shamelessly copied from Omen - thanks!
