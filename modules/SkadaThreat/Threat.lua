@@ -69,7 +69,16 @@ local opts = {
 				         get = function() return Skada.db.profile.modules.threattreshold end,
 				         set = function(self,val) Skada.db.profile.modules.threattreshold = val end,
 						order=6,
-				    },			    
+				    },
+				    
+					notankwarnings = {
+						type = "toggle",
+						name = L["Do not warn while tanking"],
+						get = function() return Skada.db.profile.modules.notankwarnings end,
+						set = function() Skada.db.profile.modules.notankwarnings = not Skada.db.profile.modules.notankwarnings end,
+						order=2,
+					},
+				    
 				},
 			},
 			
@@ -89,7 +98,7 @@ local opts = {
 				set = function() Skada.db.profile.modules.hidetps = not Skada.db.profile.modules.hidetps end,
 				order=2,
 			},
-					
+
 		},
 	}
 }
@@ -141,6 +150,7 @@ local function add_to_threattable(win, name)
 				d.class = select(2, UnitClass(name))
 				d.id = name
 				d.threat = threatvalue
+				d.isTanking = isTanking
 				if threatvalue < 0 then
 					-- Show real threat.
 					d.value = threatvalue + 410065408
@@ -165,6 +175,7 @@ local function add_to_threattable(win, name)
 				d.color =  Skada.classcolors[select(2, UnitClass(name))]
 				d.id = name
 				d.value = threatpct
+				d.isTanking = isTanking
 				d.threat = threatvalue
 				
 			end
@@ -268,7 +279,7 @@ function mod:Update(win, set)
 					-- Warn if this is ourselves and we are over the treshold.
 					local percent = data.value / maxthreat * 100
 					if data.label == UnitName("player") then
-						if Skada.db.profile.modules.threattreshold and Skada.db.profile.modules.threattreshold < percent then
+						if Skada.db.profile.modules.threattreshold and Skada.db.profile.modules.threattreshold < percent and (not data.isTanking or not Skada.db.profile.modules.notankwarnings) then
 							we_should_warn = true
 						end
 					end

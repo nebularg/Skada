@@ -1,5 +1,6 @@
 1.2-7
 * Added TPS to Threat mode. Optional, by default on.
+* Added an option to not warn on threat when tanking.
 * Threat mode now shows target as title.
 * Fixed misses being reported as minimum hit in tooltip.
 
