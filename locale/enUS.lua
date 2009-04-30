@@ -222,6 +222,7 @@ L["Absorbs"] = "Absorbs"
 L["'s Absorbs"] = "'s Absorbs"
 
 L["Do not show TPS"] = "Do not show TPS"
+L["Do not warn while tanking"] = "Do not warn while tanking"
 
 -- SkadaDebuffs
 L["Debuff uptimes"] = true
