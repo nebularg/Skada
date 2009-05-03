@@ -74,29 +74,29 @@ function mod:Wipe(win)
 	win.bargroup:SortBars()
 end
 
-local function BarClick(win, data, button)
+local function BarClick(win, id, label, button)
 	if IsShiftKeyDown() then
 		Skada:OpenMenu(win)
 	elseif win.metadata.click then
-		win.metadata.click(win, data, button)
+		win.metadata.click(win, id, label, button)
 	elseif button == "RightButton" then
 		win:RightClick()
 	end
 end
 
-local function BarEnter(win, data)
+local function BarEnter(win, id, label)
 	if Skada.db.profile.tooltips and win.metadata.tooltip then
 	    GameTooltip:SetOwner(win.bargroup, "ANCHOR_NONE")
 	    GameTooltip:SetPoint("TOPLEFT", win.bargroup, "TOPRIGHT")
 	    GameTooltip:ClearLines()
 		
-		win.metadata.tooltip(win, data, GameTooltip)
+		win.metadata.tooltip(win, id, label, GameTooltip)
 		
 	    GameTooltip:Show()
 	end
 end
 
-local function BarLeave(win, data)
+local function BarLeave(win, id, label)
 	if Skada.db.profile.tooltips and win.metadata.tooltip then
 		GameTooltip:Hide()
 	end
@@ -157,9 +157,9 @@ function mod:Update(win)
 				end
 				bar:EnableMouse()
 				bar.id = data.id
-				bar:SetScript("OnEnter", function(bar) BarEnter(win, data) end)
-				bar:SetScript("OnLeave", function(bar) BarLeave(win, data) end)
-				bar:SetScript("OnMouseDown", function(bar, button) BarClick(win, data, button) end)
+				bar:SetScript("OnEnter", function(bar) BarEnter(win, data.id, data.label) end)
+				bar:SetScript("OnLeave", function(bar) BarLeave(win, data.id, data.label) end)
+				bar:SetScript("OnMouseDown", function(bar, button) BarClick(win, data.id, data.label, button) end)
 				if data.color then
 					bar:SetColorAt(0, data.color.r, data.color.g, data.color.b, data.color.a or 1)
 				elseif data.class and win.db.classcolorbars then

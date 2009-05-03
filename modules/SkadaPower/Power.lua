@@ -56,10 +56,10 @@ local function SpellEnergize(timestamp, eventtype, srcGUID, srcName, srcFlags, d
 	log_gain(Skada.total, gain)
 end
 
-local function click_on_player(win, data, button)
+local function click_on_player(win, id, label, button)
 	if button == "LeftButton" then
-		playermod.playerid = data.id
-		playermod.name = data.label..L["'s Healing"]
+		playermod.playerid = id
+		playermod.name = label..L["'s Healing"]
 		win:DisplayMode(playermod)
 	elseif button == "RightButton" then
 		win:RightClick()
@@ -93,7 +93,7 @@ function mod:Update(win, set)
 	win.metadata.maxvalue = max
 end
 
-local function spell_click(win, data, button)
+local function spell_click(win, id, label, button)
 	if button == "RightButton" then
 		win:DisplayMode(mod)
 	end

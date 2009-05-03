@@ -82,10 +82,10 @@ local function Resurrect(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGU
 	log_resurrect(Skada.current, dstGUID, dstName)
 end
 
-local function click_on_player(win, data, button)
+local function click_on_player(win, id, label, button)
 	if button == "LeftButton" then
-		deathlog.playerid = data.id
-		deathlog.name = data.label..L["'s Death"]
+		deathlog.playerid = id
+		deathlog.name = label..L["'s Death"]
 		win:DisplayMode(deathlog)
 	elseif button == "RightButton" then
 		win:RightClick()
@@ -124,7 +124,7 @@ function mod:Update(win, set)
 end
 
 
-local function hit_click(win, data, button)
+local function hit_click(win, id, label, button)
 	if button == "RightButton" then
 		win:DisplayMode(mod)
 	end

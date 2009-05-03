@@ -214,10 +214,10 @@ local function SpellDamage(timestamp, eventtype, srcGUID, srcName, srcFlags, dst
 	end
 end
 
-local function click_on_player(win, data, button)
+local function click_on_player(win, id, label, button)
 	if button == "LeftButton" then
-		playermod.playerid = data.id
-		playermod.name = data.label..L["'s Absorbs"]
+		playermod.playerid = id
+		playermod.name = label..L["'s Absorbs"]
 		win:DisplayMode(playermod)
 	elseif button == "RightButton" then
 		win:RightClick()
@@ -251,7 +251,7 @@ function mod:Update(win, set)
 	win.metadata.maxvalue = max
 end
 
-local function click_on_healed(win, data, button)
+local function click_on_healed(win, id, label, button)
 	if button == "RightButton" then
 		win:DisplayMode(mod)
 	end

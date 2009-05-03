@@ -307,9 +307,9 @@ function Window:DisplayMode(mode)
 	Skada:UpdateDisplay()
 end
 
-local function click_on_mode(win, data, button)
+local function click_on_mode(win, id, label, button)
 	if button == "LeftButton" then
-		local mode = find_mode(data.id)
+		local mode = find_mode(id)
 		win:DisplayMode(mode)
 	elseif button == "RightButton" then
 		win:RightClick()
@@ -355,9 +355,9 @@ function Window:DisplayModes(settime)
 	Skada:UpdateDisplay()
 end
 
-local function click_on_set(win, data, button)
+local function click_on_set(win, id, label, button)
 	if button == "LeftButton" then
-		win:DisplayModes(data.id)
+		win:DisplayModes(id)
 	elseif button == "RightButton" then
 		win:RightClick() 
 	end

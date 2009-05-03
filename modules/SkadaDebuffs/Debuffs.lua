@@ -110,10 +110,10 @@ local function len(t)
 	return l
 end
 
-local function click_on_player(win, data, button)
+local function click_on_player(win, id, label, button)
 	if button == "LeftButton" then
-		auramod.playerid = data.id
-		auramod.name = data.label..L["'s Debuffs"]
+		auramod.playerid = id
+		auramod.name = label..L["'s Debuffs"]
 		win:DisplayMode(auramod)
 	elseif button == "RightButton" then
 		win:RightClick()
@@ -153,7 +153,7 @@ function mod:Update(win, set)
 	win.metadata.maxvalue = max
 end
 
-local function aura_click(win, data, button)
+local function aura_click(win, id, label, button)
 	if button == "RightButton" then
 		win:DisplayMode(mod)
 	end

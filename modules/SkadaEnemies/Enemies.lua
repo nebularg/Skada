@@ -97,10 +97,10 @@ local function SwingDamageDone(timestamp, eventtype, srcGUID, srcName, srcFlags,
 	end
 end
 
-local function taken_click(win, data, button)
+local function taken_click(win, id, label, button)
 	if button == "LeftButton" then
-		takenplayers.name = L["Damage on"].." "..data.label
-		takenplayers.mob = data.label
+		takenplayers.name = L["Damage on"].." "..label
+		takenplayers.mob = label
 		win:DisplayMode(takenplayers)
 	elseif button == "RightButton" then
 	 	win:RightClick()
@@ -133,10 +133,10 @@ function taken:Update(win, set)
 	win.metadata.maxvalue = max
 end
 
-local function done_click(win, data, button)
+local function done_click(win, id, label, button)
 	if button == "LeftButton" then
-		doneplayers.name = L["Damage from"].." "..data.label
-		doneplayers.mob = data.label
+		doneplayers.name = L["Damage from"].." "..label
+		doneplayers.mob = label
 		win:DisplayMode(doneplayers)
 	elseif button == "RightButton" then
 	 	win:RightClick()
@@ -168,7 +168,7 @@ function done:Update(win, set)
 	win.metadata.maxvalue = max
 end
 
-local function player_done_click(win, data, button)
+local function player_done_click(win, id, label, button)
 	if button == "RightButton" then
 	 	win:DisplayMode(done)
 	end
@@ -210,7 +210,7 @@ function doneplayers:Update(win, set)
 	end
 end
 
-local function player_taken_click(win, data, button)
+local function player_taken_click(win, id, label, button)
 	if button == "RightButton" then
 	 	win:DisplayMode(taken)
 	end

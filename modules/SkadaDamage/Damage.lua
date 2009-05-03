@@ -184,10 +184,10 @@ local function SpellMissed(timestamp, eventtype, srcGUID, srcName, srcFlags, dst
 end
 
 -- Called when user clicks on a data row.
-function mod_click(win, data, button)
+function mod_click(win, id, label, button)
 	if button == "LeftButton" then
-		playermod.name = data.label..L["'s Damage"]
-		playermod.playerid = data.id
+		playermod.name = label..L["'s Damage"]
+		playermod.playerid = id
 		win:DisplayMode(playermod)
 	elseif button == "RightButton" then
 		win:RightClick()
@@ -231,21 +231,21 @@ function mod:Update(win, set)
 	win.metadata.maxvalue = max
 end
 
-local function player_click(win, data, button)
+local function player_click(win, id, label, button)
 	if button == "LeftButton" then
 		local player = Skada:find_player(win:get_selected_set(), playermod.playerid)
-		spellmod.spellname = data.label
-		spellmod.name = player.name..L["'s "]..data.label
+		spellmod.spellname = label
+		spellmod.name = player.name..L["'s "]..label
 		win:DisplayMode(spellmod)
 	elseif button == "RightButton" then
 		win:DisplayMode(lastmod)
 	end
 end
 
-local function player_tooltip(win, data, tooltip)
+local function player_tooltip(win, id, label, tooltip)
 	local player = Skada:find_player(win:get_selected_set(), playermod.playerid)
 	if player then
-		local spell = player.damagespells[data.label]
+		local spell = player.damagespells[label]
 		if spell then
 			tooltip:AddLine(player.name.." - "..spell.name)
 			if spell.max and spell.min then
@@ -299,7 +299,7 @@ local function add_detail_bar(win, nr, title, value)
 	d.valuetext = ("%u (%02.1f%%)"):format(value, value / win.metadata.maxvalue * 100)
 end
 
-local function spell_click(win, data, button)
+local function spell_click(win, id, label, button)
 	if button == "RightButton" then
 		win:DisplayMode(playermod)
 	end
