@@ -724,6 +724,15 @@ local function ask_for_reset()
 	StaticPopup_Show("ResetSkadaDialog")
 end
 
+-- Hides all windows if we are in a PvP instance.
+local function hide_if_pvp()
+	if select(2,IsInInstance()) == "pvp" or select(2,IsInInstance()) == "arena" then
+		Skada:SetActive(false)
+	else
+		Skada:SetActive(true);
+	end
+end
+
 -- Fired on entering a zone.
 function Skada:PLAYER_ENTERING_WORLD()
 	-- Check if we are entering an instance.
@@ -751,6 +760,11 @@ function Skada:PLAYER_ENTERING_WORLD()
 
 	-- Check for pets.
 	self:CheckPets()
+	
+	if self.db.profile.hidepvp then
+		hide_if_pvp()
+	end
+	
 end
 
 -- Check if we join a party/raid.
@@ -1255,11 +1269,23 @@ function Skada:ApplySettings()
 		win.display:ApplySettings(win)
 	end
 
-	-- Don't show window if we are solo and we have enabled the "Hide when solo" option.
+	-- Don't show window if we are solo, option.
 	if self.db.profile.hidesolo and GetNumRaidMembers() == 0 and GetNumPartyMembers() == 0 then
 		self:SetActive(false)
 	else
 		self:SetActive(true)
+	end
+	
+	-- Don't show window in a PvP instance, option.
+	if self.db.profile.hidepvp then
+		hide_if_pvp()
+	end
+	
+	-- Hide windows if window is marked as hidden (ie, if user manually hid the window, keep hiding it).
+	for i, win in ipairs(windows) do
+		if not win.shown and win.IsShown() then
+			win:Hide()
+		end
 	end
 
 	changed = true

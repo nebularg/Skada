@@ -50,6 +50,7 @@ Skada.defaults = {
 		tooltips=true,
 		onlykeepbosses=false,
 		hidesolo=false,
+		hidepvp=false,
 		hidedisables=true,
 		feed = "",
 		sets = {},
@@ -721,6 +722,18 @@ Skada.options = {
 							        		end,
 							},
 
+							hidepvp = {
+							        type="toggle",
+							        name=L["Hide in PvP"],
+							        desc=L["Hides Skada's window when in Battlegrounds/Arenas."],
+							        order=26,
+							        get=function() return Skada.db.profile.hidepvp end,
+							        set=function()
+							        			Skada.db.profile.hidepvp = not Skada.db.profile.hidepvp
+							        			Skada:ApplySettings()
+							        		end,
+							},
+							
 							disablewhenhidden = {
 							        type="toggle",
 							        name=L["Disable while hidden"],
