@@ -28,7 +28,7 @@ Skada.windowdefaults = {
 	modeincombat="",
 	returnaftercombat=false,
 	
-	shown = true,
+	hidden = false,
 	enabletitle = true, 
 	enablebackground = false,
 	

@@ -254,7 +254,7 @@ end
 function Window:Hide()
 	self.display:Hide(self)
 end
-					
+
 function Window:IsShown()
 	return self.display:IsShown(self)
 end
@@ -584,7 +584,6 @@ function Skada:Report(channel, chantype, report_mode_name, report_set_name, max,
 	local endtime = report_set.endtime or time()
 	sendchat(string.format(L["Skada report on %s for %s, %s to %s:"], report_mode.name, report_set.name, date("%X",report_set.starttime), date("%X",endtime)), channel, chantype)
 	
-	Skada:Print("max is "..max)
 	-- For each item in dataset, print label and valuetext.
 	local nr = 1
 	for i, data in ipairs(report_table.dataset) do
@@ -836,10 +835,10 @@ end
 function Skada:ToggleWindow()
 	for i, win in ipairs(windows) do
 		if win:IsShown() then
-			win.db.shown = false
+			win.db.hidden = true
 			win:Hide()
 		else
-			win.db.shown = true
+			win.db.hidden = false
 			win:Show()
 		end
 	end
@@ -1283,7 +1282,7 @@ function Skada:ApplySettings()
 	
 	-- Hide windows if window is marked as hidden (ie, if user manually hid the window, keep hiding it).
 	for i, win in ipairs(windows) do
-		if not win.shown and win.IsShown() then
+		if win.db.hidden and win:IsShown() then
 			win:Hide()
 		end
 	end

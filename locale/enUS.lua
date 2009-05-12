@@ -224,6 +224,7 @@ L["'s Absorbs"] = "'s Absorbs"
 L["Do not show TPS"] = "Do not show TPS"
 L["Do not warn while tanking"] = "Do not warn while tanking"
 
+L["Hide in PvP"] = "Hide in PvP"
 L["Hides Skada's window when in Battlegrounds/Arenas."] = "Hides Skada's window when in Battlegrounds/Arenas."
 
 -- SkadaDebuffs
