@@ -36,7 +36,7 @@ local function log_heal(set, heal)
 		end
 		spell.overhealing = spell.overhealing + heal.overhealing
 		
-		spell.hits = spell.hits + 1
+		spell.hits = spell.hits or 0 + 1
 		
 		if not spell.min or amount < spell.min then
 			spell.min = amount
@@ -132,10 +132,10 @@ local function spell_tooltip(win, id, label, tooltip)
 			end
 			tooltip:AddDoubleLine(L["Average hit:"], Skada:FormatNumber(spell.healing / spell.hits), 255,255,255,255,255,255)
 			if spell.hits then
-				tooltip:AddDoubleLine(L["Critical:"], Skada:FormatNumber(spell.critical / spell.hits * 100).."%", 255,255,255,255,255,255)
+				tooltip:AddDoubleLine(L["Critical"]..":", (spell.critical / spell.hits * 100).."%", 255,255,255,255,255,255)
 			end
 			if spell.hits then
-				tooltip:AddDoubleLine(L["Overhealing:"], Skada:FormatNumber(spell.overhealing / (spell.overhealing + spell.healing) * 100).."%", 255,255,255,255,255,255)
+				tooltip:AddDoubleLine(L["Overhealing"]..":", (spell.overhealing / (spell.overhealing + spell.healing) * 100).."%", 255,255,255,255,255,255)
 			end
 		end
 	end
