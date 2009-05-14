@@ -24,7 +24,7 @@ local function log_heal(set, heal)
 		
 		-- Create spell if it does not exist.
 		if not player.healingspells[heal.spellname] then
-			player.healingspells[heal.spellname] = {id = heal.spellid, name = heal.spellname, hit = 0, totalhits = 0, healing = 0, overhealing = 0, critical = 0}
+			player.healingspells[heal.spellname] = {id = heal.spellid, name = heal.spellname, hits = 0, healing = 0, overhealing = 0, critical = 0, min = 0, max = 0}
 		end
 		
 		-- Get the spell from player.
@@ -35,6 +35,15 @@ local function log_heal(set, heal)
 			spell.critical = spell.critical + 1
 		end
 		spell.overhealing = spell.overhealing + heal.overhealing
+		
+		spell.hits = spell.hits + 1
+		
+		if not spell.min or amount < spell.min then
+			spell.min = amount
+		end
+		if not spell.max or amount > spell.max then
+			spell.max = amount
+		end
 	end
 end
 
@@ -111,6 +120,27 @@ local function spell_click(win, id, label, button)
 	end
 end
 
+local function spell_tooltip(win, id, label, tooltip)
+	local player = Skada:find_player(win:get_selected_set(), playermod.playerid)
+	if player then
+		local spell = player. healingspells[label]
+		if spell then
+			tooltip:AddLine(player.name.." - "..label)
+			if spell.max and spell.min then
+				tooltip:AddDoubleLine(L["Minimum hit:"], Skada:FormatNumber(spell.min), 255,255,255,255,255,255)
+				tooltip:AddDoubleLine(L["Maximum hit:"], Skada:FormatNumber(spell.max), 255,255,255,255,255,255)
+			end
+			tooltip:AddDoubleLine(L["Average hit:"], Skada:FormatNumber(spell.healing / spell.hits), 255,255,255,255,255,255)
+			if spell.hits then
+				tooltip:AddDoubleLine(L["Critical:"], Skada:FormatNumber(spell.critical / spell.hits * 100).."%", 255,255,255,255,255,255)
+			end
+			if spell.hits then
+				tooltip:AddDoubleLine(L["Overhealing:"], Skada:FormatNumber(spell.overhealing / (spell.overhealing + spell.healing) * 100).."%", 255,255,255,255,255,255)
+			end
+		end
+	end
+end
+
 -- Detail view of a player.
 function playermod:Update(win, set)
 	-- View spells for this player.
@@ -145,7 +175,7 @@ end
 
 function mod:OnEnable()
 	mod.metadata		= {showspots = true, click = click_on_player}
-	playermod.metadata	= {click = spell_click}
+	playermod.metadata	= {click = spell_click, tooltip = spell_tooltip}
 
 	Skada:RegisterForCL(SpellHeal, 'SPELL_HEAL', {src_is_interesting = true})
 	Skada:RegisterForCL(SpellHeal, 'SPELL_PERIODIC_HEAL', {src_is_interesting = true})
