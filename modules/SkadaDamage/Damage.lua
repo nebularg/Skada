@@ -401,19 +401,19 @@ function mod:OnEnable()
 	mod.metadata = 			{showspots = true, click = mod_click}
 	spellmod.metadata = 	{click = spell_click}
 
-	Skada:RegisterForCL(SpellDamage, 'DAMAGE_SHIELD', {src_is_interesting = true})
-	Skada:RegisterForCL(SpellDamage, 'SPELL_DAMAGE', {src_is_interesting = true})
-	Skada:RegisterForCL(SpellDamage, 'SPELL_PERIODIC_DAMAGE', {src_is_interesting = true})
-	Skada:RegisterForCL(SpellDamage, 'SPELL_BUILDING_DAMAGE', {src_is_interesting = true})
-	Skada:RegisterForCL(SpellDamage, 'RANGE_DAMAGE', {src_is_interesting = true})
+	Skada:RegisterForCL(SpellDamage, 'DAMAGE_SHIELD', {src_is_interesting = true, dst_is_not_interesting = true})
+	Skada:RegisterForCL(SpellDamage, 'SPELL_DAMAGE', {src_is_interesting = true, dst_is_not_interesting = true})
+	Skada:RegisterForCL(SpellDamage, 'SPELL_PERIODIC_DAMAGE', {src_is_interesting = true, dst_is_not_interesting = true})
+	Skada:RegisterForCL(SpellDamage, 'SPELL_BUILDING_DAMAGE', {src_is_interesting = true, dst_is_not_interesting = true})
+	Skada:RegisterForCL(SpellDamage, 'RANGE_DAMAGE', {src_is_interesting = true, dst_is_not_interesting = true})
 	
-	Skada:RegisterForCL(SwingDamage, 'SWING_DAMAGE', {src_is_interesting = true})
-	Skada:RegisterForCL(SwingMissed, 'SWING_MISSED', {src_is_interesting = true})
+	Skada:RegisterForCL(SwingDamage, 'SWING_DAMAGE', {src_is_interesting = true, dst_is_not_interesting = true})
+	Skada:RegisterForCL(SwingMissed, 'SWING_MISSED', {src_is_interesting = true, dst_is_not_interesting = true})
 	
-	Skada:RegisterForCL(SpellMissed, 'SPELL_MISSED', {src_is_interesting = true})
-	Skada:RegisterForCL(SpellMissed, 'SPELL_PERIODIC_MISSED', {src_is_interesting = true})
-	Skada:RegisterForCL(SpellMissed, 'RANGE_MISSED', {src_is_interesting = true})
-	Skada:RegisterForCL(SpellMissed, 'SPELL_BUILDING_MISSED', {src_is_interesting = true})
+	Skada:RegisterForCL(SpellMissed, 'SPELL_MISSED', {src_is_interesting = true, dst_is_not_interesting = true})
+	Skada:RegisterForCL(SpellMissed, 'SPELL_PERIODIC_MISSED', {src_is_interesting = true, dst_is_not_interesting = true})
+	Skada:RegisterForCL(SpellMissed, 'RANGE_MISSED', {src_is_interesting = true, dst_is_not_interesting = true})
+	Skada:RegisterForCL(SpellMissed, 'SPELL_BUILDING_MISSED', {src_is_interesting = true, dst_is_not_interesting = true})
 	
 	Skada:AddFeed(L["Damage: Personal DPS"], function()
 								if Skada.current then

@@ -1570,8 +1570,7 @@ end
 -- On a new event, loop through the interested parties.
 -- The flags are checked, and the flag value (say, that the SRC must be interesting, ie, one of the raid) is only checked once, regardless
 -- of how many modules are interested in the event. The check is also only done on the first flag that requires it.
--- The exception is src_is_interesting, which we always check to determine combat start - I would like to get rid of this, but am not sure how.
--- Combat start bit disabled for now.
+-- The exception is src_is_interesting, which we always check to determine combat start - I would like to get rid of this, but am not sure how. [disabled for now]
 
 -- TODO: Start looking at CL event flags instead of using functions.
 function Skada:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
@@ -1615,21 +1614,27 @@ function Skada:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID,
 					fail = true
 				end
 			end
-			if not fail and mod.flags.src_is_interesting then
+			if not fail and mod.flags.src_is_interesting or mod.flags.src_is_not_interesting then
 				if src_is_interesting == nil then
 					src_is_interesting = self:UnitIsInteresting(srcName, srcGUID)
 				end
-				if not src_is_interesting then
+				if mod.flags.src_is_interesting and not src_is_interesting then
 --				self:Print("fail on src_is_interesting")
 					fail = true
 				end
+				if mod.flags.src_is_not_interesting and src_is_interesting then
+					fail = true
+				end
 			end
-			if not fail and mod.flags.dst_is_interesting then
+			if not fail and mod.flags.dst_is_interesting or mod.flags.dst_is_not_interesting then
 				if dst_is_interesting_ == nil then
 					dst_is_interesting = self:UnitIsInteresting(dstName, dstGUID)
 				end
-				if not dst_is_interesting then
+				if mod.flags.dst_is_interesting and not dst_is_interesting then
 --				self:Print("fail on dst_is_interesting")
+					fail = true
+				end
+				if mod.flags.dst_is_not_interesting and dst_is_interesting then
 					fail = true
 				end
 			end
