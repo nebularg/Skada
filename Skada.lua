@@ -723,13 +723,14 @@ local function ask_for_reset()
 	StaticPopup_Show("ResetSkadaDialog")
 end
 
--- Hides all windows if we are in a PvP instance.
-local function hide_if_pvp()
-	if select(2,IsInInstance()) == "pvp" or select(2,IsInInstance()) == "arena" then
-		Skada:SetActive(false)
-	else
-		Skada:SetActive(true);
-	end
+-- Are we in a PVP zone?
+local function is_in_pvp()
+	return select(2,IsInInstance()) == "pvp" or select(2,IsInInstance()) == "arena"
+end
+
+-- Are we solo?
+local function is_solo()
+	return GetNumRaidMembers() == 0 and GetNumPartyMembers() == 0
 end
 
 -- Fired on entering a zone.
@@ -760,8 +761,8 @@ function Skada:PLAYER_ENTERING_WORLD()
 	-- Check for pets.
 	self:CheckPets()
 	
-	if self.db.profile.hidepvp then
-		hide_if_pvp()
+	if self.db.profile.hidepvp and is_in_pvp() then
+		Skada:SetActive(false)
 	end
 	
 end
@@ -1269,21 +1270,17 @@ function Skada:ApplySettings()
 	end
 
 	-- Don't show window if we are solo, option.
-	if self.db.profile.hidesolo and GetNumRaidMembers() == 0 and GetNumPartyMembers() == 0 then
+	-- Don't show window in a PvP instance, option.
+	if (self.db.profile.hidesolo and is_solo()) or (self.db.profile.hidepvp and is_in_pvp())then
 		self:SetActive(false)
 	else
 		self:SetActive(true)
-	end
-	
-	-- Don't show window in a PvP instance, option.
-	if self.db.profile.hidepvp then
-		hide_if_pvp()
-	end
-	
-	-- Hide windows if window is marked as hidden (ie, if user manually hid the window, keep hiding it).
-	for i, win in ipairs(windows) do
-		if win.db.hidden and win:IsShown() then
-			win:Hide()
+		
+		-- Hide specific windows if window is marked as hidden (ie, if user manually hid the window, keep hiding it).
+		for i, win in ipairs(windows) do
+			if win.db.hidden and win:IsShown() then
+				win:Hide()
+			end
 		end
 	end
 
@@ -1981,3 +1978,21 @@ function Skada:FixMyPets(playerGUID, playerName)
 	-- No pet match - return the player.
 	return playerGUID, playerName
 end
+
+-- A minimal mode showing test data. Used by the config.
+--[[
+local testmod = {
+	name = "Test",
+	Update = function(self, win, set)
+				for i=1,i<10,1 do
+					local d = win.dataset[nr] or {}
+					win.dataset[nr] = d
+					d.value = math.random(100)
+					d.label = "Test"
+					d.class = math
+					d.id = player.id
+					d.valuetext = tostring(player.dispells)
+				end
+			end
+}
+--]]

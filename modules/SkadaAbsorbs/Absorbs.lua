@@ -186,31 +186,36 @@ local function log_absorb(set, srcName, dstName, absorbed)
 	set.absorbs = set.absorbs + absorbed
 end
 
+local function consider_absorb(absorbed, dstName, srcName, timestamp)
+	local mintime = nil
+	local found_shield_src
+	for shield_id, spells in pairs(shields[dstName]) do
+		for shield_src, ts in pairs(spells) do
+			if ts - timestamp > 0 and (mintime == nil or ts - timestamp < mintime) then
+				found_shield_src = shield_src
+			end
+		end
+	end
+	
+	if found_shield_src then
+
+		log_absorb(Skada.current, found_shield_src, dstName, absorbed)
+		log_absorb(Skada.total, found_shield_src, dstName, absorbed)
+		
+	end
+end
+
 local function SwingDamage(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
 	local samount, soverkill, sschool, sresisted, sblocked, sabsorbed, scritical, sglancing, scrushing = ...
+	if absorbed and absorbed > 0 and dstName and shields[dstName] and srcName then
+		consider_absorb(absorbed, dstName, srcName, timestamp)
+	end
 end
 
 local function SpellDamage(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
 	local spellId, spellName, spellSchool, samount, soverkill, sschool, sresisted, sblocked, absorbed, scritical, sglancing, scrushing = ...
-	if absorbed and absorbed > 0 and shields[dstName] then
-		
-		local mintime = nil
-		local found_shield_src
-		for shield_id, spells in pairs(shields[dstName]) do
-			for shield_src, ts in pairs(spells) do
-				if ts - timestamp > 0 and (mintime == nil or ts - timestamp < mintime) then
-					found_shield_src = shield_src
-				end
-			end
-		end
-		
-		if found_shield_src then
-
-			log_absorb(Skada.current, found_shield_src, dstName, absorbed)
-			log_absorb(Skada.total, found_shield_src, dstName, absorbed)
-			
-		end
-		
+	if absorbed and absorbed > 0 and dstName and shields[dstName] and srcName then
+		consider_absorb(absorbed, dstName, srcName, timestamp)
 	end
 end
 
