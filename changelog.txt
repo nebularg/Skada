@@ -1,3 +1,10 @@
+1.2-9
+* Damage modes: now ignoring friendly fire.
+* Absorbs mode: fix for not counting swing damage.
+* Added a Hide in PVP option.
+* Added healing spell details tooltip.
+* Manually hiding windows (by clicking minimap button/LDB) should now hide the windows until clicked again.
+
 1.2-7
 * Added TPS to Threat mode. Optional, by default on.
 * Added an option to not warn on threat when tanking.
