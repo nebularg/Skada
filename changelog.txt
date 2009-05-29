@@ -1,4 +1,4 @@
-1.2-9
+1.2-8
 * Damage modes: now ignoring friendly fire.
 * Absorbs mode: fix for not counting swing damage.
 * Added a Hide in PVP option.

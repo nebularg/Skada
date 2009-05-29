@@ -210,8 +210,10 @@ end
 
 -- Called by Skada when a new player is added to a set.
 function mod:AddPlayerAttributes(player)
-	if not player.healing then
+	if not player.healed then
 		player.healed = {}			-- Stored healing per recipient
+	end
+	if not player.healing then
 		player.healing = 0			-- Total healing
 		player.healingspells = {}	-- Healing spells
 		player.overhealing = 0		-- Overheal total
