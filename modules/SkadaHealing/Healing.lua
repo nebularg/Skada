@@ -22,6 +22,14 @@ local function log_heal(set, heal)
 		set.healing = set.healing + amount
 		set.overhealing = set.overhealing + heal.overhealing
 		
+		-- Create recipient if it does not exist.
+		if not player.healed[heal.dstName] then
+			player.healed[heal.dstName] = {class = select(2, UnitClass(heal.dstName)), amount = 0}
+		end
+		
+		-- Add to recipient healing.
+		player.healed[heal.dstName].amount = player.healed[heal.dstName].amount + amount
+		
 		-- Create spell if it does not exist.
 		if not player.healingspells[heal.spellname] then
 			player.healingspells[heal.spellname] = {id = heal.spellid, name = heal.spellname, hits = 0, healing = 0, overhealing = 0, critical = 0, min = 0, max = 0}
@@ -203,9 +211,10 @@ end
 -- Called by Skada when a new player is added to a set.
 function mod:AddPlayerAttributes(player)
 	if not player.healing then
-		player.healing = 0
-		player.healingspells = {}
-		player.overhealing = 0
+		player.healed = {}			-- Stored healing per recipient
+		player.healing = 0			-- Total healing
+		player.healingspells = {}	-- Healing spells
+		player.overhealing = 0		-- Overheal total
 	end
 end
 
