@@ -2,10 +2,8 @@ local L = LibStub("AceLocale-3.0"):GetLocale("Skada", false)
 
 local Skada = Skada
 
-local mod = Skada:NewModule("ManaGained")
-local playermod = Skada:NewModule("ManaGainedPlayerView")
-
-mod.name = L["Mana gained"]
+local mod = Skada:NewModule(L["Mana gained"])
+local playermod = Skada:NewModule(L["Mana gain spell list"])
 
 local function log_gain(set, gain)
 	-- Get the player from set.
@@ -56,16 +54,6 @@ local function SpellEnergize(timestamp, eventtype, srcGUID, srcName, srcFlags, d
 	log_gain(Skada.total, gain)
 end
 
-local function click_on_player(win, id, label, button)
-	if button == "LeftButton" then
-		playermod.playerid = id
-		playermod.name = label..L["'s Healing"]
-		win:DisplayMode(playermod)
-	elseif button == "RightButton" then
-		win:RightClick()
-	end
-end
-
 function mod:Update(win, set)
 	local nr = 1
 	local max = 0
@@ -93,10 +81,9 @@ function mod:Update(win, set)
 	win.metadata.maxvalue = max
 end
 
-local function spell_click(win, id, label, button)
-	if button == "RightButton" then
-		win:DisplayMode(mod)
-	end
+function playermod:Enter(win, id, label)
+	playermod.playerid = id
+	playermod.name = label..L["'s Healing"]
 end
 
 -- Detail view of a player.
@@ -134,8 +121,8 @@ function playermod:Update(win, set)
 end
 
 function mod:OnEnable()
-	mod.metadata		= {showspots = true, click = click_on_player}
-	playermod.metadata	= {click = spell_click}
+	mod.metadata		= {showspots = true, click1 = playermod}
+	playermod.metadata	= {}
 
 	Skada:RegisterForCL(SpellEnergize, 'SPELL_ENERGIZE', {src_is_interesting = true})
 	Skada:RegisterForCL(SpellEnergize, 'SPELL_PERIODIC_ENERGIZE', {src_is_interesting = true})

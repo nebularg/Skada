@@ -2,13 +2,10 @@ local L = LibStub("AceLocale-3.0"):GetLocale("Skada", false)
 
 local Skada = Skada
 
-local mod = Skada:NewModule("Damage done")
-local dpsmod = Skada:NewModule("DPS")
-local playermod = Skada:NewModule("Damage player spells")
-local spellmod = Skada:NewModule("Damage spell details")
-
-mod.name = L["Damage"]
-dpsmod.name = L["DPS"]
+local mod = Skada:NewModule(L["Damage"])
+local dpsmod = Skada:NewModule(L["DPS"])
+local playermod = Skada:NewModule(L["Damage spell list"])
+local spellmod = Skada:NewModule(L["Damage spell details"])
 
 -- Used to track where to go back to, Damage or DPS mode.
 local lastmod = nil
@@ -183,17 +180,6 @@ local function SpellMissed(timestamp, eventtype, srcGUID, srcName, srcFlags, dst
 	end
 end
 
--- Called when user clicks on a data row.
-function mod_click(win, id, label, button)
-	if button == "LeftButton" then
-		playermod.name = label..L["'s Damage"]
-		playermod.playerid = id
-		win:DisplayMode(playermod)
-	elseif button == "RightButton" then
-		win:RightClick()
-	end
-end
-
 -- Damage overview.
 function mod:Update(win, set)
 	lastmod = mod
@@ -231,17 +217,6 @@ function mod:Update(win, set)
 	win.metadata.maxvalue = max
 end
 
-local function player_click(win, id, label, button)
-	if button == "LeftButton" then
-		local player = Skada:find_player(win:get_selected_set(), playermod.playerid)
-		spellmod.spellname = label
-		spellmod.name = player.name..L["'s "]..label
-		win:DisplayMode(spellmod)
-	elseif button == "RightButton" then
-		win:DisplayMode(lastmod)
-	end
-end
-
 local function player_tooltip(win, id, label, tooltip)
 	local player = Skada:find_player(win:get_selected_set(), playermod.playerid)
 	if player then
@@ -255,6 +230,12 @@ local function player_tooltip(win, id, label, tooltip)
 			tooltip:AddDoubleLine(L["Average hit:"], Skada:FormatNumber(spell.damage / spell.totalhits), 255,255,255,255,255,255)
 		end
 	end
+end
+
+function playermod:Enter(win, id, label)
+	local player = Skada:find_player(win:get_selected_set(), id)
+	playermod.playerid = id
+	playermod.name = player.name..L["'s Damage"]
 end
 
 -- Detail view of a player.
@@ -299,10 +280,10 @@ local function add_detail_bar(win, nr, title, value)
 	d.valuetext = ("%u (%02.1f%%)"):format(value, value / win.metadata.maxvalue * 100)
 end
 
-local function spell_click(win, id, label, button)
-	if button == "RightButton" then
-		win:DisplayMode(playermod)
-	end
+function spellmod:Enter(win, id, label)
+	local player = Skada:find_player(win:get_selected_set(), playermod.playerid)
+	spellmod.spellname = label
+	spellmod.name = player.name..L["'s "]..label
 end
 
 function spellmod:Update(win, set)
@@ -396,10 +377,10 @@ function dpsmod:Update(win, set)
 end
 
 function mod:OnEnable()
-	dpsmod.metadata = 		{showspots = true, click = mod_click}
-	playermod.metadata = 	{click = player_click, tooltip = player_tooltip}
-	mod.metadata = 			{showspots = true, click = mod_click}
-	spellmod.metadata = 	{click = spell_click}
+	dpsmod.metadata = 		{showspots = true}
+	playermod.metadata = 	{tooltip = player_tooltip, click1 = spellmod}
+	mod.metadata = 			{showspots = true, click1 = playermod}
+	spellmod.metadata = 	{}
 
 	Skada:RegisterForCL(SpellDamage, 'DAMAGE_SHIELD', {src_is_interesting = true, dst_is_not_interesting = true})
 	Skada:RegisterForCL(SpellDamage, 'SPELL_DAMAGE', {src_is_interesting = true, dst_is_not_interesting = true})

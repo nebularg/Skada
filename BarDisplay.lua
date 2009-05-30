@@ -74,30 +74,74 @@ function mod:Wipe(win)
 	win.bargroup:SortBars()
 end
 
+local function showmode(win, id, label, mode)
+	-- Add current mode to window traversal history.
+	if win.selectedmode then
+		tinsert(win.history, win.selectedmode)
+	end
+	-- Call the Enter function on the mode.
+	if mode.Enter then
+		mode:Enter(win, id, label)
+	end
+	-- Display mode.
+	win:DisplayMode(mode)
+end
+
 local function BarClick(win, id, label, button)
-	if IsShiftKeyDown() then
+	local click1 = win.metadata.click1
+	local click2 = win.metadata.click2
+	local click3 = win.metadata.click3
+	
+	if button == "RightButton" and IsShiftKeyDown() then
 		Skada:OpenMenu(win)
 	elseif win.metadata.click then
 		win.metadata.click(win, id, label, button)
 	elseif button == "RightButton" then
 		win:RightClick()
+	elseif click2 and IsShiftKeyDown() then
+		showmode(win, id, label, click2)
+	elseif click3 and IsControlKeyDown() then
+		showmode(win, id, label, click3)
+	elseif click1 then
+		showmode(win, id, label, click1)
 	end
 end
 
+local ttactive = false
+
 local function BarEnter(win, id, label)
-	if Skada.db.profile.tooltips and win.metadata.tooltip then
-	    GameTooltip:SetOwner(win.bargroup, "ANCHOR_NONE")
-	    GameTooltip:SetPoint("TOPLEFT", win.bargroup, "TOPRIGHT")
-	    GameTooltip:ClearLines()
+	local t = GameTooltip
+	if Skada.db.profile.tooltips and (win.metadata.click1 or win.metadata.click2 or win.metadata.click3 or win.metadata.tooltip) then
+		ttactive = true
+	    t:SetOwner(win.bargroup, "ANCHOR_NONE")
+	    t:SetPoint("TOPLEFT", win.bargroup, "TOPRIGHT")
+	    t:ClearLines()
+	    
+		if win.metadata.tooltip then
+			win.metadata.tooltip(win, id, label, t)
+			
+			-- Spacer
+			if win.metadata.click1 or win.metadata.click2 or win.metadata.click3 then
+				t:AddLine(" ")
+			end
+		end
 		
-		win.metadata.tooltip(win, id, label, GameTooltip)
+		if win.metadata.click1 then
+			t:AddLine("|cffeda55fClick|r for "..win.metadata.click1:GetName()..".", 0.2, 1, 0.2)
+		end
+		if win.metadata.click2 then
+			t:AddLine("|cffeda55fShift-Click|r for "..win.metadata.click2:GetName()..".", 0.2, 1, 0.2)
+		end
+		if win.metadata.click3 then
+			t:AddLine("|cffeda55fControl-Click|r for "..win.metadata.click3:GetName()..".", 0.2, 1, 0.2)
+		end
 		
-	    GameTooltip:Show()
+	    t:Show()
 	end
 end
 
 local function BarLeave(win, id, label)
-	if Skada.db.profile.tooltips and win.metadata.tooltip then
+	if ttactive then
 		GameTooltip:Hide()
 	end
 end

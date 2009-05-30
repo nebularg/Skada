@@ -2,10 +2,8 @@ local L = LibStub("AceLocale-3.0"):GetLocale("Skada", false)
 
 local Skada = Skada
 
-local mod = Skada:NewModule("DebuffMode", "AceTimer-3.0")
+local mod = Skada:NewModule(L["Debuff uptimes"], "AceTimer-3.0")
 local auramod = Skada:NewModule("DebuffModeSpellView")
-
-mod.name = L["Debuff uptimes"]
 
 -- This is highly inefficient. Come up with something better.
 local function tick_spells(set)
@@ -110,16 +108,6 @@ local function len(t)
 	return l
 end
 
-local function click_on_player(win, id, label, button)
-	if button == "LeftButton" then
-		auramod.playerid = id
-		auramod.name = label..L["'s Debuffs"]
-		win:DisplayMode(auramod)
-	elseif button == "RightButton" then
-		win:RightClick()
-	end
-end
-											
 function mod:Update(win, set)
 	local nr = 1
 	local max = 0
@@ -153,10 +141,9 @@ function mod:Update(win, set)
 	win.metadata.maxvalue = max
 end
 
-local function aura_click(win, id, label, button)
-	if button == "RightButton" then
-		win:DisplayMode(mod)
-	end
+function auramod:Enter(win, id, label)
+	auramod.playerid = id
+	auramod.name = label..L["'s Debuffs"]
 end
 
 -- Detail view of a player.
@@ -191,8 +178,8 @@ function auramod:Update(win, set)
 end
 
 function mod:OnEnable()
-	mod.metadata = {showspots = 1, click = click_on_player}
-	auramod.metadata = {click = aura_click}
+	mod.metadata 		= {showspots = 1, click1 = auramod}
+	auramod.metadata 	= {}
 
 	Skada:RegisterForCL(AuraApplied, 'SPELL_AURA_APPLIED', {src_is_interesting = true})
 	Skada:RegisterForCL(AuraRemoved, 'SPELL_AURA_REMOVED', {src_is_interesting = true})

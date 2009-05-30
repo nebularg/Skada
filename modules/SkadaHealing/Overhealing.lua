@@ -2,9 +2,7 @@ local L = LibStub("AceLocale-3.0"):GetLocale("Skada", false)
 
 local Skada = Skada
 
-local mod = Skada:NewModule("OverhealingMode")
-
-mod.name = L["Overhealing"]
+local mod = Skada:NewModule(L["Overhealing"])
 
 function mod:OnEnable()
 	mod.metadata = {showspots = true}

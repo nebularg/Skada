@@ -2,9 +2,7 @@ local L = LibStub("AceLocale-3.0"):GetLocale("Skada", false)
 
 local Skada = Skada
 
-local mod = Skada:NewModule("DispelMode")
-
-mod.name = L["Dispels"]
+local mod = Skada:NewModule(L["Dispels"])
 
 local function log_dispell(set, dispell)
 	local player = Skada:get_player(set, dispell.playerid, dispell.playername)

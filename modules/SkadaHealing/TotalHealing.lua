@@ -2,9 +2,7 @@ local L = LibStub("AceLocale-3.0"):GetLocale("Skada", false)
 
 local Skada = Skada
 
-local mod = Skada:NewModule("TotalHealingMode")
-
-mod.name = L["Total healing"]
+local mod = Skada:NewModule(L["Total healing"])
 
 -- Called by Skada when a new player is added to a set.
 function mod:AddPlayerAttributes(player)

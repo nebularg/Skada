@@ -5,9 +5,7 @@ local Skada = Skada
 local media = LibStub("LibSharedMedia-3.0")
 
 -- This mode is a bit special.
-local mod = Skada:NewModule("ThreatMode")
-
-mod.name = L["Threat"]
+local mod = Skada:NewModule(L["Threat"])
 
 local opts = {
 	options = {

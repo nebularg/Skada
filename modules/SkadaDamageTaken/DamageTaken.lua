@@ -2,10 +2,8 @@ local L = LibStub("AceLocale-3.0"):GetLocale("Skada", false)
 
 local Skada = Skada
 
-local mod = Skada:NewModule("DamageTakenMode")
-local playermod = Skada:NewModule("DamageTakenModePlayerView")
-
-mod.name = L["Damage taken"]
+local mod = Skada:NewModule(L["Damage taken"])
+local playermod = Skada:NewModule(L["Spell list"])
 
 local function log_damage_taken(set, dmg)
 	-- Get the player.
@@ -58,16 +56,6 @@ local function SwingDamage(timestamp, eventtype, srcGUID, srcName, srcFlags, dst
 	log_damage_taken(Skada.total, dmg)
 end
 
-local function click_on_player(win, id, label, button)
-	if button == "LeftButton" then
-		playermod.playerid = id
-		playermod.name = label..L["'s Damage taken"]
-		win:DisplayMode(playermod)
-	elseif button == "RightButton" then
-		win:RightClick()
-	end
-end
-
 function mod:Update(win, set)
 	local max = 0
 	
@@ -94,10 +82,9 @@ function mod:Update(win, set)
 	win.metadata.maxvalue = max
 end
 
-local function spell_click(win, id, label, button)
-	if button == "RightButton" then
-		win:DisplayMode(mod)
-	end
+function playermod:Enter(win, id, label)
+	playermod.playerid = id
+	playermod.name = label..L["'s Damage taken"]
 end
 
 -- Detail view of a player.
@@ -128,8 +115,8 @@ function playermod:Update(win, set)
 end
 
 function mod:OnEnable()
-	playermod.metadata = {click = spell_click}
-	mod.metadata = {click = click_on_player, showspots = true}
+	playermod.metadata 		= {}
+	mod.metadata 			= {click1 = playermod, showspots = true}
 
 	Skada:RegisterForCL(SpellDamage, 'SPELL_DAMAGE', {dst_is_interesting_nopets = true})
 	Skada:RegisterForCL(SpellDamage, 'SPELL_PERIODIC_DAMAGE', {dst_is_interesting_nopets = true})

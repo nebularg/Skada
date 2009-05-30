@@ -1,3 +1,8 @@
+1.2-9:
+* Added Healing recipient mode (shift-click from healing mode).
+* Multiple subviews can now be reached from one view. Only healing mode has multiple subviews as of now.
+* Fixed tooltip option; the on/off switch was inverted.
+
 1.2-8
 * Damage modes: now ignoring friendly fire.
 * Absorbs mode: fix for not counting swing damage.

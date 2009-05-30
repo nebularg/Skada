@@ -2,10 +2,8 @@ local L = LibStub("AceLocale-3.0"):GetLocale("Skada", false)
 
 local Skada = Skada
 
-local mod = Skada:NewModule("DeathsMode")
-local deathlog = Skada:NewModule("DeathLogMode")
-
-mod.name = L["Deaths"]
+local mod = Skada:NewModule(L["Deaths"])
+local deathlog = Skada:NewModule(L["Death log"])
 
 local function log_resurrect(set, playerid, playername)
 	local player = Skada:get_player(set, playerid, playername)
@@ -82,16 +80,6 @@ local function Resurrect(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGU
 	log_resurrect(Skada.current, dstGUID, dstName)
 end
 
-local function click_on_player(win, id, label, button)
-	if button == "LeftButton" then
-		deathlog.playerid = id
-		deathlog.name = label..L["'s Death"]
-		win:DisplayMode(deathlog)
-	elseif button == "RightButton" then
-		win:RightClick()
-	end 
-end
-
 -- Death meter.
 function mod:Update(win, set)
 	local nr = 1
@@ -123,11 +111,9 @@ function mod:Update(win, set)
 	win.metadata.maxvalue = max
 end
 
-
-local function hit_click(win, id, label, button)
-	if button == "RightButton" then
-		win:DisplayMode(mod)
-	end
+function deathlog:Enter(win, id, label)
+	deathlog.playerid = id
+	deathlog.name = label..L["'s Death"]
 end
 
 local green = {r = 0, g = 255, b = 0, a = 1}
@@ -178,8 +164,8 @@ function deathlog:Update(win, set)
 end
 
 function mod:OnEnable()
-	mod.metadata = {click = click_on_player}
-	deathlog.metadata = {click = hit_click, ordersort = true}
+	mod.metadata 		= {click1 = deathlog}
+	deathlog.metadata 	= {ordersort = true}
 
 	Skada:RegisterForCL(UnitDied, 'UNIT_DIED', {dst_is_interesting_nopets = true})
 	

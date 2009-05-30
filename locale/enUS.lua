@@ -227,6 +227,18 @@ L["Do not warn while tanking"] = "Do not warn while tanking"
 L["Hide in PvP"] = "Hide in PvP"
 L["Hides Skada's window when in Battlegrounds/Arenas."] = "Hides Skada's window when in Battlegrounds/Arenas."
 
+L["Healed players"] = "Healed players"
+L["Healed by"] = "Healed by"
+L["Absorb details"] = "Absorb details"
+L["Spell details"] = "Spell details"
+L["Spell list"] = "Spell list"
+L["Death log"] = "Death log"
+L["Damage done per player"] = "Damage done per player"
+L["Damage taken per player"] = "Damage taken per player"
+L["Damage spell details"] = "Damage spell details"
+L["Healing spell details"] = "Healing spell details"
+L["Mana gain spell list"] = "Mana gain spell list"
+
 -- SkadaDebuffs
 L["Debuff uptimes"] = true
 L["'s Debuffs"] = true

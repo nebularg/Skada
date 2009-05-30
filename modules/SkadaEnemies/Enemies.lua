@@ -2,14 +2,11 @@ local L = LibStub("AceLocale-3.0"):GetLocale("Skada", false)
 
 local Skada = Skada
 
-local done = Skada:NewModule("EnemyDoneMode")
-local taken = Skada:NewModule("EnemyTakenMode")
+local done = Skada:NewModule(L["Enemy damage done"])
+local taken = Skada:NewModule(L["Enemy damage taken"])
 
-local doneplayers = Skada:NewModule("EnemyDonePlayers")
-local takenplayers = Skada:NewModule("EnemyTakenPlayers")
-
-done.name = L["Enemy damage done"]
-taken.name = L["Enemy damage taken"]
+local doneplayers = Skada:NewModule(L["Damage done per player"])
+local takenplayers = Skada:NewModule(L["Damage taken per player"])
 
 local function find_player(mob, name)
 	for i, p in ipairs(mob.players) do
@@ -97,16 +94,6 @@ local function SwingDamageDone(timestamp, eventtype, srcGUID, srcName, srcFlags,
 	end
 end
 
-local function taken_click(win, id, label, button)
-	if button == "LeftButton" then
-		takenplayers.name = L["Damage on"].." "..label
-		takenplayers.mob = label
-		win:DisplayMode(takenplayers)
-	elseif button == "RightButton" then
-	 	win:RightClick()
-	end
-end
-
 -- Enemy damage taken - list mobs.
 function taken:Update(win, set)
 	local nr = 1
@@ -131,16 +118,6 @@ function taken:Update(win, set)
 	end
 	
 	win.metadata.maxvalue = max
-end
-
-local function done_click(win, id, label, button)
-	if button == "LeftButton" then
-		doneplayers.name = L["Damage from"].." "..label
-		doneplayers.mob = label
-		win:DisplayMode(doneplayers)
-	elseif button == "RightButton" then
-	 	win:RightClick()
-	end
 end
 
 function done:Update(win, set)
@@ -168,10 +145,9 @@ function done:Update(win, set)
 	win.metadata.maxvalue = max
 end
 
-local function player_done_click(win, id, label, button)
-	if button == "RightButton" then
-	 	win:DisplayMode(done)
-	end
+function doneplayers:Enter(win, id, label)
+	doneplayers.name = L["Damage from"].." "..label
+	doneplayers.mob = label
 end
 
 function doneplayers:Update(win, set)
@@ -210,10 +186,9 @@ function doneplayers:Update(win, set)
 	end
 end
 
-local function player_taken_click(win, id, label, button)
-	if button == "RightButton" then
-	 	win:DisplayMode(taken)
-	end
+function takenplayers:Enter(win, id, label)
+	takenplayers.name = L["Damage on"].." "..label
+	takenplayers.mob = label
 end
 
 function takenplayers:Update(win, set)
@@ -259,10 +234,10 @@ end
 
 
 function done:OnEnable()
-	takenplayers.metadata 	= {click = player_taken_click, showspots = true}
-	doneplayers.metadata 	= {click = player_done_click, showspots = true}
-	done.metadata 			= {click = done_click}
-	taken.metadata 			= {click = taken_click}
+	takenplayers.metadata 	= {showspots = true}
+	doneplayers.metadata 	= {showspots = true}
+	done.metadata 			= {click1 = doneplayers}
+	taken.metadata 			= {click1 = takenplayers}
 
 	Skada:RegisterForCL(SpellDamageTaken, 'SPELL_DAMAGE', {src_is_interesting = true})
 	Skada:RegisterForCL(SpellDamageTaken, 'SPELL_PERIODIC_DAMAGE', {src_is_interesting = true})

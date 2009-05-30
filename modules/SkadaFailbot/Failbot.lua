@@ -2,13 +2,11 @@ local L = LibStub("AceLocale-3.0"):GetLocale("Skada", false)
 
 local Skada = Skada
 
-local mod = Skada:NewModule("FailbotMode")
+local mod = Skada:NewModule(L["Fails"])
 local playermod = Skada:NewModule("FailbotModePlayerView")
 
 local fail = LibStub("LibFail-1.0")
 local fail_events = fail:GetSupportedEvents()
-
-mod.name = L["Fails"]
 
 function mod:AddToTooltip(set, tooltip)
  	GameTooltip:AddDoubleLine(L["Fails"], set.fails, 1,1,1)
@@ -70,16 +68,6 @@ for _, event in ipairs(fail_events) do
 	fail:RegisterCallback(event, onFail)
 end
 
-local function click_on_player(win, id, label, button)
-	if button == "LeftButton" then
-		playermod.playerid = id
-		playermod.name = label..L["'s Fails"]
-		win:DisplayMode(playermod)
-	elseif button == "RightButton" then 
-		win:RightClick()
-	end
-end
-
 function mod:Update(win, set)
 
 	local nr = 1
@@ -107,10 +95,9 @@ function mod:Update(win, set)
 	win.metadata.maxvalue = max
 end
 
-local function fail_click(win, id, label, button)
-	if button == "RightButton" then
-		win:DisplayMode(mod)
-	end
+function playermod:Enter(win, id, label)
+	playermod.playerid = id
+	playermod.name = label..L["'s Fails"]
 end
 
 -- Detail view of a player.
@@ -138,8 +125,8 @@ function playermod:Update(win, set)
 end
 
 function mod:OnEnable()
-	mod.metadata = {click = click_on_player, showspots = true}
-	playermod.metadata = {click = fail_click}
+	mod.metadata 		= {click1 = playermod, showspots = true}
+	playermod.metadata 	= {}
 
 	Skada:AddMode(self)
 end

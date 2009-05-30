@@ -2,10 +2,9 @@ local L = LibStub("AceLocale-3.0"):GetLocale("Skada", false)
 
 local Skada = Skada
 
-local mod = Skada:NewModule("HealingMode")
-local playermod = Skada:NewModule("HealingModePlayerView")
-
-mod.name = L["Healing"]
+local mod = Skada:NewModule(L["Healing"])
+local spellsmod = Skada:NewModule(L["Healing spell list"])
+local healedmod = Skada:NewModule(L["Healed players"])
 
 local function log_heal(set, heal)
 	-- Get the player from set.
@@ -44,7 +43,7 @@ local function log_heal(set, heal)
 		end
 		spell.overhealing = spell.overhealing + heal.overhealing
 		
-		spell.hits = spell.hits or 0 + 1
+		spell.hits = (spell.hits or 0) + 1
 		
 		if not spell.min or amount < spell.min then
 			spell.min = amount
@@ -61,6 +60,7 @@ local function SpellHeal(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGU
 	-- Healing
 	local spellId, spellName, spellSchool, samount, soverhealing, scritical = ...
 	
+	heal.dstName = dstName
 	heal.playerid = srcGUID
 	heal.playername = srcName
 	heal.spellid = spellId
@@ -78,16 +78,6 @@ local function getHPS(set, player)
 	local totaltime = Skada:PlayerActiveTime(set, player)
 	
 	return player.healing / math.max(1,totaltime)
-end
-
-local function click_on_player(win, id, label, button)
-	if button == "LeftButton" then
-		playermod.playerid = id
-		playermod.name = label..L["'s Healing"]
-		win:DisplayMode(playermod)
-	elseif button == "RightButton" then
-		win:RightClick()
-	end
 end
 
 function mod:Update(win, set)
@@ -122,14 +112,8 @@ function mod:Update(win, set)
 	win.metadata.maxvalue = max
 end
 
-local function spell_click(win, id, label, button)
-	if button == "RightButton" then
-		win:DisplayMode(mod)
-	end
-end
-
 local function spell_tooltip(win, id, label, tooltip)
-	local player = Skada:find_player(win:get_selected_set(), playermod.playerid)
+	local player = Skada:find_player(win:get_selected_set(), spellsmod.playerid)
 	if player then
 		local spell = player. healingspells[label]
 		if spell then
@@ -140,17 +124,22 @@ local function spell_tooltip(win, id, label, tooltip)
 			end
 			tooltip:AddDoubleLine(L["Average hit:"], Skada:FormatNumber(spell.healing / spell.hits), 255,255,255,255,255,255)
 			if spell.hits then
-				tooltip:AddDoubleLine(L["Critical"]..":", (spell.critical / spell.hits * 100).."%", 255,255,255,255,255,255)
+				tooltip:AddDoubleLine(L["Critical"]..":", ("%02.1f%%"):format(spell.critical / spell.hits * 100), 255,255,255,255,255,255)
 			end
 			if spell.hits then
-				tooltip:AddDoubleLine(L["Overhealing"]..":", (spell.overhealing / (spell.overhealing + spell.healing) * 100).."%", 255,255,255,255,255,255)
+				tooltip:AddDoubleLine(L["Overhealing"]..":", ("%02.1f%%"):format(spell.overhealing / (spell.overhealing + spell.healing) * 100), 255,255,255,255,255,255)
 			end
 		end
 	end
 end
 
--- Detail view of a player.
-function playermod:Update(win, set)
+function spellsmod:Enter(win, id, label)
+	spellsmod.playerid = id
+	spellsmod.title = label..L["'s Healing"]
+end
+
+-- Spell view of a player.
+function spellsmod:Update(win, set)
 	-- View spells for this player.
 		
 	local player = Skada:find_player(set, self.playerid)
@@ -181,9 +170,46 @@ function playermod:Update(win, set)
 	win.metadata.maxvalue = max
 end
 
+function healedmod:Enter(win, id, label)
+	healedmod.playerid = id
+	healedmod.title = L["Healed by"].." "..label
+end
+
+-- Healed players view of a player.
+function healedmod:Update(win, set)
+	local player = Skada:find_player(set, healedmod.playerid)
+	local nr = 1
+	local max = 0
+	
+	if player then
+		for name, heal in pairs(player.healed) do
+			if heal.amount > 0 then
+		
+				local d = win.dataset[nr] or {}
+				win.dataset[nr] = d
+				
+				d.id = name
+				d.label = name
+				d.value = heal.amount
+				d.class = heal.class
+				d.valuetext = Skada:FormatNumber(heal.amount)..(" (%02.1f%%)"):format(heal.amount / player.healing * 100)
+				
+				if heal.amount > max then
+					max = heal.amount
+				end
+				
+				nr = nr + 1
+			end
+		end
+	end
+	
+	win.metadata.maxvalue = max
+end
+
 function mod:OnEnable()
-	mod.metadata		= {showspots = true, click = click_on_player}
-	playermod.metadata	= {click = spell_click, tooltip = spell_tooltip}
+	mod.metadata		= {showspots = true, click1 = spellsmod, click2 = healedmod}
+	spellsmod.metadata	= {tooltip = spell_tooltip}
+	healedmod.metadata 	= {showspots = true}
 
 	Skada:RegisterForCL(SpellHeal, 'SPELL_HEAL', {src_is_interesting = true})
 	Skada:RegisterForCL(SpellHeal, 'SPELL_PERIODIC_HEAL', {src_is_interesting = true})

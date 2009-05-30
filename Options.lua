@@ -697,7 +697,7 @@ Skada.options = {
 							        name=L["Show tooltips"],
 							        desc=L["Shows tooltips with extra information in some modes."],
 							        order=24,
-							        get=function() return not Skada.db.profile.tooltips end,
+							        get=function() return Skada.db.profile.tooltips end,
 							        set=function() Skada.db.profile.tooltips = not Skada.db.profile.tooltips end,
 							},
 							

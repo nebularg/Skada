@@ -74,7 +74,7 @@ end
 
 local function find_mode(name)
 	for i, mode in ipairs(modes) do
-		if mode.name == name then
+		if mode:GetName() == name then
 			return mode
 		end
 	end
@@ -106,6 +106,10 @@ function Window:new()
 			
 			-- Our display provider.
 			display = nil,
+			
+			-- Our mode traversing history.
+			history = {},
+			
 	   	 }, mt)
 end
 
@@ -280,9 +284,6 @@ end
 
 -- Sets up the mode view.
 function Window:DisplayMode(mode)
-	-- Save a reference to the previous mode.
-	self.lastmode = self.selectedmode
-
 	self:Wipe()
 
 	self.selectedplayer = nil
@@ -297,11 +298,12 @@ function Window:DisplayMode(mode)
 			self.metadata[key] = value
 		end
 	end
+	
+	local name = mode.title or mode:GetName()
 
 	-- Save for posterity.
-	self.db.mode = self.selectedmode.name
-
-	self.metadata.title = mode.name
+	self.db.mode = name
+	self.metadata.title = name
 
 	changed = true
 	Skada:UpdateDisplay()
@@ -318,6 +320,7 @@ end
 
 -- Sets up the mode list.
 function Window:DisplayModes(settime)
+	self.history = {}
 	self:Wipe()
 
 	self.selectedplayer = nil
@@ -365,6 +368,7 @@ end
 
 -- Sets up the set list.
 function Window:DisplaySets()
+	self.history = {}
 	self:Wipe()
 	
 	self.metadata = {}
@@ -384,11 +388,17 @@ function Window:DisplaySets()
 end
 
 -- Default "right-click" behaviour in case no special click function is defined:
--- 1) Go to modes list if we are in a mode.
--- 2) Go to set list.
+-- 1) If there is a mode traversal history entry, go to the last mode.
+-- 2) Go to modes list if we are in a mode.
+-- 3) Go to set list.
 function Window:RightClick(group, button)
 	if self.selectedmode then
-		self:DisplayModes(self.selectedset)
+		-- If mode traversal history exists, go to last entry, else mode list.
+		if #self.history > 0 then
+			self:DisplayMode(tremove(self.history))
+		else
+			self:DisplayModes(self.selectedset)
+		end
 	elseif self.selectedset then
 		self:DisplaySets()
 	end
@@ -1771,8 +1781,8 @@ function Skada:UpdateDisplay()
 				local d = win.dataset[i] or {}
 				win.dataset[i] = d
 				
-				d.id = mode.name
-				d.label = mode.name
+				d.id = mode:GetName()
+				d.label = mode:GetName()
 				d.value = 1
 				if set and mode.GetSetSummary ~= nil then
 					d.valuetext = mode:GetSetSummary(set)

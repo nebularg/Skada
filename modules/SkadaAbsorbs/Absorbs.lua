@@ -3,10 +3,8 @@
 local L = LibStub("AceLocale-3.0"):GetLocale("Skada", false)
 
 local Skada = Skada
-local mod = Skada:NewModule("AbsorbMode")
-local playermod = Skada:NewModule("AbsorbModePlayerView")
-
-mod.name = L["Absorbs"]
+local mod = Skada:NewModule(L["Absorbs"])
+local playermod = Skada:NewModule(L["Absorb details"])
 
 -- This bit shamelessly copied straight from RecountGuessedAbsorbs - thanks!
 local AbsorbSpellDuration = 
@@ -219,16 +217,6 @@ local function SpellDamage(timestamp, eventtype, srcGUID, srcName, srcFlags, dst
 	end
 end
 
-local function click_on_player(win, id, label, button)
-	if button == "LeftButton" then
-		playermod.playerid = id
-		playermod.name = label..L["'s Absorbs"]
-		win:DisplayMode(playermod)
-	elseif button == "RightButton" then
-		win:RightClick()
-	end
-end
-
 function mod:Update(win, set)
 	local nr = 1
 	local max = 0
@@ -256,10 +244,9 @@ function mod:Update(win, set)
 	win.metadata.maxvalue = max
 end
 
-local function click_on_healed(win, id, label, button)
-	if button == "RightButton" then
-		win:DisplayMode(mod)
-	end
+function playermod:Enter(win, id, label)
+	playermod.playerid = id
+	playermod.name = label..L["'s Absorbs"]
 end
 
 function playermod:Update(win, set)
@@ -293,8 +280,8 @@ function playermod:Update(win, set)
 end
 
 function mod:OnEnable()
-	mod.metadata = {showspots = 1, click = click_on_player}
-	playermod.metadata = {click = click_on_healed}
+	mod.metadata 		= {showspots = 1, click1 = playermod}
+	playermod.metadata 	= {}
 
 	Skada:RegisterForCL(AuraApplied, 'SPELL_AURA_APPLIED', {src_is_interesting = true})
 	Skada:RegisterForCL(AuraRemoved, 'SPELL_AURA_REMOVED', {src_is_interesting = true})
