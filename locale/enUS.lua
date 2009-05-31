@@ -239,6 +239,8 @@ L["Damage taken per player"] = "Damage taken per player"
 L["Damage spell details"] = "Damage spell details"
 L["Healing spell details"] = "Healing spell details"
 L["Mana gain spell list"] = "Mana gain spell list"
+L["List of damaging spells"] = "List of damaging spells"
+L["Debuff spell list"] = "Debuff spell list"
 
 -- SkadaDebuffs
 L["Debuff uptimes"] = true

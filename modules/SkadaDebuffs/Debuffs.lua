@@ -3,7 +3,7 @@ local L = LibStub("AceLocale-3.0"):GetLocale("Skada", false)
 local Skada = Skada
 
 local mod = Skada:NewModule(L["Debuff uptimes"], "AceTimer-3.0")
-local auramod = Skada:NewModule("DebuffModeSpellView")
+local auramod = Skada:NewModule(L["Debuff spell list"])
 
 -- This is highly inefficient. Come up with something better.
 local function tick_spells(set)
@@ -169,7 +169,7 @@ function auramod:Update(win, set)
 			d.value = uptime
 			d.label = spell.name
 			d.icon = select(3, GetSpellInfo(spell.id))
-			d.valuetext = ("(%02.1f%%)"):format(uptime / maxtime * 100)
+			d.valuetext = ("%02.1f%%"):format(uptime / maxtime * 100)
 			
 			nr = nr + 1
 		end

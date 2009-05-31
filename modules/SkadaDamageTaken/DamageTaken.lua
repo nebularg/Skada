@@ -3,7 +3,7 @@ local L = LibStub("AceLocale-3.0"):GetLocale("Skada", false)
 local Skada = Skada
 
 local mod = Skada:NewModule(L["Damage taken"])
-local playermod = Skada:NewModule(L["Spell list"])
+local playermod = Skada:NewModule(L["List of damaging spells"])
 
 local function log_damage_taken(set, dmg)
 	-- Get the player.
