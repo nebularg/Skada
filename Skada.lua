@@ -179,7 +179,7 @@ function Window:AddOptions()
 							local modes = {}
 							modes[""] = L["None"]
 							for i, mode in ipairs(Skada:GetModes()) do
-								modes[mode.name] = mode.name
+								modes[mode:GetName()] = mode:GetName()
 							end
 							return modes
 						end,
@@ -592,7 +592,7 @@ function Skada:Report(channel, chantype, report_mode_name, report_set_name, max,
 	
 	-- Title
 	local endtime = report_set.endtime or time()
-	sendchat(string.format(L["Skada report on %s for %s, %s to %s:"], report_mode.name, report_set.name, date("%X",report_set.starttime), date("%X",endtime)), channel, chantype)
+	sendchat(string.format(L["Skada report on %s for %s, %s to %s:"], report_mode:GetName(), report_set.name, date("%X",report_set.starttime), date("%X",endtime)), channel, chantype)
 	
 	-- For each item in dataset, print label and valuetext.
 	local nr = 1
@@ -1487,12 +1487,7 @@ function Skada:RestoreView(win, theset, themode)
 	
 	-- Find the mode. The mode may not actually be available.
 	if themode then
-		local mymode = nil
-		for i, m in ipairs(modes) do
-			if m.name == themode then
-				mymode = m
-			end
-		end
+		local mymode = find_mode(themode)
 	
 		-- If the mode exists, switch to this mode.
 		-- If not, show modes.
@@ -1765,7 +1760,7 @@ function Skada:UpdateDisplay()
 				if win.selectedmode.Update then
 					win.selectedmode:Update(win, set)
 				else
-					self:Print("Mode "..win.selectedmode.name.." does not have an Update function!")
+					self:Print("Mode "..win.selectedmode:GetName().." does not have an Update function!")
 				end
 				
 				-- Let window display the data.
