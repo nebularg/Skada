@@ -1009,7 +1009,7 @@ function Skada:OpenMenu(window)
 		        
 		        for i, module in ipairs(Skada:GetModes()) do
 			        wipe(info)
-		            info.text = module.name
+		            info.text = module:GetName()
 		            info.func = function() window:DisplayMode(module) end
 		            info.checked = (window.selectedmode == module)
 		            UIDropDownMenu_AddButton(info, level)
@@ -1162,9 +1162,9 @@ function Skada:OpenMenu(window)
 
 		        for i, module in ipairs(Skada:GetModes()) do
 			        wipe(info)
-		            info.text = module.name
-		            info.checked = (Skada.db.profile.report.mode == module.name)
-		            info.func = function() Skada.db.profile.report.mode = module.name end
+		            info.text = module:GetName()
+		            info.checked = (Skada.db.profile.report.mode == module:GetName())
+		            info.func = function() Skada.db.profile.report.mode = module:GetName() end
 		            UIDropDownMenu_AddButton(info, level)
 		        end
 		    elseif UIDROPDOWNMENU_MENU_VALUE == "segment" then
@@ -1447,7 +1447,7 @@ function Skada:StartCombat()
 						win.restore_set = win.selectedset
 					end
 					if win.selectedmode then
-						win.restore_mode = win.selectedmode.name
+						win.restore_mode = win.selectedmode:GetName()
 					end
 				end
 				
@@ -1878,8 +1878,8 @@ function Skada:AddMode(mode)
 	-- Set this mode as the active mode if it matches the saved one.
 	-- Bit of a hack.
 	for i, win in ipairs(windows) do
-		if mode.name == win.db.mode then
-			self:RestoreView(win, win.db.set, mode.name)
+		if mode:GetName() == win.db.mode then
+			self:RestoreView(win, win.db.set, mode:GetName())
 		end
 	end
 
