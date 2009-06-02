@@ -146,7 +146,7 @@ function done:Update(win, set)
 end
 
 function doneplayers:Enter(win, id, label)
-	doneplayers.name = L["Damage from"].." "..label
+	doneplayers.title = L["Damage from"].." "..label
 	doneplayers.mob = label
 end
 
@@ -187,7 +187,7 @@ function doneplayers:Update(win, set)
 end
 
 function takenplayers:Enter(win, id, label)
-	takenplayers.name = L["Damage on"].." "..label
+	takenplayers.title = L["Damage on"].." "..label
 	takenplayers.mob = label
 end
 
@@ -239,18 +239,18 @@ function done:OnEnable()
 	done.metadata 			= {click1 = doneplayers}
 	taken.metadata 			= {click1 = takenplayers}
 
-	Skada:RegisterForCL(SpellDamageTaken, 'SPELL_DAMAGE', {src_is_interesting = true})
-	Skada:RegisterForCL(SpellDamageTaken, 'SPELL_PERIODIC_DAMAGE', {src_is_interesting = true})
-	Skada:RegisterForCL(SpellDamageTaken, 'SPELL_BUILDING_DAMAGE', {src_is_interesting = true})
-	Skada:RegisterForCL(SpellDamageTaken, 'RANGE_DAMAGE', {src_is_interesting = true})
+	Skada:RegisterForCL(SpellDamageTaken, 'SPELL_DAMAGE', {src_is_interesting = true, dst_is_not_interesting = true})
+	Skada:RegisterForCL(SpellDamageTaken, 'SPELL_PERIODIC_DAMAGE', {src_is_interesting = true, dst_is_not_interesting = true})
+	Skada:RegisterForCL(SpellDamageTaken, 'SPELL_BUILDING_DAMAGE', {src_is_interesting = true, dst_is_not_interesting = true})
+	Skada:RegisterForCL(SpellDamageTaken, 'RANGE_DAMAGE', {src_is_interesting = true, dst_is_not_interesting = true})
 
-	Skada:RegisterForCL(SpellDamageDone, 'SPELL_DAMAGE', {dst_is_interesting_nopets = true})
-	Skada:RegisterForCL(SpellDamageDone, 'SPELL_PERIODIC_DAMAGE', {dst_is_interesting_nopets = true})
-	Skada:RegisterForCL(SpellDamageDone, 'SPELL_BUILDING_DAMAGE', {dst_is_interesting_nopets = true})
-	Skada:RegisterForCL(SpellDamageDone, 'RANGE_DAMAGE', {dst_is_interesting_nopets = true})
+	Skada:RegisterForCL(SpellDamageDone, 'SPELL_DAMAGE', {dst_is_interesting_nopets = true, dst_is_not_interesting = true})
+	Skada:RegisterForCL(SpellDamageDone, 'SPELL_PERIODIC_DAMAGE', {dst_is_interesting_nopets = true, dst_is_not_interesting = true})
+	Skada:RegisterForCL(SpellDamageDone, 'SPELL_BUILDING_DAMAGE', {dst_is_interesting_nopets = true, dst_is_not_interesting = true})
+	Skada:RegisterForCL(SpellDamageDone, 'RANGE_DAMAGE', {dst_is_interesting_nopets = true, dst_is_not_interesting = true})
 
-	Skada:RegisterForCL(SwingDamageTaken, 'SWING_DAMAGE', {src_is_interesting = true})
-	Skada:RegisterForCL(SwingDamageDone, 'SWING_DAMAGE', {dst_is_interesting_nopets = true})
+	Skada:RegisterForCL(SwingDamageTaken, 'SWING_DAMAGE', {src_is_interesting = true, dst_is_not_interesting = true})
+	Skada:RegisterForCL(SwingDamageDone, 'SWING_DAMAGE', {dst_is_interesting_nopets = true, dst_is_not_interesting = true})
 	
 	Skada:AddMode(self)
 end

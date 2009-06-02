@@ -33,34 +33,35 @@ end
 
 local function onFail(event, who, fatal)
 --   print(event, who, fatal)
-
-	-- Always log to Total set. Current only if we are active.
-	-- Idea: let modes force-start a set, so we can get a set
-	-- for these things.
-	if Skada.current then
-		local unitGUID = UnitGUID(who)
-		local player = Skada:get_player(Skada.current, unitGUID, who)
-		player.fails = player.fails + 1
+	if event and who then
+		-- Always log to Total set. Current only if we are active.
+		-- Idea: let modes force-start a set, so we can get a set
+		-- for these things.
+		if Skada.current then
+			local unitGUID = UnitGUID(who)
+			local player = Skada:get_player(Skada.current, unitGUID, who)
+			player.fails = player.fails + 1
+			
+			if player.failevents[event] then
+				player.failevents[event] = player.failevents[event] + 1
+			else
+				player.failevents[event] = 1
+			end
+			Skada.current.fails = Skada.current.fails + 1
+		end
 		
-		if player.failevents[event] then
-			player.failevents[event] = player.failevents[event] + 1
-		else
-			player.failevents[event] = 1
+		if Skada.total then
+			local unitGUID = UnitGUID(who)
+			local player = Skada:get_player(Skada.total, unitGUID, who)
+			player.fails = player.fails + 1
+		
+			if player.failevents[event] then
+				player.failevents[event] = player.failevents[event] + 1
+			else
+				player.failevents[event] = 1
+			end
+			Skada.total.fails = Skada.total.fails + 1
 		end
-		Skada.current.fails = Skada.current.fails + 1
-	end
-	
-	if Skada.total then
-		local unitGUID = UnitGUID(who)
-		local player = Skada:get_player(Skada.total, unitGUID, who)
-		player.fails = player.fails + 1
-	
-		if player.failevents[event] then
-			player.failevents[event] = player.failevents[event] + 1
-		else
-			player.failevents[event] = 1
-		end
-		Skada.total.fails = Skada.total.fails + 1
 	end
 end
 
@@ -97,7 +98,7 @@ end
 
 function playermod:Enter(win, id, label)
 	playermod.playerid = id
-	playermod.name = label..L["'s Fails"]
+	playermod.title = label..L["'s Fails"]
 end
 
 -- Detail view of a player.

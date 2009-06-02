@@ -113,7 +113,7 @@ end
 
 function deathlog:Enter(win, id, label)
 	deathlog.playerid = id
-	deathlog.name = label..L["'s Death"]
+	deathlog.title = label..L["'s Death"]
 end
 
 local green = {r = 0, g = 255, b = 0, a = 1}

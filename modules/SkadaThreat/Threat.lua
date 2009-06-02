@@ -309,7 +309,7 @@ function mod:Update(win, set)
 			last_warn = time()
 		end
 	else
-		win.metadata.title = self.name
+		win.metadata.title = self:GetName()
 	end
 end
 

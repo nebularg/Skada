@@ -246,7 +246,7 @@ end
 
 function playermod:Enter(win, id, label)
 	playermod.playerid = id
-	playermod.name = label..L["'s Absorbs"]
+	playermod.title = label..L["'s Absorbs"]
 end
 
 function playermod:Update(win, set)

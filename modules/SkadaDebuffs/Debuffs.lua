@@ -143,7 +143,7 @@ end
 
 function auramod:Enter(win, id, label)
 	auramod.playerid = id
-	auramod.name = label..L["'s Debuffs"]
+	auramod.title = label..L["'s Debuffs"]
 end
 
 -- Detail view of a player.

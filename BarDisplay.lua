@@ -111,7 +111,7 @@ local ttactive = false
 
 local function BarEnter(win, id, label)
 	local t = GameTooltip
-	if Skada.db.profile.tooltips and (win.metadata.click1 or win.metadata.click2 or win.metadata.click3 or win.metadata.tooltip) then
+	if Skada.db.profile.tooltips and (win.metadata.click2 or win.metadata.click3 or win.metadata.tooltip) then
 		ttactive = true
 	    t:SetOwner(win.bargroup, "ANCHOR_NONE")
 	    t:SetPoint("TOPLEFT", win.bargroup, "TOPRIGHT")

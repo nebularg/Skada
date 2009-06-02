@@ -592,7 +592,7 @@ function Skada:Report(channel, chantype, report_mode_name, report_set_name, max,
 	
 	-- Title
 	local endtime = report_set.endtime or time()
-	sendchat(string.format(L["Skada report on %s for %s, %s to %s:"], report_mode:GetName(), report_set.name, date("%X",report_set.starttime), date("%X",endtime)), channel, chantype)
+	sendchat(string.format(L["Skada report on %s for %s, %s to %s:"], report_mode.title or report_mode:GetName(), report_set.name, date("%X",report_set.starttime), date("%X",endtime)), channel, chantype)
 	
 	-- For each item in dataset, print label and valuetext.
 	local nr = 1
