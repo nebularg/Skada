@@ -1,3 +1,7 @@
+1.2-10:
+* Fixed empty segments (that are discarded) still being pointed to by Current after fight. 
+* Fixed pets not being merged with owner for Enemy Damage Taken mode.
+
 1.2-9:
 * Added Healing recipient mode (shift-click from healing mode).
 * Multiple subviews can now be reached from one view. Only healing mode has multiple subviews as of now.

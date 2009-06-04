@@ -1358,39 +1358,40 @@ function Skada:Tick()
 				
 				-- Add set to sets.
 				table.insert(sets, 1, self.current)
+
+				-- Make set last set.
+				self.last = self.current
+				
+				-- Add time spent to total set as well.
+				self.total.time = self.total.time + self.current.time
+				setPlayerActiveTimes(self.total)
+				
+				-- Set player.first and player.last to nil in total set.
+				-- Neccessary since first and last has no relevance over an entire raid.
+				-- Modes should look at the "time" value if available.
+				for i, player in ipairs(self.total.players) do
+					player.first = nil
+					player.last = nil
+				end
+				
+				-- Reset current set.
+				self.current = nil
+				
+				-- Find out number of non-persistent sets.
+				local numsets = 0
+				for i, set in ipairs(sets) do if not set.keep then numsets = numsets + 1 end end
+				
+				-- Trim segments; don't touch persistent sets.
+				for i=table.maxn(sets), 1, -1 do
+					if numsets > self.db.profile.setstokeep and not sets[i].keep then
+						table.remove(sets, i)
+						numsets = numsets - 1
+					end
+				end
+				
 			end
 		end
 
-		-- Make set last set.
-		self.last = self.current
-		
-		-- Add time spent to total set as well.
-		self.total.time = self.total.time + self.current.time
-		setPlayerActiveTimes(self.total)
-		
-		-- Set player.first and player.last to nil in total set.
-		-- Neccessary since first and last has no relevance over an entire raid.
-		-- Modes should look at the "time" value if available.
-		for i, player in ipairs(self.total.players) do
-			player.first = nil
-			player.last = nil
-		end
-		
-		-- Reset current set.
-		self.current = nil
-		
-		-- Find out number of non-persistent sets.
-		local numsets = 0
-		for i, set in ipairs(sets) do if not set.keep then numsets = numsets + 1 end end
-		
-		-- Trim segments; don't touch persistent sets.
-		for i=table.maxn(sets), 1, -1 do
-			if numsets > self.db.profile.setstokeep and not sets[i].keep then
-				table.remove(sets, i)
-				numsets = numsets - 1
-			end
-		end
-		
 		for i, win in ipairs(windows) do
 			win:Wipe()
 			changed = true
