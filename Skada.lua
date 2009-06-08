@@ -1975,7 +1975,20 @@ function Skada:FixPets(action)
 			action.playerid = pet.id
 		end
 	end
+end
 
+function Skada:SetTooltipPosition(tooltip, frame)
+	local p = self.db.profile.tooltippos
+	if p == "default" then
+	    tooltip:SetOwner(UIParent, "ANCHOR_NONE")
+		tooltip:SetPoint("BOTTOMRIGHT", "UIParent", "BOTTOMRIGHT", -40, 40);
+	elseif p == "topleft" then
+	    tooltip:SetOwner(frame, "ANCHOR_NONE")
+	    tooltip:SetPoint("TOPRIGHT", frame, "TOPLEFT")
+	elseif p == "topright" then
+	    tooltip:SetOwner(frame, "ANCHOR_NONE")
+	    tooltip:SetPoint("TOPLEFT", frame, "TOPRIGHT")
+   end
 end
 
 -- Same thing, only takes two arguments and returns two arguments.

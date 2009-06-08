@@ -111,10 +111,11 @@ local ttactive = false
 
 local function BarEnter(win, id, label)
 	local t = GameTooltip
-	if Skada.db.profile.tooltips and (win.metadata.click2 or win.metadata.click3 or win.metadata.tooltip) then
+	if Skada.db.profile.tooltips and (win.metadata.click1 or win.metadata.click2 or win.metadata.click3 or win.metadata.tooltip) then
 		ttactive = true
-	    t:SetOwner(win.bargroup, "ANCHOR_NONE")
-	    t:SetPoint("TOPLEFT", win.bargroup, "TOPRIGHT")
+--	    t:SetOwner(win.bargroup, "ANCHOR_NONE")
+--	    t:SetPoint("TOPLEFT", win.bargroup, "TOPRIGHT")
+		Skada:SetTooltipPosition(t, win.bargroup)
 	    t:ClearLines()
 	    
 		if win.metadata.tooltip then
@@ -127,13 +128,13 @@ local function BarEnter(win, id, label)
 		end
 		
 		if win.metadata.click1 then
-			t:AddLine("|cffeda55fClick|r for "..win.metadata.click1:GetName()..".", 0.2, 1, 0.2)
+			t:AddLine(L["Click for"].." "..win.metadata.click1:GetName()..".", 0.2, 1, 0.2)
 		end
 		if win.metadata.click2 then
-			t:AddLine("|cffeda55fShift-Click|r for "..win.metadata.click2:GetName()..".", 0.2, 1, 0.2)
+			t:AddLine(L["Shift-Click for"].." "..win.metadata.click2:GetName()..".", 0.2, 1, 0.2)
 		end
 		if win.metadata.click3 then
-			t:AddLine("|cffeda55fControl-Click|r for "..win.metadata.click3:GetName()..".", 0.2, 1, 0.2)
+			t:AddLine(L["Control-Click for"].." "..win.metadata.click3:GetName()..".", 0.2, 1, 0.2)
 		end
 		
 	    t:Show()

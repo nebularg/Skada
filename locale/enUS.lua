@@ -52,7 +52,7 @@ L["Show minimap button"] = true
 L["Toggles showing the minimap button."] = true
 
 L["reports the active mode"] = true
-L["Skada report on %s for %s, %s to %s:"] = true
+L["Skada: %s for %s, %s to %s:"] = true
 L["Only keep boss fighs"] = true
 L["Boss fights will be kept with this on, and non-boss fights are discarded."] = true
 L["Show raw threat"] = true
@@ -241,6 +241,15 @@ L["Healing spell details"] = "Healing spell details"
 L["Mana gain spell list"] = "Mana gain spell list"
 L["List of damaging spells"] = "List of damaging spells"
 L["Debuff spell list"] = "Debuff spell list"
+
+L["Click for"] = "Click for"
+L["Shift-Click for"] = "Shift-Click for"
+L["Control-Click for"] = "Control-Click for"
+L["Default"] = "Default"
+L["Top right"] = "Top right"
+L["Top left"] = "Top left"
+L["Position of the tooltips."] = "Position of the tooltips."
+L["Tooltip position"] = "Tooltip position"
 
 -- SkadaDebuffs
 L["Debuff uptimes"] = true
