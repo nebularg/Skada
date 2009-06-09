@@ -1359,12 +1359,13 @@ function Skada:Tick()
 				-- Add set to sets.
 				table.insert(sets, 1, self.current)
 
-				-- Make set last set.
-				self.last = self.current
-				
 			end
+			
 		end
 
+		-- Make set last set.
+		self.last = self.current
+			
 		-- Add time spent to total set as well.
 		self.total.time = self.total.time + self.current.time
 		setPlayerActiveTimes(self.total)

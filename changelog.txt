@@ -1,3 +1,6 @@
+1.2-12:
+* Fixed "Only keep bosses" option, broken since a few releases.
+
 1.2-11:
 * Added tooltip positioning option.
 
