@@ -12,7 +12,7 @@ Skada.windowdefaults = {
 	barfont="Accidental Presidency",
 	barfontsize=11,
 	barheight=15,
-	barwidth=180,
+	barwidth=220,
 	barorientation=1,
 	barcolor = {r = 0.3, g = 0.3, b = 0.8, a=1},
 	baraltcolor = {r = 0.45, g = 0.45, b = 0.8, a = 1},
