@@ -1,3 +1,6 @@
+1.2-11:
+* Added tooltip positioning option.
+
 1.2-10:
 * Fixed empty segments (that are discarded) still being pointed to by Current after fight. 
 * Fixed pets not being merged with owner for Enemy Damage Taken mode.
