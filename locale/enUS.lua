@@ -52,7 +52,7 @@ L["Show minimap button"] = true
 L["Toggles showing the minimap button."] = true
 
 L["reports the active mode"] = true
-L["Skada: %s for %s, %s to %s:"] = true
+L["Skada report on %s for %s, %s to %s:"] = "Skada: %s for %s, %s - %s:"
 L["Only keep boss fighs"] = true
 L["Boss fights will be kept with this on, and non-boss fights are discarded."] = true
 L["Show raw threat"] = true

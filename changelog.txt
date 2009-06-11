@@ -1,3 +1,7 @@
+1.2-13:
+* Fixed missing translation for reports.
+* New push to get an updated LibFail-1.0 that doesn't fail quite so bad.
+
 1.2-12:
 * Fixed "Only keep bosses" option, broken since a few releases.
 
