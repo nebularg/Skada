@@ -1,3 +1,5 @@
+local fail = LibStub("LibFail-1.0", true)
+if not fail then return end
 local L = LibStub("AceLocale-3.0"):GetLocale("Skada", false)
 
 local Skada = Skada
@@ -5,7 +7,6 @@ local Skada = Skada
 local mod = Skada:NewModule(L["Fails"])
 local playermod = Skada:NewModule("FailbotModePlayerView")
 
-local fail = LibStub("LibFail-1.0")
 local fail_events = fail:GetSupportedEvents()
 
 function mod:AddToTooltip(set, tooltip)
