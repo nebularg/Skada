@@ -1,3 +1,8 @@
+1.2-14:
+* Fixed title bar font changes affecting game fonts.
+* Added an optional button opening the menu in the title bar.
+* Added a subview to Damage - damaged mobs, showing who the player damaged.
+
 1.2-13:
 * Fixed missing translation for reports.
 * New push to get an updated LibFail-1.0 that doesn't fail quite so bad.

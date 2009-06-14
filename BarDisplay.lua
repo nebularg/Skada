@@ -35,6 +35,7 @@ function mod:Create(window)
 	window.bargroup.win = window
 	window.bargroup.RegisterCallback(mod, "AnchorMoved")
 	window.bargroup.RegisterCallback(mod, "AnchorClicked")
+	window.bargroup.RegisterCallback(mod, "ConfigClicked")
 	window.bargroup:EnableMouse(true)
 	window.bargroup:SetScript("OnMouseDown", function(win, button) if button == "RightButton" then window:RightClick() end end)
 	window.bargroup:HideIcon()
@@ -304,6 +305,10 @@ function mod:AdjustBackgroundHeight(win)
 	end
 end
 
+function mod:ConfigClicked(cbk, group, button)
+	Skada:OpenMenu(group.win)
+end
+
 function mod:AnchorClicked(cbk, group, button)
 	if IsShiftKeyDown() then
 		Skada:OpenMenu(group.win)
@@ -373,13 +378,11 @@ function mod:ApplySettings(win)
 	else
 		g:Unlock()
 	end
-	g:SortBars()
 
 	-- Header
-	g.button:SetNormalFontObject(ChatFontSmall)
-	local font = g.button:GetNormalFontObject()
-	font:SetFont(media:Fetch('font', p.title.font), p.title.fontsize)
-	g.button:SetNormalFontObject(font)
+	local fo = CreateFont("TitleFont"..win.db.name)
+	fo:SetFont(media:Fetch('font', p.title.font), p.title.fontsize)
+	g.button:SetNormalFontObject(fo)
 	local inset = p.title.margin
 	titlebackdrop.bgFile = media:Fetch("statusbar", p.title.texture)
 	if p.title.borderthickness > 0 then
@@ -399,6 +402,17 @@ function mod:ApplySettings(win)
 		g:ShowAnchor()
 	else
 		g:HideAnchor()
+	end
+	
+	-- Header config button
+	g.optbutton:ClearAllPoints()
+	g.optbutton:SetPoint("TOPRIGHT", g.button, "TOPRIGHT", -5, 0 - (math.max(g.button:GetHeight() - g.optbutton:GetHeight(), 2) / 2))
+	
+	-- Menu button - default on.
+	if p.title.menubutton == nil or p.title.menubutton then
+		g.optbutton:Show()
+	else
+		g.optbutton:Hide()
 	end
 	
 	-- Window
@@ -659,7 +673,7 @@ function mod:AddDisplayOptions(win, options)
 		         			Skada:ApplySettings()
 			        	end,
 			},
-			
+
 		}
 	}
    	
@@ -785,6 +799,18 @@ function mod:AddDisplayOptions(win, options)
 				order=7,
 			},
 			
+			menubutton = {
+			        type="toggle",
+			        name=L["Show menu button"],
+			        desc=L["Shows a button for opening the menu in the window title bar."],
+			        order=8,
+			        get=function() return db.title.menubutton == nil or db.title.menubutton end,
+			        set=function()
+			        		db.title.menubutton = not db.title.menubutton
+		         			Skada:ApplySettings()
+			        	end,
+			},
+					
 		}
   		}
 

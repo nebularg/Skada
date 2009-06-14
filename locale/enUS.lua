@@ -251,6 +251,10 @@ L["Top left"] = "Top left"
 L["Position of the tooltips."] = "Position of the tooltips."
 L["Tooltip position"] = "Tooltip position"
 
+L["Damaged mobs"] = "Damaged mobs"
+L["Shows a button for opening the menu in the window title bar."] = "Shows a button for opening the menu in the window title bar."
+L["Show menu button"] = "Show menu button"
+
 -- SkadaDebuffs
 L["Debuff uptimes"] = true
 L["'s Debuffs"] = true

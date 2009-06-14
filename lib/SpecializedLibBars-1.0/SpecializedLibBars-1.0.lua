@@ -326,6 +326,9 @@ do
 	local function buttonClick(self, button)
 		self:GetParent().callbacks:Fire("AnchorClicked", self:GetParent(), button)
 	end
+	local function configClick(self, button)
+		self:GetParent().callbacks:Fire("ConfigClicked", self:GetParent(), button)
+	end
 	
 	local DEFAULT_TEXTURE = [[Interface\TARGETINGFRAME\UI-StatusBar]]
 	function lib:NewBarGroup(name, orientation, length, thickness, frameName)
@@ -359,11 +362,13 @@ do
 			tile = true
 		})
 		--]]
+		
+		local myfont = CreateFont("MyTitleFont")
+		myfont:CopyFontObject(ChatFontSmall)
 
 		list.button = CreateFrame("Button", nil, list)
 		list.button:SetBackdrop(frame_defaults)
-
-		list.button:SetNormalFontObject(ChatFontSmall)
+		list.button:SetNormalFontObject(myfont)
 
 		list.length = length or 200
 		list.thickness = thickness or 15
@@ -376,6 +381,21 @@ do
 		list.button:SetBackdropColor(0,0,0,1)
 		list.button:RegisterForClicks("LeftButtonUp", "RightButtonUp", "MiddleButtonUp", "Button4Up", "Button5Up")
 		list.button:SetScript("OnClick", buttonClick)
+		
+		-- MODIFIED
+		list.optbutton = CreateFrame("Button", nil, list)
+		list.button:SetFrameLevel(1)
+		list.optbutton:SetFrameLevel(2)
+		list.optbutton:ClearAllPoints()
+		list.optbutton:SetHeight(16)
+		list.optbutton:SetWidth(16)
+		list.optbutton:SetNormalTexture("Interface\\Addons\\Skada\\icon-config")
+		list.optbutton:SetHighlightTexture("Interface\\Addons\\Skada\\icon-config", 0.5)
+		list.optbutton:SetAlpha(0.3)
+		list.optbutton:SetPoint("TOPRIGHT", list.button, "TOPRIGHT", -5, 0 - (math.max(list.button:GetHeight() - list.optbutton:GetHeight(), 2) / 2))
+		list.optbutton:Show()
+		list.optbutton:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+		list.optbutton:SetScript("OnClick", configClick)
 
 		list:SetPoint("TOPLEFT", UIParent, "CENTER")
 		list:ReverseGrowth(false)

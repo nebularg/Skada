@@ -6,9 +6,7 @@ local mod = Skada:NewModule(L["Damage"])
 local dpsmod = Skada:NewModule(L["DPS"])
 local playermod = Skada:NewModule(L["Damage spell list"])
 local spellmod = Skada:NewModule(L["Damage spell details"])
-
--- Used to track where to go back to, Damage or DPS mode.
-local lastmod = nil
+local damagedmod = Skada:NewModule(L["Damaged mobs"])
 
 local function getDPS(set, player)
 	local totaltime = Skada:PlayerActiveTime(set, player)
@@ -77,6 +75,15 @@ local function log_damage(set, dmg)
 		else
 			spell.hit = spell.hit + 1
 		end
+		
+		-- Make sure destination exists in player.
+		if not player.damaged[dmg.dstname] then
+			player.damaged[dmg.dstname] = 0
+		end
+		
+		-- Add to destination.
+		player.damaged[dmg.dstname] = player.damaged[dmg.dstname] + dmg.amount
+		
 	end
 end
 
@@ -88,6 +95,7 @@ local function SpellDamage(timestamp, eventtype, srcGUID, srcName, srcFlags, dst
 		local spellId, spellName, spellSchool, samount, soverkill, sschool, sresisted, sblocked, sabsorbed, scritical, sglancing, scrushing = ...
 		
 		dmg.playerid = srcGUID
+		dmg.dstname = dstName
 		dmg.playername = srcName
 		dmg.spellid = spellId
 		dmg.spellname = spellName
@@ -114,6 +122,7 @@ local function SwingDamage(timestamp, eventtype, srcGUID, srcName, srcFlags, dst
 		
 		dmg.playerid = srcGUID
 		dmg.playername = srcName
+		dmg.dstname = dstName
 		dmg.spellid = 6603
 		dmg.spellname = L["Attack"]
 		dmg.amount = samount
@@ -138,6 +147,7 @@ local function SwingMissed(timestamp, eventtype, srcGUID, srcName, srcFlags, dst
 
 		dmg.playerid = srcGUID
 		dmg.playername = srcName
+		dmg.dstname = dstName
 		dmg.spellid = 6603
 		dmg.spellname = L["Attack"]
 		dmg.amount = 0
@@ -162,6 +172,7 @@ local function SpellMissed(timestamp, eventtype, srcGUID, srcName, srcFlags, dst
 		local spellId, spellName, spellSchool, missType, samount = ...
 		dmg.playerid = srcGUID
 		dmg.playername = srcName
+		dmg.dstname = dstName
 		dmg.spellid = spellId
 		dmg.spellname = spellName
 		dmg.amount = 0
@@ -182,8 +193,6 @@ end
 
 -- Damage overview.
 function mod:Update(win, set)
-	lastmod = mod
-
 	-- Max value.
 	local max = 0
  
@@ -235,7 +244,7 @@ end
 function playermod:Enter(win, id, label)
 	local player = Skada:find_player(win:get_selected_set(), id)
 	playermod.playerid = id
-	playermod.name = player.name..L["'s Damage"]
+	playermod.title = player.name..L["'s Damage"]
 end
 
 -- Detail view of a player.
@@ -270,6 +279,41 @@ function playermod:Update(win, set)
 	win.metadata.maxvalue = max
 end
 
+function damagedmod:Enter(win, id, label)
+	local player = Skada:find_player(win:get_selected_set(), id)
+	damagedmod.playerid = id
+	damagedmod.title = player.name..L["'s Damage"]
+end
+
+-- Player view showing damaged mobs.
+function damagedmod:Update(win, set)
+	local player = Skada:find_player(set, self.playerid)
+	local max = 0
+	
+	-- If we reset we have no data.
+	if player then
+		
+		local nr = 1
+		if player then
+			for mob, amount in pairs(player.damaged) do
+
+				local d = win.dataset[nr] or {}
+				win.dataset[nr] = d
+				d.label = mob
+				d.id = mob
+				d.value = amount
+				d.valuetext = Skada:FormatNumber(amount)..(" (%02.1f%%)"):format(amount / player.damage * 100)
+				if amount > max then
+					max = amount
+				end
+				nr = nr + 1
+			end
+		end
+	end
+	
+	win.metadata.maxvalue = max
+end
+
 local function add_detail_bar(win, nr, title, value)
 	local d = win.dataset[nr] or {}
 	win.dataset[nr] = d
@@ -283,7 +327,7 @@ end
 function spellmod:Enter(win, id, label)
 	local player = Skada:find_player(win:get_selected_set(), playermod.playerid)
 	spellmod.spellname = label
-	spellmod.name = player.name..L["'s "]..label
+	spellmod.title = player.name..L["'s "]..label
 end
 
 function spellmod:Update(win, set)
@@ -349,8 +393,6 @@ function dpsmod:GetSetSummary(set)
 end
 
 function dpsmod:Update(win, set)
-	lastmod = dpsmod
-
 	local max = 0
 	local nr = 1
 	
@@ -379,7 +421,7 @@ end
 function mod:OnEnable()
 	dpsmod.metadata = 		{showspots = true}
 	playermod.metadata = 	{tooltip = player_tooltip, click1 = spellmod}
-	mod.metadata = 			{showspots = true, click1 = playermod}
+	mod.metadata = 			{showspots = true, click1 = playermod, click2 = damagedmod}
 	spellmod.metadata = 	{}
 
 	Skada:RegisterForCL(SpellDamage, 'DAMAGE_SHIELD', {src_is_interesting = true, dst_is_not_interesting = true})
@@ -440,6 +482,9 @@ function mod:AddPlayerAttributes(player)
 	if not player.damage then
 		player.damage = 0
 		player.damagespells = {}
+	end
+	if not player.damaged then
+		player.damaged = {}
 	end
 end
 
