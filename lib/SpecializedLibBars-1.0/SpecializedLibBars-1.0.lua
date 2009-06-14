@@ -383,6 +383,7 @@ do
 		list.button:SetScript("OnClick", buttonClick)
 		
 		-- MODIFIED
+		-- TODO: refactor into a generic function for adding buttons.
 		list.optbutton = CreateFrame("Button", nil, list)
 		list.button:SetFrameLevel(1)
 		list.optbutton:SetFrameLevel(2)

@@ -1243,7 +1243,7 @@ function Skada:OpenMenu(window)
 	    end
 	end
 	
-	local x,y = GetCursorPosition(UIParent); 
+	local x,y = GetCursorPosition(UIParent);
 	ToggleDropDownMenu(1, nil, skadamenu, "UIParent", x / UIParent:GetEffectiveScale() , y / UIParent:GetEffectiveScale())
 end
 

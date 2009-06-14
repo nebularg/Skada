@@ -406,7 +406,7 @@ function mod:ApplySettings(win)
 	
 	-- Header config button
 	g.optbutton:ClearAllPoints()
-	g.optbutton:SetPoint("TOPRIGHT", g.button, "TOPRIGHT", -5, 0 - (math.max(g.button:GetHeight() - g.optbutton:GetHeight(), 2) / 2))
+	g.optbutton:SetPoint("TOPRIGHT", g.button, "TOPRIGHT", -5, 0 - (math.max(g.button:GetHeight() - g.optbutton:GetHeight(), 1) / 2))
 	
 	-- Menu button - default on.
 	if p.title.menubutton == nil or p.title.menubutton then
