@@ -49,6 +49,12 @@ local windows = {}
 -- Our display providers.
 Skada.displays = {}
 
+-- Timer for updating windows.
+local update_timer = nil
+
+-- Timer for checking for combat end.
+local tick_timer = nil
+
 function Skada:GetWindows()
 	return windows
 end
@@ -659,9 +665,6 @@ function Skada:OnEnable()
 	self:RegisterEvent("PLAYER_REGEN_DISABLED")
 	self:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
 	
-	self:ScheduleRepeatingTimer("UpdateDisplay", 0.5)
-	self:ScheduleRepeatingTimer("Tick", 1)
-			
 	if type(CUSTOM_CLASS_COLORS) == "table" then
 		Skada.classcolors = CUSTOM_CLASS_COLORS
 	end
@@ -1410,7 +1413,8 @@ function Skada:Tick()
 		end
 
 		self:UpdateDisplay()
-
+		self:CancelTimer(update_timer, true)
+		self:CancelTimer(tick_timer, true)
 	end
 end
 
@@ -1462,6 +1466,10 @@ function Skada:StartCombat()
 	-- Force immediate update.
 	changed = true
 	self:UpdateDisplay()
+	
+	-- Schedule timers for updating windows and detecting combat end.
+	update_timer = self:ScheduleRepeatingTimer("UpdateDisplay", 0.5)
+	tick_timer = self:ScheduleRepeatingTimer("Tick", 1)
 end
 
 -- Simply calls the same function on all windows.
