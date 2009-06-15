@@ -242,12 +242,16 @@ function mod:Update(win)
 				bar.checked = true
 			end
 	
-			if data.emphathize then
+			-- Emphathized items - cache a flag saying it is done so it is not done again.
+			-- This is a little lame.
+			if data.emphathize and bar.emphathize_set ~= true then
 				bar:SetFont(nil,nil,"OUTLINE")
-			else
+				bar.emphathize_set = true
+			elseif not data.emphathize and bar.emphathize_set ~= false then
 				bar:SetFont(nil,nil,"PLAIN")
+				bar.emphathize_set = false
 			end
-					
+			
 			-- Background texture color.
 			if data.backgroundcolor then
 				bar.bgtexture:SetVertexColor(data.backgroundcolor.r, data.backgroundcolor.g, data.backgroundcolor.b, data.backgroundcolor.a or 1)
@@ -287,7 +291,7 @@ function mod:Update(win)
 		else
 			win.bargroup:SetSortFunction(bar_order_sort)
 		end
-		win.bargroup:SortBars(bar_order_sort)
+		win.bargroup:SortBars()
 	else
 		win.bargroup:SetSortFunction(nil)
 		win.bargroup:SortBars()
