@@ -1572,6 +1572,11 @@ function Skada:RegisterForCL(func, event, flags)
 	tinsert(combatlogevents[event], {["func"] = func, ["flags"] = flags})
 end
 
+local band = bit.band
+local PET_FLAGS = COMBATLOG_OBJECT_TYPE_PET + COMBATLOG_OBJECT_TYPE_GUARDIAN
+local RAID_FLAGS = COMBATLOG_OBJECT_AFFILIATION_MINE + COMBATLOG_OBJECT_AFFILIATION_PARTY + COMBATLOG_OBJECT_AFFILIATION_RAID
+local RAID_AND_PET_FLAGS = COMBATLOG_OBJECT_AFFILIATION_MINE + COMBATLOG_OBJECT_AFFILIATION_PARTY + COMBATLOG_OBJECT_AFFILIATION_RAID + COMBATLOG_OBJECT_TYPE_PET + COMBATLOG_OBJECT_TYPE_GUARDIAN
+
 -- The basic idea for CL processing:
 -- Modules register for interest in a certain event, along with the function to call and the flags determining if the particular event is interesting.
 -- On a new event, loop through the interested parties.
@@ -1598,7 +1603,8 @@ function Skada:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID,
 			-- Lua can not use assignments as expressions... grmbl. 
 			if not fail and mod.flags.src_is_interesting_nopets then
 				if src_is_interesting_nopets == nil then
-					src_is_interesting_nopets = self:UnitIsInterestingNoPets(srcName, srcGUID)
+					src_is_interesting_nopets = band(srcFlags, RAID_FLAGS) ~= 0
+					--self:UnitIsInterestingNoPets(srcName, srcGUID)
 					if src_is_interesting_nopets then
 						src_is_interesting = true
 					end
@@ -1611,7 +1617,8 @@ function Skada:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID,
 			end
 			if not fail and mod.flags.dst_is_interesting_nopets then
 				if dst_is_interesting_nopets == nil then
-					dst_is_interesting_nopets = self:UnitIsInterestingNoPets(dstName, dstGUID)
+					dst_is_interesting_nopets = band(dstFlags, RAID_FLAGS) ~= 0
+					-- self:UnitIsInterestingNoPets(dstName, dstGUID)
 					if dst_is_interesting_nopets then
 						dst_is_interesting = true
 					end
@@ -1623,7 +1630,8 @@ function Skada:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID,
 			end
 			if not fail and mod.flags.src_is_interesting or mod.flags.src_is_not_interesting then
 				if src_is_interesting == nil then
-					src_is_interesting = self:UnitIsInteresting(srcName, srcGUID)
+					src_is_interesting = band(srcFlags, RAID_FLAGS) ~= 0 or (band(srcFlags, PET_FLAGS) ~= 0 and pets[srcGUID])
+					--self:UnitIsInteresting(srcName, srcGUID)
 				end
 				if mod.flags.src_is_interesting and not src_is_interesting then
 --				self:Print("fail on src_is_interesting")
@@ -1635,7 +1643,8 @@ function Skada:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID,
 			end
 			if not fail and mod.flags.dst_is_interesting or mod.flags.dst_is_not_interesting then
 				if dst_is_interesting_ == nil then
-					dst_is_interesting = self:UnitIsInteresting(dstName, dstGUID)
+					dst_is_interesting = band(dstFlags, RAID_FLAGS) ~= 0 or (band(dstFlags, PET_FLAGS) ~= 0 and pets[dstGUID])
+					-- self:UnitIsInteresting(dstName, dstGUID)
 				end
 				if mod.flags.dst_is_interesting and not dst_is_interesting then
 --				self:Print("fail on dst_is_interesting")
@@ -1676,13 +1685,8 @@ function Skada:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID,
 	-- Pet scheme: save the GUID in a table along with the GUID of the owner.
 	-- Note to self: this needs 1) to be made self-cleaning so it can't grow too much, and 2) saved persistently.
 	-- Now also done on raid roster/party changes.
-	if eventtype == 'SPELL_SUMMON' then
-		if src_is_interesting_nopets == nil then
-			src_is_interesting_nopets = self:UnitIsInterestingNoPets(srcName, srcGUID)
-			if src_is_interesting_nopets then
-				pets[dstGUID] = {id = srcGUID, name = srcName}
-			end
-		end
+	if eventtype == 'SPELL_SUMMON' and band(srcFlags, RAID_FLAGS) ~= 0 then
+		pets[dstGUID] = {id = srcGUID, name = srcName}
 	end
 
 end
@@ -1935,16 +1939,6 @@ end
 Sets
 
 --]]
-
--- Returns true if we are interested in the unit. Include pets.
-function Skada:UnitIsInteresting(name, id)
-	return name and (UnitIsUnit("player",name) or UnitIsUnit("pet",name) or UnitPlayerOrPetInRaid(name) or UnitPlayerOrPetInParty(name) or (id and pets[id] ~= nil))
-end
-
--- Returns true if we are interested in the unit. Does not include pets.
-function Skada:UnitIsInterestingNoPets(name)
-	return name and (UnitIsUnit("player",name) or UnitInRaid(name) or UnitInParty(name))
-end
 
 -- Returns the time (in seconds) a player has been active for a set.
 function Skada:PlayerActiveTime(set, player)

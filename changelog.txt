@@ -1,3 +1,6 @@
+1.2-15:
+* Now using combat log event flags to determine if we are interested in actors. Should result in a slight performance increase.
+
 1.2-14:
 * Fixed title bar font changes affecting game fonts.
 * Added an optional button opening the menu in the title bar.
