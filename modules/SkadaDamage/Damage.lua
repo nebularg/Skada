@@ -76,13 +76,18 @@ local function log_damage(set, dmg)
 			spell.hit = spell.hit + 1
 		end
 		
-		-- Make sure destination exists in player.
-		if not player.damaged[dmg.dstname] then
-			player.damaged[dmg.dstname] = 0
+		-- For now, only save damaged info to current set.
+		-- Saving this to Total may become a memory hog deluxe, and besides, it does not make much sense
+		-- to see in Total. Why care which particular mob you damaged the most in a whole raid, for example?
+		if set == Skada.current then
+			-- Make sure destination exists in player.
+			if not player.damaged[dmg.dstname] then
+				player.damaged[dmg.dstname] = 0
+			end
+			
+			-- Add to destination.
+			player.damaged[dmg.dstname] = player.damaged[dmg.dstname] + dmg.amount
 		end
-		
-		-- Add to destination.
-		player.damaged[dmg.dstname] = player.damaged[dmg.dstname] + dmg.amount
 		
 	end
 end
