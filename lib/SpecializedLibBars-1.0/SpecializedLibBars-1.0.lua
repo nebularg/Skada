@@ -385,8 +385,7 @@ do
 		-- MODIFIED
 		-- TODO: refactor into a generic function for adding buttons.
 		list.optbutton = CreateFrame("Button", nil, list)
-		list.button:SetFrameLevel(1)
-		list.optbutton:SetFrameLevel(2)
+		list.optbutton:SetFrameLevel(10)
 		list.optbutton:ClearAllPoints()
 		list.optbutton:SetHeight(16)
 		list.optbutton:SetWidth(16)
