@@ -52,8 +52,10 @@ local function SpellInterrupt(timestamp, eventtype, srcGUID, srcName, srcFlags, 
 	dispell.spellid = spellId
 	dispell.spellname = spellName
 	dispell.extraspellid = sextraSpellId
-	dispell.extraspellname = sextraSpellName		
+	dispell.extraspellname = sextraSpellName
 	
+	Skada:FixPets(dispell)
+		
 	log_interrupt(Skada.current, dispell)
 	log_interrupt(Skada.total, dispell)
 end
