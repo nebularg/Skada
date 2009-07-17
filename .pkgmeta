@@ -33,4 +33,5 @@ move-folders:
     Skada/modules/SkadaEnemies: SkadaEnemies
     Skada/modules/SkadaPower: SkadaPower
     Skada/modules/SkadaAbsorbs: SkadaAbsorbs
+    Skada/modules/SkadaCC: SkadaCC
 

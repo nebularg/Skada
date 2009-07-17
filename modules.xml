@@ -16,5 +16,6 @@
 <Script file="modules\SkadaEnemies\Enemies.lua"/>
 <Script file="modules\SkadaPower\Power.lua"/>
 <Script file="modules\SkadaAbsorbs\Absorbs.lua"/>
+<Script file="modules\SkadaCC\CC.lua"/>
 <!--@end-debug@--> 
 </Ui>

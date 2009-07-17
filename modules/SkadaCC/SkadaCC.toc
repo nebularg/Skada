@@ -1,0 +1,8 @@
+## Interface: 30100
+## Title: Skada |r[|caaedc99fCrowdControl|r]
+## Notes: Adds a Crowd Control Breakers mode and data collection to Skada.
+## Author: Zarnivoop
+## Version: 1.0
+## Dependencies: Skada
+
+CC.lua

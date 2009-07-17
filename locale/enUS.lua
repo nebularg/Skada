@@ -255,19 +255,12 @@ L["Damaged mobs"] = "Damaged mobs"
 L["Shows a button for opening the menu in the window title bar."] = "Shows a button for opening the menu in the window title bar."
 L["Show menu button"] = "Show menu button"
 
--- SkadaDebuffs
 L["Debuff uptimes"] = true
 L["'s Debuffs"] = true
-
--- SkadaDeaths
 L["Deaths"] = true
-
--- SkadaDamageTaken
 L["Damage taken"] = true
 L["Attack"] = true
 L["'s Damage taken"] = true
-
--- SkadaDamage
 L["DPS"] = true
 L["Damage"] = true
 L["'s Damage"] = true
@@ -279,19 +272,19 @@ L["Blocked"] = true
 L["Glancing"] = true
 L["Crushing"] = "Crushing"
 L["Absorbed"] = true
-
--- SkadaDispels
 L["Dispels"] = true
-
--- SkadaFailbot
 L["Fails"] = true
 L["'s Fails"] = true
-
--- SkadaHealing
 L["HPS"] = "HPS"
 L["Healing"] = true
 L["'s Healing"] = true
 L["Overhealing"] = true
-
--- SkadaThreat
 L["Threat"] = true
+
+L["Announce CC breaking to party"] = true
+L["Ignore Main Tanks"] = true
+L["%s on %s removed by %s's %s"]= true
+L["%s on %s removed by %s"]= true
+L["CC"] = true
+L["CC breakers"] = true
+L["CC breaks"] = true
