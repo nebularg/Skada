@@ -7,6 +7,12 @@ local boss = LibStub("LibBossIDs-1.0")
 
 local dataobj = ldb:NewDataObject("Skada", {label = "Skada", type = "data source", icon = "Interface\\Icons\\Spell_Lightning_LightningBolt01", text = "n/a"})
 
+-- Keybindings
+BINDING_HEADER_Skada = "Skada"
+BINDING_NAME_SKADA_TOGGLE = L["Toggle window"]
+BINDING_NAME_SKADA_RESET = L["Reset"]
+BINDING_NAME_SKADA_NEWSEGMENT = L["Start new segment"]
+
 -- All saved sets
 local sets = {}
 
@@ -859,6 +865,7 @@ function Skada:ToggleWindow()
 	end
 end
 
+
 local function createSet(setname)
 	local set = {players = {}, name = setname, starttime = time(), ["time"] = 0, last_action = time()}
 
@@ -989,6 +996,13 @@ function Skada:OpenMenu(window)
 	        info.notCheckable = 1
 	        UIDropDownMenu_AddButton(info, level)
 	        
+	        wipe(info)
+	        info.text = L["Start new segment"]
+	        info.func = function() Skada:NewSegment() end
+	        info.notCheckable = 1
+	        UIDropDownMenu_AddButton(info, level)
+
+
 	        wipe(info)
 	        info.text = L["Configure"]
 	        info.func = function() Skada:OpenOptions() end
@@ -1318,6 +1332,16 @@ local function setPlayerActiveTimes(set)
 	end
 end
 
+-- Starts a new segment, saving the current one first.
+-- Does nothing if we are out of combat.
+-- Useful for multi-part fights where you want individual segments for each part.
+function Skada:NewSegment()
+	if self.current then
+		self:EndSegment()
+		self:StartCombat()
+	end
+end
+
 local function IsRaidInCombat()
 	if GetNumRaidMembers() > 0 then
 		-- We are in a raid.
@@ -1342,81 +1366,84 @@ end
 -- We can not simply rely on PLAYER_REGEN_ENABLED since it is fired if we die and the fight continues.
 function Skada:Tick()
 	if not disabled and self.current and not InCombatLockdown() and not UnitIsDead("player") and not IsRaidInCombat() then
-	
-		-- Save current set unless this a trivial set, or if we have the Only keep boss fights options on, and no boss in fight.
-		-- A set is trivial if we have no mob name saved, or if total time for set is not more than 5 seconds.
-		if not self.db.profile.onlykeepbosses or self.current.gotboss then
-			if self.current.mobname ~= nil and time() - self.current.starttime > 5 then
-				-- End current set.
-				self.current.endtime = time()
-				self.current.time = self.current.endtime - self.current.starttime
-				setPlayerActiveTimes(self.current)
-				self.current.name = self.current.mobname
-				
-				-- Tell each mode that set has finished and do whatever it wants to do about it.
-				for i, mode in ipairs(modes) do
-					if mode.SetComplete ~= nil then
-						mode:SetComplete(self.current)
-					end
-				end
-				
-				-- Add set to sets.
-				table.insert(sets, 1, self.current)
-
-			end
-			
-		end
-
-		-- Make set last set.
-		self.last = self.current
-			
-		-- Add time spent to total set as well.
-		self.total.time = self.total.time + self.current.time
-		setPlayerActiveTimes(self.total)
-				
-		-- Set player.first and player.last to nil in total set.
-		-- Neccessary since first and last has no relevance over an entire raid.
-		-- Modes should look at the "time" value if available.
-		for i, player in ipairs(self.total.players) do
-			player.first = nil
-			player.last = nil
-		end
-		
-		-- Reset current set.
-		self.current = nil
-		
-		-- Find out number of non-persistent sets.
-		local numsets = 0
-		for i, set in ipairs(sets) do if not set.keep then numsets = numsets + 1 end end
-		
-		-- Trim segments; don't touch persistent sets.
-		for i=table.maxn(sets), 1, -1 do
-			if numsets > self.db.profile.setstokeep and not sets[i].keep then
-				table.remove(sets, i)
-				numsets = numsets - 1
-			end
-		end
-
-		for i, win in ipairs(windows) do
-			win:Wipe()
-			changed = true
-		
-			-- Auto-switch back to previous set/mode.
-			if win.db.returnaftercombat and win.restore_mode and win.restore_set then
-				if win.restore_set ~= win.selectedset or win.restore_mode ~= win.selectedmode then
-					
-					self:RestoreView(win, win.restore_set, win.restore_mode)
-					
-					win.restore_mode = nil
-					win.restore_set = nil
-				end
-			end
-		end
-
-		self:UpdateDisplay()
-		self:CancelTimer(update_timer, true)
-		self:CancelTimer(tick_timer, true)
+		self:EndSegment()
 	end
+end
+
+function Skada:EndSegment()
+	-- Save current set unless this a trivial set, or if we have the Only keep boss fights options on, and no boss in fight.
+	-- A set is trivial if we have no mob name saved, or if total time for set is not more than 5 seconds.
+	if not self.db.profile.onlykeepbosses or self.current.gotboss then
+		if self.current.mobname ~= nil and time() - self.current.starttime > 5 then
+			-- End current set.
+			self.current.endtime = time()
+			self.current.time = self.current.endtime - self.current.starttime
+			setPlayerActiveTimes(self.current)
+			self.current.name = self.current.mobname
+			
+			-- Tell each mode that set has finished and do whatever it wants to do about it.
+			for i, mode in ipairs(modes) do
+				if mode.SetComplete ~= nil then
+					mode:SetComplete(self.current)
+				end
+			end
+			
+			-- Add set to sets.
+			table.insert(sets, 1, self.current)
+
+		end
+		
+	end
+
+	-- Make set last set.
+	self.last = self.current
+		
+	-- Add time spent to total set as well.
+	self.total.time = self.total.time + self.current.time
+	setPlayerActiveTimes(self.total)
+			
+	-- Set player.first and player.last to nil in total set.
+	-- Neccessary since first and last has no relevance over an entire raid.
+	-- Modes should look at the "time" value if available.
+	for i, player in ipairs(self.total.players) do
+		player.first = nil
+		player.last = nil
+	end
+	
+	-- Reset current set.
+	self.current = nil
+	
+	-- Find out number of non-persistent sets.
+	local numsets = 0
+	for i, set in ipairs(sets) do if not set.keep then numsets = numsets + 1 end end
+	
+	-- Trim segments; don't touch persistent sets.
+	for i=table.maxn(sets), 1, -1 do
+		if numsets > self.db.profile.setstokeep and not sets[i].keep then
+			table.remove(sets, i)
+			numsets = numsets - 1
+		end
+	end
+
+	for i, win in ipairs(windows) do
+		win:Wipe()
+		changed = true
+	
+		-- Auto-switch back to previous set/mode.
+		if win.db.returnaftercombat and win.restore_mode and win.restore_set then
+			if win.restore_set ~= win.selectedset or win.restore_mode ~= win.selectedmode then
+				
+				self:RestoreView(win, win.restore_set, win.restore_mode)
+				
+				win.restore_mode = nil
+				win.restore_set = nil
+			end
+		end
+	end
+
+	self:UpdateDisplay()
+	self:CancelTimer(update_timer, true)
+	self:CancelTimer(tick_timer, true)
 end
 
 function Skada:PLAYER_REGEN_DISABLED()

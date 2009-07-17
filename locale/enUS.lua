@@ -288,3 +288,5 @@ L["%s on %s removed by %s"]= true
 L["CC"] = true
 L["CC breakers"] = true
 L["CC breaks"] = true
+L["Start new segment"] = true
+

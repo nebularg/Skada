@@ -1,6 +1,8 @@
 1.2-16:
 * Interrupts and Dispels modes now show the owner for pets.
 * Added a crowd control (CC) breaks mode, with optional announce.
+* Added a function for manually starting a new segment, saving the current one. Useful for multi-part boss fights.
+* Added key bindings for toggling windows, resetting data, and starting a new segment.
 * Fixed a bug in Damage Taken mode.
 
 1.2-15:
