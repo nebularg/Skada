@@ -247,6 +247,7 @@ function Window:UpdateDisplay()
 		end
 	end
 	
+	-- Display it.
 	self.display:Update(self)
 end
 

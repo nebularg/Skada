@@ -1,5 +1,7 @@
 1.2-16:
 * Interrupts and Dispels modes now show the owner for pets.
+* Added a crowd control (CC) breaks mode, with optional announce.
+* Fixed a bug in Damage Taken mode.
 
 1.2-15:
 * Now using combat log event flags to determine if we are interested in actors. Should result in a slight performance increase.

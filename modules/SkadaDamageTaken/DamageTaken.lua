@@ -108,10 +108,10 @@ function playermod:Update(win, set)
 			
 			nr = nr + 1
 		end
+		
+		-- Sort the possibly changed bars.
+		win.metadata.maxvalue = player.damagetaken
 	end
-	
-	-- Sort the possibly changed bars.
-	win.metadata.maxvalue = player.damagetaken
 end
 
 function mod:OnEnable()

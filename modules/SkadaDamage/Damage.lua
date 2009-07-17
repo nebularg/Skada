@@ -42,7 +42,7 @@ local function log_damage(set, dmg)
 		
 		-- Add spell to player if it does not exist.
 		if not player.damagespells[dmg.spellname] then
-			player.damagespells[dmg.spellname] = {id = dmg.spellid, name = dmg.spellname, hit = 0, totalhits = 0, damage = 0, critical = 0, glancing = 0, crushing = 0, ABSORB = 0, BLOCK = 0, DEFLECT = 0, DODGE= 0, EVADE = 0, IMMUNE = 0, PARRY = 0, REFLECT = 0, RESIST = 0, MISS = 0}
+			player.damagespells[dmg.spellname] = {id = dmg.spellid, hit = 0, totalhits = 0, damage = 0, critical = 0, glancing = 0, crushing = 0, ABSORB = 0, BLOCK = 0, DEFLECT = 0, DODGE= 0, EVADE = 0, IMMUNE = 0, PARRY = 0, REFLECT = 0, RESIST = 0, MISS = 0}
 		end
     		
 		-- Add to player total damage.
@@ -236,7 +236,7 @@ local function player_tooltip(win, id, label, tooltip)
 	if player then
 		local spell = player.damagespells[label]
 		if spell then
-			tooltip:AddLine(player.name.." - "..spell.name)
+			tooltip:AddLine(player.name.." - "..label)
 			if spell.max and spell.min then
 				tooltip:AddDoubleLine(L["Minimum hit:"], Skada:FormatNumber(spell.min), 255,255,255,255,255,255)
 				tooltip:AddDoubleLine(L["Maximum hit:"], Skada:FormatNumber(spell.max), 255,255,255,255,255,255)
@@ -268,7 +268,7 @@ function playermod:Update(win, set)
 
 				local d = win.dataset[nr] or {}
 				win.dataset[nr] = d
-				d.label = spell.name
+				d.label = spellname
 				d.id = spell.id
 				d.icon = select(3, GetSpellInfo(spell.id))
 				d.value = spell.damage
