@@ -33,8 +33,7 @@ Options.lua
 Bosses.lua
 BarDisplay.lua
 <!--@debug@-->
-LDBDisplay.lua
-TextDisplay.lua
+--TextDisplay.lua
 <!--@end-debug@-->
 
 modules.xml
