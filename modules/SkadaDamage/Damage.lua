@@ -201,8 +201,6 @@ function mod:Update(win, set)
 	-- Max value.
 	local max = 0
  
-	-- For each player in the set, see if we have a bar already.
-	-- If so, update values, else create bar.
 	local nr = 1
 	for i, player in ipairs(set.players) do
 		if player.damage > 0 then
@@ -212,12 +210,12 @@ function mod:Update(win, set)
 			win.dataset[nr] = d
 			d.label = player.name
 			
-			if Skada.db.profile.modules.damagenodps then
-				d.valuetext = Skada:FormatNumber(player.damage)..(" (%02.1f%%)"):format(player.damage / set.damage * 100)
-			else
-				d.valuetext = Skada:FormatNumber(player.damage)..(" (%02.1f, %02.1f%%)"):format(dps, player.damage / set.damage * 100)
-			end
-			
+			d.valuetext = Skada:FormatValueText(
+											Skada:FormatNumber(player.damage), self.metadata.columns.Damage, 
+											string.format("%02.1f", dps), self.metadata.columns.DPS,
+											string.format("%02.1f%%", player.damage / set.damage * 100), self.metadata.columns.Percent
+										)
+
 			d.value = player.damage
 			d.id = player.id
 			d.class = player.class
@@ -272,7 +270,10 @@ function playermod:Update(win, set)
 				d.id = spell.id
 				d.icon = select(3, GetSpellInfo(spell.id))
 				d.value = spell.damage
-				d.valuetext = Skada:FormatNumber(spell.damage)..(" (%02.1f%%)"):format(spell.damage / player.damage * 100)
+				d.valuetext = Skada:FormatValueText(
+												Skada:FormatNumber(spell.damage), self.metadata.columns.Damage,
+												string.format("%02.1f%%", spell.damage / player.damage * 100), self.metadata.columns.Percent
+											)
 				if spell.damage > max then
 					max = spell.damage
 				end
@@ -307,7 +308,10 @@ function damagedmod:Update(win, set)
 				d.label = mob
 				d.id = mob
 				d.value = amount
-				d.valuetext = Skada:FormatNumber(amount)..(" (%02.1f%%)"):format(amount / player.damage * 100)
+				d.valuetext = Skada:FormatValueText(
+												Skada:FormatNumber(amount), self.metadata.columns.Damage,
+												string.format("%02.1f%%", amount / player.damage * 100), self.metadata.columns.Percent
+											)
 				if amount > max then
 					max = amount
 				end
@@ -326,7 +330,10 @@ local function add_detail_bar(win, nr, title, value)
 	d.value = value
 	d.label = title
 	d.id = title
-	d.valuetext = ("%u (%02.1f%%)"):format(value, value / win.metadata.maxvalue * 100)
+	d.valuetext = Skada:FormatValueText(
+									value, self.metadata.columns.Damage,
+									string.format("%02.1f%%", value / win.metadata.maxvalue * 100), self.metadata.columns.Percent
+								)
 end
 
 function spellmod:Enter(win, id, label)
@@ -425,10 +432,16 @@ end
 
 function mod:OnEnable()
 	dpsmod.metadata = 		{showspots = true}
-	playermod.metadata = 	{tooltip = player_tooltip, click1 = spellmod}
-	mod.metadata = 			{showspots = true, click1 = playermod, click2 = damagedmod}
-	spellmod.metadata = 	{}
-
+	playermod.metadata = 	{tooltip = player_tooltip, click1 = spellmod, columns = {Damage = true, Percent = true}}
+	mod.metadata = 			{showspots = true, click1 = playermod, click2 = damagedmod, columns = {Damage = true, DPS = true, Percent = true}}
+	damagedmod.metadata = 	{columns = {Damage = true, Percent = true}}
+	spellmod.metadata =		{columns = {Damage = true, Percent = true}}
+	
+	Skada:AddColumnOptions(mod)
+	Skada:AddColumnOptions(damagedmod)
+	Skada:AddColumnOptions(playermod)
+	Skada:AddColumnOptions(spellmod)
+	
 	Skada:RegisterForCL(SpellDamage, 'DAMAGE_SHIELD', {src_is_interesting = true, dst_is_not_interesting = true})
 	Skada:RegisterForCL(SpellDamage, 'SPELL_DAMAGE', {src_is_interesting = true, dst_is_not_interesting = true})
 	Skada:RegisterForCL(SpellDamage, 'SPELL_PERIODIC_DAMAGE', {src_is_interesting = true, dst_is_not_interesting = true})
@@ -498,28 +511,4 @@ function mod:AddSetAttributes(set)
 	if not set.damage then
 		set.damage = 0
 	end
-end
-
-local opts = {
-	damageoptions = {
-		type="group",
-		name=L["Damage"],
-		args={
-
-			showdps = {
-				type = "toggle",
-				name = L["Do not show DPS"],
-				desc = L["Hides DPS from the Damage mode."],
-				get = function() return Skada.db.profile.modules.damagenodps end,
-				set = function() Skada.db.profile.modules.damagenodps = not Skada.db.profile.modules.damagenodps end,
-				order=2,
-			},
-					
-		},
-	}
-}
-
-function mod:OnInitialize()
-	-- Add our options.
-	table.insert(Skada.options.plugins, opts)
 end

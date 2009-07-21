@@ -1,3 +1,6 @@
+1.2-17:
+* Added options for enabling/disabling columns in a more standardized way.
+
 1.2-16:
 * Interrupts and Dispels modes now show the owner for pets.
 * Added a crowd control (CC) breaks mode, with optional announce.

@@ -65,50 +65,49 @@ Skada.defaults = {
 	}
 }
 
--- Returns column configuration options for a mode.
-function Skada:GetColumnOptions(mod)
+-- Adds column configuration options for a mode.
+-- Called by individual modes themselves currently, as Skada is not aware of submodes.
+function Skada:AddColumnOptions(mod)
 	local db = self.db.profile.columns
 	
 	if mod.metadata and mod.metadata.columns then
 		local cols = {
-	        type="group",
-			name="Columns",
-	        args={
-	        	
-					defaultvalues = {
-					        type="toggle",
-					        name="Default",
-					        get=function() return db[mod.name] end,
-					        set=function() 
-					        		db[mod.name] = not db[mod.name]
-				         			Skada:ApplySettings()
-					        	end,
-					},
-					        	
-	        	},
+       			type = "group",
+       			name = mod:GetName(),
+       			order=0,
+       			inline=true,
+				args = {}
 		}
-		
-		for colname, value in ipairs(mod.metadata.columns) do
-			local c = mod.name.."_"..colname
+	
+		for colname, value in pairs(mod.metadata.columns) do
+			local c = mod:GetName().."_"..colname
+			
+			-- Set initial value from db if available, otherwise use mod default value.
+			if db[c] ~= nil then
+				mod.metadata.columns[colname] = db[c]
+			end
+			
+			-- Add column option.
 			local col = {
 			        type="toggle",
-			        name=colname,
-			        get=function() return db[c] end,
+			        name=L[colname] or colname,
+			        get=function() return mod.metadata.columns[colname] end,
 			        set=function() 
-			        		db[c] = not db[c]
-		         			Skada:ApplySettings()
-			        	end,
+			        			mod.metadata.columns[colname] = not mod.metadata.columns[colname]
+			        			db[c] = mod.metadata.columns[colname]
+			        			Skada:UpdateDisplay(true)
+			        		end,
 			}
 			cols.args[c] = col
 		end
 		
-		return cols
+		Skada.options.args.columns.args[mod:GetName()] = cols
 	end
 	
 end
 
 local deletewindow = nil
-
+ 
 Skada.options = {
 	        type="group",
 			name="Skada",
@@ -324,6 +323,13 @@ Skada.options = {
 							
 						}
 	        		},
+
+	        		columns = {
+	        			type = "group",
+	        			name = L["Columns"],
+	        			order=4,
+						args = {},
+	        		}
 	        		
 	        		
 	        }

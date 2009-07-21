@@ -290,3 +290,8 @@ L["CC breakers"] = true
 L["CC breaks"] = true
 L["Start new segment"] = true
 
+L["Columns"] = "Columns"
+L["Overheal"] = "Overheal"
+L["Percent"] = "Percent"
+L["TPS"] = "TPS"
+

@@ -89,14 +89,6 @@ local opts = {
 				order=2,
 			},
 			
-			hidetps = {
-				type = "toggle",
-				name = L["Do not show TPS"],
-				get = function() return Skada.db.profile.modules.hidetps end,
-				set = function() Skada.db.profile.modules.hidetps = not Skada.db.profile.modules.hidetps end,
-				order=2,
-			},
-
 		},
 	}
 }
@@ -107,7 +99,7 @@ function mod:OnInitialize()
 end
 
 function mod:OnEnable()
-	mod.metadata = {showspots = 1, wipestale = 1}
+	mod.metadata = {showspots = 1, wipestale = 1, columns = {Threat = true, TPS = false, Percent = true}}
 
 	-- Add our feed.
 	Skada:AddFeed(L["Threat: Personal Threat"], function()
@@ -121,6 +113,9 @@ function mod:OnEnable()
 							
 	-- Enable us
 	Skada:AddMode(self)
+	
+	-- Add column options.
+	Skada:AddColumnOptions(self)
 end
 
 function mod:OnDisable()
@@ -282,11 +277,11 @@ function mod:Update(win, set)
 						end
 					end
 					
-					if Skada.db.profile.modules.hidetps then
-						data.valuetext = format_threatvalue(data.threat)..(", %02.1f%%"):format(percent)
-					else
-						data.valuetext = format_threatvalue(data.threat)..(" ("..getTPS(data.threat)..", %02.1f%%)"):format(percent)
-					end
+					data.valuetext = Skada:FormatValueText(
+													format_threatvalue(data.threat), self.metadata.columns.Threat,
+													getTPS(data.threat), self.metadata.columns.TPS,
+													string.format("%02.1f%%", percent), self.metadata.columns.Percent
+												)
 				else
 					data.id = nil
 				end

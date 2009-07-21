@@ -93,12 +93,12 @@ function mod:Update(win, set)
 			d.id = player.id
 			d.label = player.name
 			d.value = player.healing
-			if Skada.db.profile.modules.healingnohps then
-				d.valuetext = Skada:FormatNumber(player.healing)..(" (%02.1f%%)"):format(player.healing / set.healing * 100)
-			else
-				local hps = getHPS(set, player)
-				d.valuetext = Skada:FormatNumber(player.healing)..(" (%02.1f, %02.1f%%)"):format(hps, player.healing / set.healing * 100)
-			end
+			
+			d.valuetext = Skada:FormatValueText(
+											Skada:FormatNumber(player.healing), self.metadata.columns.Healing,
+											string.format("%02.1f", hps), self.metadata.columns.HPS,
+											string.format("%02.1f%%", player.healing / set.healing * 100), self.metadata.columns.Percent
+										)
 			d.class = player.class
 			
 			if player.healing > max then
@@ -156,7 +156,10 @@ function spellsmod:Update(win, set)
 			d.id = spell.id
 			d.label = spell.name
 			d.value = spell.healing
-			d.valuetext = Skada:FormatNumber(spell.healing)..(" (%02.1f%%)"):format(spell.healing / player.healing * 100)
+			d.valuetext = Skada:FormatValueText(
+											Skada:FormatNumber(spell.healing), self.metadata.columns.Healing,
+											string.format("%02.1f%%", spell.healing / player.healing * 100), self.metadata.columns.Percent
+										)
 			d.icon = select(3, GetSpellInfo(spell.id))
 			
 			if spell.healing > max then
@@ -192,8 +195,10 @@ function healedmod:Update(win, set)
 				d.label = name
 				d.value = heal.amount
 				d.class = heal.class
-				d.valuetext = Skada:FormatNumber(heal.amount)..(" (%02.1f%%)"):format(heal.amount / player.healing * 100)
-				
+				d.valuetext = Skada:FormatValueText(
+												Skada:FormatNumber(heal.amount), self.metadata.columns.Healing,
+												string.format("%02.1f%%", heal.amount / player.healing * 100), self.metadata.columns.Percent
+											)
 				if heal.amount > max then
 					max = heal.amount
 				end
@@ -207,9 +212,13 @@ function healedmod:Update(win, set)
 end
 
 function mod:OnEnable()
-	mod.metadata		= {showspots = true, click1 = spellsmod, click2 = healedmod}
-	spellsmod.metadata	= {tooltip = spell_tooltip}
-	healedmod.metadata 	= {showspots = true}
+	mod.metadata		= {showspots = true, click1 = spellsmod, click2 = healedmod, columns = {Healing = true, HPS = true, Percent = true}}
+	spellsmod.metadata	= {tooltip = spell_tooltip, columns = {Healing = true, Percent = true}}
+	healedmod.metadata 	= {showspots = true, columns = {Healing = true, Percent = true}}
+	
+	Skada:AddColumnOptions(mod)
+	Skada:AddColumnOptions(spellsmod)
+	Skada:AddColumnOptions(healedmod)
 
 	Skada:RegisterForCL(SpellHeal, 'SPELL_HEAL', {src_is_interesting = true})
 	Skada:RegisterForCL(SpellHeal, 'SPELL_PERIODIC_HEAL', {src_is_interesting = true})
@@ -252,29 +261,4 @@ function mod:AddSetAttributes(set)
 		set.healing = 0
 		set.overhealing = 0
 	end
-end
-
-
-local opts = {
-	healingoptions = {
-		type="group",
-		name=L["Healing"],
-		args={
-
-			showdps = {
-				type = "toggle",
-				name = L["Do not show HPS"],
-				desc = L["Hides HPS from the Healing modes."],
-				get = function() return Skada.db.profile.modules.healingnohps end,
-				set = function() Skada.db.profile.modules.healingnohps = not Skada.db.profile.modules.healingnohps end,
-				order=2,
-			},
-					
-		},
-	}
-}
-
-function mod:OnInitialize()
-	-- Add our options.
-	table.insert(Skada.options.plugins, opts)
 end

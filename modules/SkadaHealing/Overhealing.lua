@@ -5,8 +5,10 @@ local Skada = Skada
 local mod = Skada:NewModule(L["Overhealing"])
 
 function mod:OnEnable()
-	mod.metadata = {showspots = true}
+	mod.metadata = {showspots = true, columns = {Overheal = true, Percent = true}}
+	
 	Skada:AddMode(self)
+	Skada:AddColumnOptions(self)
 end
 
 function mod:OnDisable()
@@ -44,7 +46,11 @@ function mod:Update(win, set)
 			d.id = player.id
 			d.value = player.overhealing
 			d.label = player.name
-			d.valuetext = Skada:FormatNumber(player.overhealing)..(" (%02.1f%%)"):format(player.overhealing / set.overhealing * 100)
+
+			d.valuetext = Skada:FormatValueText(
+											Skada:FormatNumber(player.overhealing), self.metadata.columns.Overheal,
+											string.format("%02.1f%%", player.overhealing / set.overhealing * 100), self.metadata.columns.Percent
+										)
 			d.class = player.class
 			
 			if player.overhealing > max then

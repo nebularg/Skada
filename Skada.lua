@@ -1772,7 +1772,12 @@ function dataobj:OnClick(button)
 	end
 end
 
-function Skada:UpdateDisplay()
+function Skada:UpdateDisplay(force)
+	-- Force an update by setting our "changed" flag to true.
+	if force then
+		changed = true
+	end
+	
 	-- Update data feed.
 	-- This is done even if our set has not changed, since for example DPS changes even though the data does not.
 	-- Does not update feed text if nil.
@@ -2032,6 +2037,30 @@ function Skada:FixMyPets(playerGUID, playerName)
 	end
 	-- No pet match - return the player.
 	return playerGUID, playerName
+end
+
+-- Format value text in a standardized way. Up to 3 value and boolean (show/don't show) combinations are accepted.
+-- Values are rendered from left to right.
+-- Idea: "compile" a function on the fly instead and store in mode for re-use.
+function Skada:FormatValueText(...)
+	local value1, bool1, value2, bool2, value3, bool3 = ...
+	
+	-- This construction is a little silly.
+	if bool1 and bool2 and bool3 then
+		return value1.." ("..value2..", "..value3..")"
+	elseif bool1 and bool2 then
+		return value1.." ("..value2..")"
+	elseif bool1 and bool3 then
+		return value1.." ("..value3..")"
+	elseif bool2 and bool3 then
+		return value2.." ("..value3..")"
+	elseif bool2 then
+		return value2
+	elseif bool1 then
+		return value1
+	elseif bool3 then
+		return value3
+	end
 end
 
 -- A minimal mode showing test data. Used by the config.
