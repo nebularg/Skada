@@ -519,6 +519,8 @@ function Skada:Command(param)
 		self:OpenMenu()
 	elseif param == "reset" then
 		self:Reset()
+	elseif param == "newsegment" then
+		self:NewSegment()
 	elseif param == "toggle" then
 		self:ToggleWindow()
 	elseif param == "config" then
@@ -546,6 +548,7 @@ function Skada:Command(param)
 		self:Print("Usage:")
 		self:Print(("%-20s"):format("/skada report [raid|guild|party|officer|say] [mode] [max lines]"))
 		self:Print(("%-20s"):format("/skada reset"))
+		self:Print(("%-20s"):format("/skada newsegment"))
 		self:Print(("%-20s"):format("/skada config"))
 	end
 end

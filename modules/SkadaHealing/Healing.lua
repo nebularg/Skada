@@ -96,7 +96,7 @@ function mod:Update(win, set)
 			
 			d.valuetext = Skada:FormatValueText(
 											Skada:FormatNumber(player.healing), self.metadata.columns.Healing,
-											string.format("%02.1f", hps), self.metadata.columns.HPS,
+											string.format("%02.1f", getHPS(set, player)), self.metadata.columns.HPS,
 											string.format("%02.1f%%", player.healing / set.healing * 100), self.metadata.columns.Percent
 										)
 			d.class = player.class

@@ -43,7 +43,7 @@ Skada:tcopy(windefaultscopy, Skada.windowdefaults)
 
 Skada.defaults = {
 	profile = {
-		reset={instance=1, join=1, leave=1},
+		reset={instance=1, join=3, leave=1},
 		icon = {hide = false, radius = 80, minimapPos = 195},
 		numberformat=1,
 		setstokeep = 10,
