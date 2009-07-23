@@ -732,6 +732,7 @@ local function verify_set(mode, set)
 end
 
 local wasininstance
+local wasinpvp
 
 local function ask_for_reset()
 	StaticPopupDialogs["ResetSkadaDialog"] = {
@@ -761,6 +762,7 @@ function Skada:PLAYER_ENTERING_WORLD()
 	-- Check if we are entering an instance.
 	local inInstance, instanceType = IsInInstance()
 	local isininstance = inInstance and (instanceType == "party" or instanceType == "raid")
+	local isinpvp = is_in_pvp()
 
 	-- If we are entering an instance, and we were not previously in an instance, and we got this event before... and we have some data...
 	if isininstance and wasininstance ~= nil and not wasininstance and self.db.profile.reset.instance ~= 1 and total ~= nil then
@@ -771,11 +773,27 @@ function Skada:PLAYER_ENTERING_WORLD()
 		end
 	end
 
+	-- Hide in PvP. Hide if entering a PvP instance, show if we are leaving one.
+	if self.db.profile.hidepvp then
+		if is_in_pvp() then
+			Skada:SetActive(false)
+		elseif wasinpvp then
+			Skada:SetActive(true)
+		end
+	end
+
 	-- Save a flag marking our previous (current) instance status.
 	if isininstance then
 		wasininstance = true
 	else
 		wasininstance = false
+	end
+	
+	-- Save a flag marking out previous (current) pvp status.
+	if isinpvp then
+		wasinpvp = true
+	else
+		wasinpvp = false
 	end
 
 	-- Mark our last party status. This is done so that the flag is set to correct value on relog/reloadui.
@@ -783,11 +801,6 @@ function Skada:PLAYER_ENTERING_WORLD()
 
 	-- Check for pets.
 	self:CheckPets()
-	
-	if self.db.profile.hidepvp and is_in_pvp() then
-		Skada:SetActive(false)
-	end
-	
 end
 
 -- Check if we join a party/raid.

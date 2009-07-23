@@ -209,7 +209,7 @@ Skada.options = {
 							        type="toggle",
 							        name=L["Show minimap button"],
 							        desc=L["Toggles showing the minimap button."],
-							        order=23,
+							        order=1,
 							        get=function() return not Skada.db.profile.icon.hide end,
 							        set=function()
 							    			Skada.db.profile.icon.hide = not Skada.db.profile.icon.hide
@@ -221,7 +221,7 @@ Skada.options = {
 							        type="toggle",
 							        name=L["Show tooltips"],
 							        desc=L["Shows tooltips with extra information in some modes."],
-							        order=24,
+							        order=2,
 							        get=function() return Skada.db.profile.tooltips end,
 							        set=function() Skada.db.profile.tooltips = not Skada.db.profile.tooltips end,
 							},
@@ -233,14 +233,14 @@ Skada.options = {
 								values=	{["default"] = L["Default"], ["topright"] = L["Top right"], ["topleft"] = L["Top left"]},
 								get=function() return Skada.db.profile.tooltippos end,
 								set=function(self, opt) Skada.db.profile.tooltippos = opt end,
-								order=25,
+								order=10,
 							},
 							
 							onlykeepbosses = {
 							        type="toggle",
 							        name=L["Only keep boss fighs"],
 							        desc=L["Boss fights will be kept with this on, and non-boss fights are discarded."],
-							        order=26,
+							        order=3,
 							        get=function() return Skada.db.profile.onlykeepbosses end,
 							        set=function() Skada.db.profile.onlykeepbosses = not Skada.db.profile.onlykeepbosses end,
 							},
@@ -249,7 +249,7 @@ Skada.options = {
 							        type="toggle",
 							        name=L["Hide when solo"],
 							        desc=L["Hides Skada's window when not in a party or raid."],
-							        order=27,
+							        order=4,
 							        get=function() return Skada.db.profile.hidesolo end,
 							        set=function()
 							        			Skada.db.profile.hidesolo = not Skada.db.profile.hidesolo
@@ -261,7 +261,7 @@ Skada.options = {
 							        type="toggle",
 							        name=L["Hide in PvP"],
 							        desc=L["Hides Skada's window when in Battlegrounds/Arenas."],
-							        order=28,
+							        order=5,
 							        get=function() return Skada.db.profile.hidepvp end,
 							        set=function()
 							        			Skada.db.profile.hidepvp = not Skada.db.profile.hidepvp
@@ -273,7 +273,7 @@ Skada.options = {
 							        type="toggle",
 							        name=L["Disable while hidden"],
 							        desc=L["Skada will not collect any data when automatically hidden."],
-							        order=29,
+							        order=6,
 							        get=function() return Skada.db.profile.hidedisables end,
 							        set=function()
 							        			Skada.db.profile.hidedisables = not Skada.db.profile.hidedisables
@@ -288,7 +288,7 @@ Skada.options = {
 								values=	function() return {[1] = L["Condensed"], [2] = L["Detailed"]} end,
 								get=function() return Skada.db.profile.numberformat end,
 								set=function(self, opt) Skada.db.profile.numberformat = opt end,
-								order=30,
+								order=11,
 							},
 							
 							datafeed = {
@@ -306,7 +306,7 @@ Skada.options = {
 											Skada.db.profile.feed = feed
 											if feed ~= "" then Skada:SetFeed(Skada:GetFeeds()[feed]) end
 										end,
-								order=31,
+								order=12,
 							},
 
 							setstokeep = {
@@ -318,7 +318,7 @@ Skada.options = {
 								step=1,
 								get=function() return Skada.db.profile.setstokeep end,
 								set=function(self, val) Skada.db.profile.setstokeep = val end,
-								order=32,
+								order=13,
 							},
 							
 						}

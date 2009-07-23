@@ -1,3 +1,7 @@
+1.2-18:
+* Fixed a Damage spell details bug.
+* Hide in PvP now shows Skada windows after exiting a PvP instance.
+
 1.2-17:
 * Added options for enabling/disabling columns in a more standardized way.
 * Added a command for starting a new segment manually, /skada newsegment.
