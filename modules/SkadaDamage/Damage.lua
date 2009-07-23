@@ -331,8 +331,8 @@ local function add_detail_bar(win, nr, title, value)
 	d.label = title
 	d.id = title
 	d.valuetext = Skada:FormatValueText(
-									value, self.metadata.columns.Damage,
-									string.format("%02.1f%%", value / win.metadata.maxvalue * 100), self.metadata.columns.Percent
+									value, mod.metadata.columns.Damage,
+									string.format("%02.1f%%", value / win.metadata.maxvalue * 100), mod.metadata.columns.Percent
 								)
 end
 
