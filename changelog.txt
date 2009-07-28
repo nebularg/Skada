@@ -1,3 +1,7 @@
+1.2-19:
+* Increased maximum line count in report popup menu to 25.
+* Death log improved.
+
 1.2-18:
 * Fixed a Damage spell details bug.
 * Hide in PvP now shows Skada windows after exiting a PvP instance.

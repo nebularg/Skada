@@ -295,3 +295,6 @@ L["Overheal"] = "Overheal"
 L["Percent"] = "Percent"
 L["TPS"] = "TPS"
 
+L["%s dies"] = "%s dies"
+L["Change"] = "Change"
+L["Health"] = "Health"

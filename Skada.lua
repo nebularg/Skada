@@ -1218,9 +1218,9 @@ function Skada:OpenMenu(window)
 		            info.func = function() Skada.db.profile.report.set = i end
 		            info.checked = (Skada.db.profile.report.set == i)
 		            UIDropDownMenu_AddButton(info, level)
-		        end		        
+		        end
 		    elseif UIDROPDOWNMENU_MENU_VALUE == "number" then
-		        for i = 1,10 do
+		        for i = 1,25 do
 			        wipe(info)
 		            info.text = i
 		            info.checked = (Skada.db.profile.report.number == i)
@@ -1655,7 +1655,7 @@ function Skada:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID,
 			-- Lua can not use assignments as expressions... grmbl. 
 			if not fail and mod.flags.src_is_interesting_nopets then
 				if src_is_interesting_nopets == nil then
-					src_is_interesting_nopets = band(srcFlags, RAID_FLAGS) ~= 0
+					src_is_interesting_nopets = band(srcFlags, RAID_FLAGS) ~= 0 and band(srcFlags, PET_FLAGS) == 0
 					--self:UnitIsInterestingNoPets(srcName, srcGUID)
 					if src_is_interesting_nopets then
 						src_is_interesting = true
@@ -1669,7 +1669,7 @@ function Skada:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID,
 			end
 			if not fail and mod.flags.dst_is_interesting_nopets then
 				if dst_is_interesting_nopets == nil then
-					dst_is_interesting_nopets = band(dstFlags, RAID_FLAGS) ~= 0
+					dst_is_interesting_nopets = band(dstFlags, RAID_FLAGS) ~= 0 and band(dstFlags, PET_FLAGS) == 0
 					-- self:UnitIsInterestingNoPets(dstName, dstGUID)
 					if dst_is_interesting_nopets then
 						dst_is_interesting = true

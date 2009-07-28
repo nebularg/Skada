@@ -13,7 +13,12 @@ end
 local function log_deathlog(set, playerid, playername, spellid, spellname, amount, timestamp)
 	local player = Skada:get_player(set, playerid, playername)
 	
-	table.insert(player.deathlog, 1, {["spellid"] = spellid, ["spellname"] = spellname, ["amount"] = amount, ["ts"] = timestamp})
+	table.insert(player.deathlog, 1, {["spellid"] = spellid, ["spellname"] = spellname, ["amount"] = amount, ["ts"] = timestamp, hp = UnitHealth(playername)})
+	
+	-- Max health.
+	if player.maxhp == 0 then
+		player.maxhp = UnitHealthMax(playername)
+	end
 	
 	-- Trim.
 	while table.maxn(player.deathlog) > 15 do table.remove(player.deathlog) end
@@ -40,7 +45,7 @@ local function UnitDied(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUI
 end
 
 local function SpellDamage(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
-	-- Spell damage. We have to fix for pets. (hi there, Malygos!)
+	-- Spell damage.
 	local spellId, spellName, spellSchool, samount, soverkill, sschool, sresisted, sblocked, sabsorbed, scritical, sglancing, scrushing = ...
 	
 	dstGUID, dstName = Skada:FixMyPets(dstGUID, dstName)
@@ -123,12 +128,22 @@ local red = {r = 255, g = 0, b = 0, a = 1}
 function deathlog:Update(win, set)
 	local player = Skada:get_player(set, self.playerid)
 	
-	if player then
-		-- Find the max amount
-		local maxhit = 0
+	if player and player.deathlog then
 		local nr = 1
 		
-		table.sort(player.deathlog, function(a,b) return a and b and a.ts and b.ts and a.ts < b.ts end)
+		-- Sort logs.
+		table.sort(player.deathlog, function(a,b) return a and b and a.ts > b.ts end)
+		
+		-- Add a fake entry for the actual death.
+		local d = win.dataset[nr] or {}
+		win.dataset[nr] = d
+		d.id = nr
+		d.label = date("%H:%M:%S", player.deathts).. ": "..string.format(L["%s dies"], player.name)
+		d.ts = player.deathts
+		d.value = 0
+		d.icon = select(3, GetSpellInfo(5384)) -- Feign Death icon.
+		
+		nr = nr + 1
 		
 		for i, log in ipairs(player.deathlog) do
 			local diff = tonumber(log.ts) - tonumber(player.deathts)
@@ -139,16 +154,24 @@ function deathlog:Update(win, set)
 				win.dataset[nr] = d
 				
 				d.id = nr
-				d.label = log.spellname
+				d.label = ("%2.2f"):format(diff) .. ": "..log.spellname
 				d.ts = log.ts
-				d.value = math.abs(log.amount)
+				d.value = log.hp or 0
 				d.icon = select(3, GetSpellInfo(log.spellid))
-				d.valuetext = Skada:FormatNumber(log.amount)..", "..("%2.3f"):format(diff)
 				
-				if d.value > maxhit then
-					maxhit = d.value
+				local change = Skada:FormatNumber(math.abs(log.amount))
+				if log.amount > 0 then
+					change = "+"..change
+				else
+					change = "-"..change
 				end
 				
+				d.valuetext = Skada:FormatValueText(
+												change, self.metadata.columns.Change,
+												Skada:FormatNumber(log.hp or 0), self.metadata.columns.Health,
+												string.format("%02.1f%%", (log.hp or 1) / (player.maxhp or 1) * 100), self.metadata.columns.Percent
+											)
+											
 				if log.amount > 0 then
 					d.color = green
 				else
@@ -159,13 +182,15 @@ function deathlog:Update(win, set)
 			end
 		end
 		
-		win.metadata.maxvalue = maxhiyt
+		win.metadata.maxvalue = player.maxhp
 	end
 end
 
 function mod:OnEnable()
 	mod.metadata 		= {click1 = deathlog}
-	deathlog.metadata 	= {ordersort = true}
+	deathlog.metadata 	= {ordersort = true, columns = {Change = true, Health = false, Percent = true}}
+
+	Skada:AddColumnOptions(deathlog)
 
 	Skada:RegisterForCL(UnitDied, 'UNIT_DIED', {dst_is_interesting_nopets = true})
 	
@@ -211,6 +236,7 @@ end
 function mod:AddPlayerAttributes(player)
 	if not player.deaths then
 		player.deaths = 0
+		player.maxhp = 0
 		player.deathts = 0
 		player.deathlog = {}
 	end
