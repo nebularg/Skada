@@ -548,6 +548,7 @@ function Skada:Command(param)
 		self:Print("Usage:")
 		self:Print(("%-20s"):format("/skada report [raid|guild|party|officer|say] [mode] [max lines]"))
 		self:Print(("%-20s"):format("/skada reset"))
+		self:Print(("%-20s"):format("/skada toggle"))
 		self:Print(("%-20s"):format("/skada newsegment"))
 		self:Print(("%-20s"):format("/skada config"))
 	end
@@ -1635,8 +1636,6 @@ local RAID_AND_PET_FLAGS = COMBATLOG_OBJECT_AFFILIATION_MINE + COMBATLOG_OBJECT_
 -- The flags are checked, and the flag value (say, that the SRC must be interesting, ie, one of the raid) is only checked once, regardless
 -- of how many modules are interested in the event. The check is also only done on the first flag that requires it.
 -- The exception is src_is_interesting, which we always check to determine combat start - I would like to get rid of this, but am not sure how. [disabled for now]
-
--- TODO: Start looking at CL event flags instead of using functions.
 function Skada:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
 	if disabled then
 		return
@@ -1922,6 +1921,31 @@ function Skada:FormatNumber(number)
 	end
 end
 
+local function scan_for_columns(mode)
+	-- Only process if not already scanned.
+	if not mode.scanned then
+		mode.scanned = true
+	
+		-- Add options for this mode if available.
+		if mode.metadata and mode.metadata.columns then
+			Skada:AddColumnOptions(mode)
+		end
+		
+		-- Scan any linked modes.
+		if mode.metadata then
+			if mode.metadata.click1 then
+				scan_for_columns(mode.metadata.click1)
+			end
+			if mode.metadata.click2 then
+				scan_for_columns(mode.metadata.click2)
+			end
+			if mode.metadata.click3 then
+				scan_for_columns(mode.metadata.click3)
+			end
+		end
+	end
+end
+
 -- Register a mode.
 function Skada:AddMode(mode)
 	-- Ask mode to verify our sets.
@@ -1954,6 +1978,11 @@ function Skada:AddMode(mode)
 				self:SetFeed(feed)
 			end
 		end
+	end
+	
+	-- Add column configuration if available.
+	if mode.metadata then
+		scan_for_columns(mode)
 	end
 	
 	-- Sort modes.

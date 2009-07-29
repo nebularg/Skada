@@ -1,6 +1,7 @@
 1.2-19:
 * Increased maximum line count in report popup menu to 25.
 * Death log improved.
+* Documented a few hidden /skada commands.
 
 1.2-18:
 * Fixed a Damage spell details bug.

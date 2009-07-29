@@ -437,11 +437,6 @@ function mod:OnEnable()
 	damagedmod.metadata = 	{columns = {Damage = true, Percent = true}}
 	spellmod.metadata =		{columns = {Damage = true, Percent = true}}
 	
-	Skada:AddColumnOptions(mod)
-	Skada:AddColumnOptions(damagedmod)
-	Skada:AddColumnOptions(playermod)
-	Skada:AddColumnOptions(spellmod)
-	
 	Skada:RegisterForCL(SpellDamage, 'DAMAGE_SHIELD', {src_is_interesting = true, dst_is_not_interesting = true})
 	Skada:RegisterForCL(SpellDamage, 'SPELL_DAMAGE', {src_is_interesting = true, dst_is_not_interesting = true})
 	Skada:RegisterForCL(SpellDamage, 'SPELL_PERIODIC_DAMAGE', {src_is_interesting = true, dst_is_not_interesting = true})

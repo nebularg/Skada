@@ -8,7 +8,6 @@ function mod:OnEnable()
 	mod.metadata = {showspots = true, columns = {Overheal = true, Percent = true}}
 	
 	Skada:AddMode(self)
-	Skada:AddColumnOptions(self)
 end
 
 function mod:OnDisable()

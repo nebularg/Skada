@@ -216,10 +216,6 @@ function mod:OnEnable()
 	spellsmod.metadata	= {tooltip = spell_tooltip, columns = {Healing = true, Percent = true}}
 	healedmod.metadata 	= {showspots = true, columns = {Healing = true, Percent = true}}
 	
-	Skada:AddColumnOptions(mod)
-	Skada:AddColumnOptions(spellsmod)
-	Skada:AddColumnOptions(healedmod)
-
 	Skada:RegisterForCL(SpellHeal, 'SPELL_HEAL', {src_is_interesting = true})
 	Skada:RegisterForCL(SpellHeal, 'SPELL_PERIODIC_HEAL', {src_is_interesting = true})
 

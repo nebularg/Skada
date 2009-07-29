@@ -190,8 +190,6 @@ function mod:OnEnable()
 	mod.metadata 		= {click1 = deathlog}
 	deathlog.metadata 	= {ordersort = true, columns = {Change = true, Health = false, Percent = true}}
 
-	Skada:AddColumnOptions(deathlog)
-
 	Skada:RegisterForCL(UnitDied, 'UNIT_DIED', {dst_is_interesting_nopets = true})
 	
 	Skada:RegisterForCL(SpellDamage, 'SPELL_DAMAGE', {dst_is_interesting_nopets = true})

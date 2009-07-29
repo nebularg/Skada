@@ -113,9 +113,6 @@ function mod:OnEnable()
 							
 	-- Enable us
 	Skada:AddMode(self)
-	
-	-- Add column options.
-	Skada:AddColumnOptions(self)
 end
 
 function mod:OnDisable()
