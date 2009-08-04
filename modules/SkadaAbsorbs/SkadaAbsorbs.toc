@@ -1,4 +1,4 @@
-## Interface: 30100
+## Interface: 30200
 ## Title: Skada |r[|caaedc99fAbsorbs|r]
 ## Notes: Adds an Absorbs mode and data collection to Skada.
 ## Author: Zarnivoop

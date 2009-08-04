@@ -2,6 +2,7 @@
 * Increased maximum line count in report popup menu to 25.
 * Death log improved.
 * Documented a few hidden /skada commands.
+* Fix: damage spell breakdown now shows separate entries for pets using same spell as owner (such as Attack).
 
 1.2-18:
 * Fixed a Damage spell details bug.
