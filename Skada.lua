@@ -318,8 +318,7 @@ function Window:DisplayMode(mode)
 	self.db.mode = name
 	self.metadata.title = name
 
-	changed = true
-	Skada:UpdateDisplay()
+	Skada:UpdateDisplay(true)
 end
 
 local function click_on_mode(win, id, label, button)
@@ -367,8 +366,7 @@ function Window:DisplayModes(settime)
 	self.metadata.maxvalue = 1
 	self.metadata.sortfunc = function(a,b) return a.name < b.name end
 
-	changed = true
-	Skada:UpdateDisplay()
+	Skada:UpdateDisplay(true)
 end
 
 local function click_on_set(win, id, label, button)
@@ -396,8 +394,7 @@ function Window:DisplaySets()
 	self.metadata.maxvalue = 1
 --	self.metadata.sortfunc = function(a,b) return a.name < b.name end
 	
-	changed = true
-	Skada:UpdateDisplay()
+	Skada:UpdateDisplay(true)
 end
 
 -- Default "right-click" behaviour in case no special click function is defined:
@@ -915,8 +912,8 @@ function Skada:Reset()
 			wipe(table.remove(sets, i))
 		end
 	end
-	changed = true
-	self:UpdateDisplay()
+	
+	self:UpdateDisplay(true)
 	self:Print(L["All data has been reset."])
 	collectgarbage("collect")
 end
@@ -931,8 +928,7 @@ function Skada:DeleteSet(set)
 		end
 	end
 	self:Wipe()
-	changed = true
-	self:UpdateDisplay()
+	self:UpdateDisplay(true)
 end
 	
 -- Open a menu. Supply a window to tailor it to that window, else generic.
@@ -1067,8 +1063,7 @@ function Skada:OpenMenu(window)
 	            info.func = function()
 	            				window.selectedset = "total"
 	            				Skada:Wipe()
-	            				changed = true
-	            				Skada:UpdateDisplay()
+	            				Skada:UpdateDisplay(true)
 	            			end
 	            info.checked = (window.selectedset == "total")
 	            UIDropDownMenu_AddButton(info, level)
@@ -1077,8 +1072,7 @@ function Skada:OpenMenu(window)
 	            info.func = function()
 	            				window.selectedset = "current"
 	            				Skada:Wipe()
-	            				changed = true
-	            				Skada:UpdateDisplay()
+	            				Skada:UpdateDisplay(true)
 	            			end
 	            info.checked = (window.selectedset == "current")
 	            UIDropDownMenu_AddButton(info, level)
@@ -1089,8 +1083,7 @@ function Skada:OpenMenu(window)
 		            info.func = function() 
 		            				window.selectedset = i
 		            				Skada:Wipe()
-		            				changed = true
-		            				Skada:UpdateDisplay()
+		            				Skada:UpdateDisplay(true)
 		            			end
 		            info.checked = (window.selectedset == set.starttime)
 		            UIDropDownMenu_AddButton(info, level)
@@ -1126,8 +1119,7 @@ function Skada:OpenMenu(window)
 		            info.func = function() 
 		            				set.keep = not set.keep
 		            				Skada:Wipe()
-		            				changed = true
-		            				Skada:UpdateDisplay()
+		            				Skada:UpdateDisplay(true)
 		            			end
 		            info.checked = set.keep
 		            UIDropDownMenu_AddButton(info, level)
@@ -1329,8 +1321,7 @@ function Skada:ApplySettings()
 		end
 	end
 
-	changed = true
-	self:UpdateDisplay()
+	self:UpdateDisplay(true)
 end
 
 -- Set a data feed as selectedfeed.
@@ -1509,8 +1500,7 @@ function Skada:StartCombat()
 	end
 	
 	-- Force immediate update.
-	changed = true
-	self:UpdateDisplay()
+	self:UpdateDisplay(true)
 	
 	-- Schedule timers for updating windows and detecting combat end.
 	update_timer = self:ScheduleRepeatingTimer("UpdateDisplay", 0.5)
@@ -1993,8 +1983,8 @@ function Skada:AddMode(mode)
 	-- all modules are loaded. :/
 	for i, win in ipairs(windows) do
 		win:Wipe()
-		changed = true
 	end
+	changed = true
 end
 
 -- Unregister a mode.

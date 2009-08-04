@@ -1,4 +1,4 @@
-## Interface: 30100
+## Interface: 30200
 ## Title: Skada
 ## Notes: Modular damage meter.
 ## Notes-koKR: 데미지 미터 모듈입니다.
@@ -33,7 +33,7 @@ Options.lua
 Bosses.lua
 BarDisplay.lua
 <!--@debug@-->
---TextDisplay.lua
+#TextDisplay.lua
 <!--@end-debug@-->
 
 modules.xml
