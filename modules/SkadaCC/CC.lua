@@ -61,22 +61,17 @@ local function SpellAuraBroken(timestamp, eventtype, srcGUID, srcName, srcFlags,
 		log_ccbreak(Skada.total, srcGUID, srcName)
 		
 		-- Optional announce
-		if Skada.db.profile.modules.ccannounce then
+		if Skada.db.profile.modules.ccannounce and GetNumRaidMembers() > 0 and UnitInRaid(srcName) then
 
 			-- Ignore main tanks?
 			if Skada.db.profile.modules.ccignoremaintanks then
 
-				-- Make sure we are in a raid.
-				if UnitInRaid("player") and UnitInRaid(srcName) then
-
-					-- Loop through our raid and return if src is a main tank.
-					for i = 1, MAX_RAID_MEMBERS do
-						local name, _, _, _, _, class, _, _, _, role, _ = GetRaidRosterInfo(i)
-						if name == srcName and role == "maintank" then
-							return
-						end
+				-- Loop through our raid and return if src is a main tank.
+				for i = 1, MAX_RAID_MEMBERS do
+					local name, _, _, _, _, class, _, _, _, role, _ = GetRaidRosterInfo(i)
+					if name == srcName and role == "maintank" then
+						return
 					end
-					
 				end
 
 			end
