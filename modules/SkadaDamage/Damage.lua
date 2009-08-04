@@ -267,7 +267,7 @@ function playermod:Update(win, set)
 				local d = win.dataset[nr] or {}
 				win.dataset[nr] = d
 				d.label = spellname
-				d.id = spell.id
+				d.id = spellname
 				d.icon = select(3, GetSpellInfo(spell.id))
 				d.value = spell.damage
 				d.valuetext = Skada:FormatValueText(
