@@ -204,8 +204,9 @@ local function consider_absorb(absorbed, dstName, srcName, timestamp)
 end
 
 local function SwingDamage(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
-	local samount, soverkill, sschool, sresisted, sblocked, sabsorbed, scritical, sglancing, scrushing = ...
+	local samount, soverkill, sschool, sresisted, sblocked, absorbed, scritical, sglancing, scrushing = ...
 	if absorbed and absorbed > 0 and dstName and shields[dstName] and srcName then
+		--Skada:Print(dstName.." absorbed "..absorbed.." from "..srcName)
 		consider_absorb(absorbed, dstName, srcName, timestamp)
 	end
 end
@@ -213,6 +214,7 @@ end
 local function SpellDamage(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
 	local spellId, spellName, spellSchool, samount, soverkill, sschool, sresisted, sblocked, absorbed, scritical, sglancing, scrushing = ...
 	if absorbed and absorbed > 0 and dstName and shields[dstName] and srcName then
+		--Skada:Print(dstName.." absorbed "..absorbed.." from "..srcName)
 		consider_absorb(absorbed, dstName, srcName, timestamp)
 	end
 end
@@ -283,14 +285,14 @@ function mod:OnEnable()
 	mod.metadata 		= {showspots = 1, click1 = playermod}
 	playermod.metadata 	= {}
 
-	Skada:RegisterForCL(AuraApplied, 'SPELL_AURA_APPLIED', {src_is_interesting = true})
-	Skada:RegisterForCL(AuraRemoved, 'SPELL_AURA_REMOVED', {src_is_interesting = true})
-	Skada:RegisterForCL(SpellDamage, 'DAMAGE_SHIELD', {dst_is_interesting = true})
-	Skada:RegisterForCL(SpellDamage, 'SPELL_DAMAGE', {dst_is_interesting = true})
-	Skada:RegisterForCL(SpellDamage, 'SPELL_PERIODIC_DAMAGE', {dst_is_interesting = true})
-	Skada:RegisterForCL(SpellDamage, 'SPELL_BUILDING_DAMAGE', {dst_is_interesting = true})
-	Skada:RegisterForCL(SpellDamage, 'RANGE_DAMAGE', {dst_is_interesting = true})
-	Skada:RegisterForCL(SwingDamage, 'SWING_DAMAGE', {dst_is_interesting = true})
+	Skada:RegisterForCL(AuraApplied, 'SPELL_AURA_APPLIED', {src_is_interesting_nopets = true})
+	Skada:RegisterForCL(AuraRemoved, 'SPELL_AURA_REMOVED', {src_is_interesting_nopets = true})
+	Skada:RegisterForCL(SpellDamage, 'DAMAGE_SHIELD', {dst_is_interesting_nopets = true})
+	Skada:RegisterForCL(SpellDamage, 'SPELL_DAMAGE', {dst_is_interesting_nopets = true})
+	Skada:RegisterForCL(SpellDamage, 'SPELL_PERIODIC_DAMAGE', {dst_is_interesting_nopets = true})
+	Skada:RegisterForCL(SpellDamage, 'SPELL_BUILDING_DAMAGE', {dst_is_interesting_nopets = true})
+	Skada:RegisterForCL(SpellDamage, 'RANGE_DAMAGE', {dst_is_interesting_nopets = true})
+	Skada:RegisterForCL(SwingDamage, 'SWING_DAMAGE', {dst_is_interesting_nopets = true})
 	
 	Skada:AddMode(self)
 end
