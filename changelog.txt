@@ -1,3 +1,12 @@
+1.2-21:
+* Fixed a major bug in Absorbs mode - swing damage was not considered.
+* Adapted healing and death log modes to new heal event format.
+* Added a Hide in combat option. Note that the various Hide options do not play along nicely amongst themselves at this time.
+* Fixed classcolor text option causing mischief.
+
+1.2-20:
+* .toc bump.
+
 1.2-19:
 * Increased maximum line count in report popup menu to 25.
 * Death log improved.

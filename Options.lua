@@ -53,6 +53,7 @@ Skada.defaults = {
 		hidesolo=false,
 		hidepvp=false,
 		hidedisables=true,
+		hidecombat=false,
 		feed = "",
 		sets = {},
 		total = nil,
@@ -66,7 +67,6 @@ Skada.defaults = {
 }
 
 -- Adds column configuration options for a mode.
--- Called by individual modes themselves currently, as Skada is not aware of submodes.
 function Skada:AddColumnOptions(mod)
 	local db = self.db.profile.columns
 	
@@ -268,12 +268,24 @@ Skada.options = {
 							        			Skada:ApplySettings()
 							        		end,
 							},
-							
+
+							hidecombat = {
+							        type="toggle",
+							        name=L["Hide in combat"],
+							        desc=L["Hides Skada's window when in combat."],
+							        order=6,
+							        get=function() return Skada.db.profile.hidecombat end,
+							        set=function()
+							        			Skada.db.profile.hidecombat = not Skada.db.profile.hidecombat
+							        			Skada:ApplySettings()
+							        		end,
+							},
+														
 							disablewhenhidden = {
 							        type="toggle",
 							        name=L["Disable while hidden"],
 							        desc=L["Skada will not collect any data when automatically hidden."],
-							        order=6,
+							        order=7,
 							        get=function() return Skada.db.profile.hidedisables end,
 							        set=function()
 							        			Skada.db.profile.hidedisables = not Skada.db.profile.hidedisables

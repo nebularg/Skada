@@ -197,6 +197,7 @@ function mod:Update(win)
 				bar:SetMaxValue(win.metadata.maxvalue or 1)
 				bar:SetValue(data.value)
 			else
+				-- Initialization of bars.
 				bar = mod:CreateBar(win, data.id, data.label, data.value, win.metadata.maxvalue or 1, data.icon, false)
 				if data.icon then
 					bar:ShowIcon()
@@ -206,24 +207,33 @@ function mod:Update(win)
 				bar:SetScript("OnEnter", function(bar) BarEnter(win, data.id, data.label) end)
 				bar:SetScript("OnLeave", function(bar) BarLeave(win, data.id, data.label) end)
 				bar:SetScript("OnMouseDown", function(bar, button) BarClick(win, data.id, data.label, button) end)
+				
 				if data.color then
+					-- Explicit color from dataset.
 					bar:SetColorAt(0, data.color.r, data.color.g, data.color.b, data.color.a or 1)
 				elseif data.class and win.db.classcolorbars then
+					-- Class color.
 					local color = Skada.classcolors[data.class]
 					if color then
 						bar:SetColorAt(0, color.r, color.g, color.b, color.a or 1)
 					end
 				else
+					-- Default color.
 					local color = win.db.barcolor
 					bar:SetColorAt(0, color.r, color.g, color.b, color.a or 1)
 				end
 				
 				if data.class and win.db.classcolortext then
+					-- Class color text.
 					local color = Skada.classcolors[data.class]
 					if color then
 						bar.label:SetTextColor(color.r, color.g, color.b, color.a or 1)
 						bar.timerLabel:SetTextColor(color.r, color.g, color.b, color.a or 1)
 					end
+				else
+					-- Default color text.
+					bar.label:SetTextColor(1,1,1,1)
+					bar.timerLabel:SetTextColor(1,1,1,1)
 				end
 			end
 			
@@ -417,6 +427,14 @@ function mod:ApplySettings(win)
 		g.optbutton:Show()
 	else
 		g.optbutton:Hide()
+	end
+	
+	-- Spark.
+	local bars = win.bargroup:GetBars()
+	for name, bar in pairs(bars) do
+		if true then
+			bar.spark:Show()
+		end
 	end
 	
 	-- Window

@@ -1452,6 +1452,11 @@ function Skada:EndSegment()
 	self:UpdateDisplay()
 	self:CancelTimer(update_timer, true)
 	self:CancelTimer(tick_timer, true)
+	
+	-- Hide in combat option.
+	if self.db.profile.hidecombat then
+		self:SetActive(true)
+	end	
 end
 
 function Skada:PLAYER_REGEN_DISABLED()
@@ -1505,6 +1510,11 @@ function Skada:StartCombat()
 	-- Schedule timers for updating windows and detecting combat end.
 	update_timer = self:ScheduleRepeatingTimer("UpdateDisplay", 0.5)
 	tick_timer = self:ScheduleRepeatingTimer("Tick", 1)
+	
+	-- Hide in combat option.
+	if self.db.profile.hidecombat then
+		self:SetActive(false)
+	end
 end
 
 -- Simply calls the same function on all windows.
