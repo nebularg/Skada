@@ -58,7 +58,7 @@ local heal = {}
 
 local function SpellHeal(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
 	-- Healing
-	local spellId, spellName, spellSchool, samount, soverhealing, scritical = ...
+	local spellId, spellName, spellSchool, samount, soverhealing, absorbed, scritical = ...
 	
 	heal.dstName = dstName
 	heal.playerid = srcGUID
