@@ -141,6 +141,7 @@ function deathlog:Update(win, set)
 		d.label = date("%H:%M:%S", player.deathts).. ": "..string.format(L["%s dies"], player.name)
 		d.ts = player.deathts
 		d.value = 0
+		d.valuetext = ""
 		d.icon = select(3, GetSpellInfo(5384)) -- Feign Death icon.
 		
 		nr = nr + 1
