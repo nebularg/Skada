@@ -1594,6 +1594,10 @@ function Skada:get_player(set, playerid, playername)
 	end
 	
 	if not player then
+		-- If we do not supply a playername (often the case in submodes), we can not create an entry.
+		if not playername then
+			return
+		end
 		player = {id = playerid, class = select(2, UnitClass(playername)), name = playername, first = time(), ["time"] = 0}
 		
 		-- Tell each mode to apply its needed attributes.
