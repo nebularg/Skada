@@ -61,7 +61,8 @@ local function SpellAuraBroken(timestamp, eventtype, srcGUID, srcName, srcFlags,
 		log_ccbreak(Skada.total, srcGUID, srcName)
 		
 		-- Optional announce
-		if Skada.db.profile.modules.ccannounce and GetNumRaidMembers() > 0 and UnitInRaid(srcName) then
+		local inInstance, instanceType = IsInInstance()
+		if Skada.db.profile.modules.ccannounce and GetNumRaidMembers() > 0 and UnitInRaid(srcName) and not (instanceType == "pvp") then
 
 			-- Ignore main tanks?
 			if Skada.db.profile.modules.ccignoremaintanks then
