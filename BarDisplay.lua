@@ -114,11 +114,10 @@ local function BarEnter(win, id, label)
 	local t = GameTooltip
 	if Skada.db.profile.tooltips and (win.metadata.click1 or win.metadata.click2 or win.metadata.click3 or win.metadata.tooltip) then
 		ttactive = true
---	    t:SetOwner(win.bargroup, "ANCHOR_NONE")
---	    t:SetPoint("TOPLEFT", win.bargroup, "TOPRIGHT")
 		Skada:SetTooltipPosition(t, win.bargroup)
 	    t:ClearLines()
 	    
+	    -- Current mode's own tooltips.
 		if win.metadata.tooltip then
 			win.metadata.tooltip(win, id, label, t)
 			
@@ -128,6 +127,20 @@ local function BarEnter(win, id, label)
 			end
 		end
 		
+		-- Generic informative tooltips.
+		if Skada.db.profile.informativetooltips then
+			if win.metadata.click1 then
+				Skada:AddSubviewToTooltip(t, win, win.metadata.click1, id, label)
+			end
+			if win.metadata.click2 then
+				Skada:AddSubviewToTooltip(t, win, win.metadata.click2, id, label)
+			end
+			if win.metadata.click3 then
+				Skada:AddSubviewToTooltip(t, win, win.metadata.click3, id, label)
+			end
+		end
+		
+		-- Click directions.
 		if win.metadata.click1 then
 			t:AddLine(L["Click for"].." "..win.metadata.click1:GetName()..".", 0.2, 1, 0.2)
 		end
@@ -145,6 +158,7 @@ end
 local function BarLeave(win, id, label)
 	if ttactive then
 		GameTooltip:Hide()
+		ttactive = false
 	end
 end
 

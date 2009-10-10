@@ -240,8 +240,7 @@ function Window:SetDisplay(name)
 	end
 end
 
--- Tells window to update the display of its dataset.
--- TODO: This will delegate to the chosen display provider. For now, just do bars.
+-- Tells window to update the display of its dataset, using its display provider.
 function Window:UpdateDisplay()
 	-- Fetch max value if our mode has not done this itself.
 	if not self.metadata.maxvalue then
@@ -589,7 +588,7 @@ function Skada:Report(channel, chantype, report_mode_name, report_set_name, max,
 			return
 		end
 		-- Create a temporary fake window.
-		report_table = {metadata = {}, dataset = {}}
+		report_table = Window:new()
 		
 		-- Tell our mode to populate our dataset.
 		report_mode:Update(report_table, report_set)
@@ -2111,6 +2110,63 @@ function Skada:FormatValueText(...)
 		return value3
 	end
 end
+
+local function value_sort(a,b)
+	if not a or a.value == nil then
+		return false
+	elseif not b or b.value == nil then
+		return true
+	else
+		return a.value > b.value
+	end
+end
+
+-- Tooltip display. Shows subview data for a specific row.
+-- Using a fake window, the subviews are asked to populate the window's dataset normally.
+local ttwin = Window:new()
+function Skada:AddSubviewToTooltip(tooltip, win, mode, id, label)
+	-- Clean dataset.
+	wipe(ttwin.dataset)
+	
+	-- Tell mode we are entering our real window.
+	mode:Enter(win, id, label)
+	
+	-- Ask mode to populate dataset in our fake window.
+	mode:Update(ttwin, win:get_selected_set())
+	
+	-- Sort dataset unless we are using ordersort.
+	if not mode.metadata or not mode.metadata.ordersort then
+		table.sort(ttwin.dataset, value_sort)
+	end
+
+	-- Show title and data if we have data.
+	if #ttwin.dataset > 0 then
+		tooltip:AddLine(mode.title or mode:GetName(), 1,1,1)
+
+		-- Display the top X, default 3, rows.
+		local nr = 0
+		for i, data in ipairs(ttwin.dataset) do
+			if data.id and nr < Skada.db.profile.tooltiprows then
+				nr = nr + 1
+				
+				local color = {r = 1, g = 1, b = 1}
+				if data.color then
+					-- Explicit color from dataset.
+					color = data.color
+				elseif data.class then
+					-- Class color.
+					local color = Skada.classcolors[data.class]
+				end
+				
+				tooltip:AddDoubleLine(nr..". "..data.label, data.valuetext, color.r, color.g, color.b)
+			end
+		end
+		
+		-- Add an empty line.
+		tooltip:AddLine(" ")
+	end
+end
+
 
 -- A minimal mode showing test data. Used by the config.
 --[[

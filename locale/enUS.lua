@@ -301,3 +301,10 @@ L["Health"] = "Health"
 
 L["Hide in combat"] = "Hide in combat"
 L["Hides Skada's window when in combat."] = "Hides Skada's window when in combat."
+
+L["Tooltips"] = "Tooltips"
+L["Informative tooltips"] = "Informative tooltips"
+L["Shows subview summaries in the tooltips."] = "Shows subview summaries in the tooltips."
+L["Subview rows"] = "Subview rows"
+L["The number of rows from each subview to show when using informative tooltips."] = "The number of rows from each subview to show when using informative tooltips."
+

@@ -229,6 +229,7 @@ function mod:Update(win, set)
 	win.metadata.maxvalue = max
 end
 
+-- Tooltip for a specific player.
 local function player_tooltip(win, id, label, tooltip)
 	local player = Skada:find_player(win:get_selected_set(), playermod.playerid)
 	if player then
@@ -288,7 +289,7 @@ end
 function damagedmod:Enter(win, id, label)
 	local player = Skada:find_player(win:get_selected_set(), id)
 	damagedmod.playerid = id
-	damagedmod.title = player.name..L["'s Damage"]
+	damagedmod.title = player.name..L["'s "]..L["Damaged mobs"]
 end
 
 -- Player view showing damaged mobs.
@@ -348,9 +349,9 @@ function spellmod:Update(win, set)
 	if player then
 		local spell = player.damagespells[self.spellname]
 		
-		win.metadata.maxvalue = spell.totalhits
-		
 		if spell then
+			win.metadata.maxvalue = spell.totalhits
+			
 			if spell.hit > 0 then
 				add_detail_bar(win, 1, L["Hit"], spell.hit)
 			end

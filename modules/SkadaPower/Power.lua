@@ -83,7 +83,7 @@ end
 
 function playermod:Enter(win, id, label)
 	playermod.playerid = id
-	playermod.title = label..L["'s Healing"]
+	playermod.title = label
 end
 
 -- Detail view of a player.

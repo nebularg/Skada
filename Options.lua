@@ -46,9 +46,11 @@ Skada.defaults = {
 		reset={instance=1, join=3, leave=1},
 		icon = {hide = false, radius = 80, minimapPos = 195},
 		numberformat=1,
-		setstokeep = 10,
+		setstokeep=10,
 		tooltips=true,
 		tooltippos="default",
+		tooltiprows=3,
+		informativetooltips=true,
 		onlykeepbosses=false,
 		hidesolo=false,
 		hidepvp=false,
@@ -199,6 +201,53 @@ Skada.options = {
 				        
 	        		},
 
+					tooltips = {
+	        			type = "group",
+	        			name = L["Tooltips"],
+	        			order=4,
+						args = {
+							tooltips = {
+							        type="toggle",
+							        name=L["Show tooltips"],
+							        desc=L["Shows tooltips with extra information in some modes."],
+							        order=1,
+							        get=function() return Skada.db.profile.tooltips end,
+							        set=function() Skada.db.profile.tooltips = not Skada.db.profile.tooltips end,
+							},
+							
+							informative = {
+							        type="toggle",
+							        name=L["Informative tooltips"],
+							        desc=L["Shows subview summaries in the tooltips."],
+							        order=2,
+							        get=function() return Skada.db.profile.informativetooltips end,
+							        set=function() Skada.db.profile.informativetooltips = not Skada.db.profile.informativetooltips end,
+							},
+							
+							rows = {
+								type="range",
+								name=L["Subview rows"],
+								desc=L["The number of rows from each subview to show when using informative tooltips."],
+								min=1,
+								max=10,
+								step=1,
+								get=function() return Skada.db.profile.tooltiprows end,
+								set=function(self, val) Skada.db.profile.tooltiprows = val end,
+								order=3,
+							},
+							
+							tooltippos = {
+								type="select",
+								name=L["Tooltip position"],
+								desc=L["Position of the tooltips."],
+								values=	{["default"] = L["Default"], ["topright"] = L["Top right"], ["topleft"] = L["Top left"]},
+								get=function() return Skada.db.profile.tooltippos end,
+								set=function(self, opt) Skada.db.profile.tooltippos = opt end,
+								order=4,
+							},							
+						}
+					},
+
 	        		generaloptions = {
 	        			type = "group",
 	        			name = L["General options"],
@@ -217,24 +266,7 @@ Skada.options = {
 							        	end,
 							},
 
-							tooltips = {
-							        type="toggle",
-							        name=L["Show tooltips"],
-							        desc=L["Shows tooltips with extra information in some modes."],
-							        order=2,
-							        get=function() return Skada.db.profile.tooltips end,
-							        set=function() Skada.db.profile.tooltips = not Skada.db.profile.tooltips end,
-							},
-							
-							tooltippos = {
-								type="select",
-								name=L["Tooltip position"],
-								desc=L["Position of the tooltips."],
-								values=	{["default"] = L["Default"], ["topright"] = L["Top right"], ["topleft"] = L["Top left"]},
-								get=function() return Skada.db.profile.tooltippos end,
-								set=function(self, opt) Skada.db.profile.tooltippos = opt end,
-								order=10,
-							},
+
 							
 							onlykeepbosses = {
 							        type="toggle",
