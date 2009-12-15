@@ -1,4 +1,4 @@
-## Interface: 30200
+## Interface: 30300
 ## Title: Skada |r[|caaedc99fPower|r]
 ## Notes: Adds Power gained modes and data collection to Skada.
 ## Author: Zarnivoop
