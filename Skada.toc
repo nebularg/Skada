@@ -22,6 +22,7 @@ embeds.xml
 lib\SpecializedLibBars-1.0\SpecializedLibBars-1.0.lua
 
 locale\enUS.lua
+locale\ruRU.lua
 locale\koKR.lua
 locale\zhCN.lua
 locale\zhTW.lua
