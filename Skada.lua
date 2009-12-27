@@ -2044,6 +2044,14 @@ Sets
 
 --]]
 
+function Skada:GetSetTime(set)
+	if set.time then
+		return set.time
+	else
+		return (time() - set.starttime)
+	end
+end
+
 -- Returns the time (in seconds) a player has been active for a set.
 function Skada:PlayerActiveTime(set, player)
 	local maxtime = 0

@@ -308,3 +308,6 @@ L["Shows subview summaries in the tooltips."] = "Shows subview summaries in the 
 L["Subview rows"] = "Subview rows"
 L["The number of rows from each subview to show when using informative tooltips."] = "The number of rows from each subview to show when using informative tooltips."
 
+L["Damage done"] = "Damage done"
+L["Active time"] = "Active time"
+L["Segment time"] = "Segment time"

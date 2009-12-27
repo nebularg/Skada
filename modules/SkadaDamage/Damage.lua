@@ -230,6 +230,23 @@ function mod:Update(win, set)
 end
 
 -- Tooltip for a specific player.
+local function dps_tooltip(win, id, label, tooltip)
+	local set = win:get_selected_set()
+	local player = Skada:find_player(set, id)
+	if player then
+
+		local activetime = Skada:PlayerActiveTime(set, player)
+		local totaltime = Skada:GetSetTime(set)
+		tooltip:AddLine(player.name.." - "..L["DPS"])
+		tooltip:AddDoubleLine(L["Segment time"], totaltime.."s", 255,255,255,255,255,255)
+		tooltip:AddDoubleLine(L["Active time"], activetime.."s", 255,255,255,255,255,255)
+		tooltip:AddDoubleLine(L["Damage done"], Skada:FormatNumber(player.damage), 255,255,255,255,255,255)
+		tooltip:AddDoubleLine(Skada:FormatNumber(player.damage) .. " / " .. activetime .. ":", ("%02.1f"):format(player.damage / math.max(1,activetime)), 255,255,255,255,255,255)
+		
+	end
+end
+
+-- Tooltip for a specific player.
 local function player_tooltip(win, id, label, tooltip)
 	local player = Skada:find_player(win:get_selected_set(), playermod.playerid)
 	if player then
@@ -432,7 +449,7 @@ function dpsmod:Update(win, set)
 end
 
 function mod:OnEnable()
-	dpsmod.metadata = 		{showspots = true}
+	dpsmod.metadata = 		{showspots = true, tooltip = dps_tooltip}
 	playermod.metadata = 	{tooltip = player_tooltip, click1 = spellmod, columns = {Damage = true, Percent = true}}
 	mod.metadata = 			{showspots = true, click1 = playermod, click2 = damagedmod, columns = {Damage = true, DPS = true, Percent = true}}
 	damagedmod.metadata = 	{columns = {Damage = true, Percent = true}}

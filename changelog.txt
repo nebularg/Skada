@@ -1,5 +1,6 @@
 1.2-25:
 * Added X-Part-Of headers for the ACP crowd.
+* Added tooltip to DPS mode showing the very simple calculation.
 
 1.2-24:
 * Fixed forgotten module .tocs, yay.
