@@ -4,6 +4,7 @@
 ## Author: Zarnivoop
 ## Version: 1.0
 ## Dependencies: Skada
+## X-Part-Of: Skada
 
 Healing.lua
 Overhealing.lua

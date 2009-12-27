@@ -1,3 +1,16 @@
+1.2-25:
+* Added X-Part-Of headers for the ACP crowd.
+
+1.2-24:
+* Fixed forgotten module .tocs, yay.
+
+1.2-23:
+* 3.3 .toc update.
+
+1.2-22:
+* Added subview summary tooltips.
+* Made CC breaks not announce in PvP instances.
+
 1.2-21:
 * Fixed a major bug in Absorbs mode - swing damage was not considered.
 * Adapted healing and death log modes to new heal event format.
