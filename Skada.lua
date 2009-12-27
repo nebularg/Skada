@@ -1587,7 +1587,7 @@ function Skada:find_set(s)
 	end
 end
 
--- Returns a player from the current. Safe to use to simply 
+-- Returns a player from the current. Safe to use to simply view a player without creating an entry.
 function Skada:find_player(set, playerid)
 	local player = nil
 	for i, p in ipairs(set.players) do

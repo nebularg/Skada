@@ -311,3 +311,4 @@ L["The number of rows from each subview to show when using informative tooltips.
 L["Damage done"] = "Damage done"
 L["Active time"] = "Active time"
 L["Segment time"] = "Segment time"
+L["Absorbs and healing"] = "Absorbs and healing"

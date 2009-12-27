@@ -206,21 +206,25 @@ function mod:Update(win)
 	local nr = 1
 	for i, data in ipairs(win.dataset) do
 		if data.id then
-			local bar = win.bargroup:GetBar(data.id)
+			local barid = data.id
+			local barlabel = data.label
+			
+			local bar = win.bargroup:GetBar(barid)
+			
 			if bar then
 				bar:SetMaxValue(win.metadata.maxvalue or 1)
 				bar:SetValue(data.value)
 			else
 				-- Initialization of bars.
-				bar = mod:CreateBar(win, data.id, data.label, data.value, win.metadata.maxvalue or 1, data.icon, false)
+				bar = mod:CreateBar(win, barid, barlabel, data.value, win.metadata.maxvalue or 1, data.icon, false)
 				if data.icon then
 					bar:ShowIcon()
 				end
 				bar:EnableMouse()
 				bar.id = data.id
-				bar:SetScript("OnEnter", function(bar) BarEnter(win, data.id, data.label) end)
-				bar:SetScript("OnLeave", function(bar) BarLeave(win, data.id, data.label) end)
-				bar:SetScript("OnMouseDown", function(bar, button) BarClick(win, data.id, data.label, button) end)
+				bar:SetScript("OnEnter", function(bar) BarEnter(win, barid, barlabel) end)
+				bar:SetScript("OnLeave", function(bar) BarLeave(win, barid, barlabel) end)
+				bar:SetScript("OnMouseDown", function(bar, button) BarClick(win, barid, barlabel, button) end)
 				
 				if data.color then
 					-- Explicit color from dataset.

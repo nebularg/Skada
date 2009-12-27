@@ -5,6 +5,7 @@ local L = LibStub("AceLocale-3.0"):GetLocale("Skada", false)
 local Skada = Skada
 local mod = Skada:NewModule(L["Absorbs"])
 local playermod = Skada:NewModule(L["Absorb details"])
+local combined = Skada:NewModule(L["Absorbs and healing"])
 
 -- This bit shamelessly copied straight from RecountGuessedAbsorbs - thanks!
 local AbsorbSpellDuration = 
@@ -178,10 +179,12 @@ end
 
 local function log_absorb(set, srcName, dstName, absorbed)
 	-- Get the player.
-	local player = Skada:get_player(set, srcName, UnitName(srcName))
-	player.totalabsorbs = player.totalabsorbs + absorbed
-	player.absorbs[dstName] = (player.absorbs[dstName] or 0) + absorbed
-	set.absorbs = set.absorbs + absorbed
+	local player = Skada:get_player(set, UnitGUID(srcName), UnitName(srcName))
+	if player then
+		player.totalabsorbs = player.totalabsorbs + absorbed
+		player.absorbs[dstName] = (player.absorbs[dstName] or 0) + absorbed
+		set.absorbs = set.absorbs + absorbed
+	end
 end
 
 local function consider_absorb(absorbed, dstName, srcName, timestamp)
@@ -281,7 +284,35 @@ function playermod:Update(win, set)
 	end
 end
 
+function combined:Update(win, set)
+	local nr = 1
+	local max = 0
+
+	for i, player in ipairs(set.players) do
+		if player.totalabsorbs > 0 or player.healing > 0 then
+		
+			local d = win.dataset[nr] or {}
+			win.dataset[nr] = d
+			
+			d.id = player.id
+			d.value = player.totalabsorbs + (player.healing or 0)
+			d.label = player.name
+			d.valuetext = Skada:FormatNumber(player.totalabsorbs + (player.healing or 0))..(" (%02.1f%%)"):format((player.totalabsorbs + (player.healing or 0)) / (set.absorbs + (set.healing or 0)) * 100)
+			d.class = player.class
+
+			if (player.totalabsorbs + player.healing) > max then
+				max = player.totalabsorbs + player.healing
+			end
+			
+			nr = nr + 1
+		end
+	end
+	
+	win.metadata.maxvalue = max
+end
+
 function mod:OnEnable()
+	combined.metadata 	= {showspots = 1, click1 = playermod}
 	mod.metadata 		= {showspots = 1, click1 = playermod}
 	playermod.metadata 	= {}
 
@@ -295,10 +326,12 @@ function mod:OnEnable()
 	Skada:RegisterForCL(SwingDamage, 'SWING_DAMAGE', {dst_is_interesting_nopets = true})
 	
 	Skada:AddMode(self)
+	Skada:AddMode(combined)
 end
 
 function mod:OnDisable()
 	Skada:RemoveMode(self)
+	Skada:RemoveMode(combined)
 end
 
 function mod:AddToTooltip(set, tooltip)
@@ -306,6 +339,10 @@ end
 
 function mod:GetSetSummary(set)
 	return Skada:FormatNumber(set.absorbs)
+end
+
+function combined:GetSetSummary(set)
+	return Skada:FormatNumber(set.absorbs + set.healing)
 end
 
 -- Called by Skada when a new player is added to a set.
