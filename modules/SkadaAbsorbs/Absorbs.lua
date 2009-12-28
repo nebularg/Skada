@@ -222,6 +222,14 @@ local function SpellDamage(timestamp, eventtype, srcGUID, srcName, srcFlags, dst
 	end
 end
 
+local function SpellMissed(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
+	local spellId, spellName, spellSchool, misstype, amount = ...
+	if misstype == "ABSORB" and amount > 0 and dstName and shields[dstName] and srcName then
+		--Skada:Print(dstName.." absorbed "..absorbed.." from "..srcName.." (MISS)")
+		consider_absorb(amount, dstName, srcName, timestamp)
+	end
+end
+
 function mod:Update(win, set)
 	local nr = 1
 	local max = 0
@@ -316,6 +324,7 @@ function mod:OnEnable()
 	mod.metadata 		= {showspots = 1, click1 = playermod}
 	playermod.metadata 	= {}
 
+	Skada:RegisterForCL(AuraApplied, 'SPELL_AURA_REFRESH', {src_is_interesting_nopets = true})
 	Skada:RegisterForCL(AuraApplied, 'SPELL_AURA_APPLIED', {src_is_interesting_nopets = true})
 	Skada:RegisterForCL(AuraRemoved, 'SPELL_AURA_REMOVED', {src_is_interesting_nopets = true})
 	Skada:RegisterForCL(SpellDamage, 'DAMAGE_SHIELD', {dst_is_interesting_nopets = true})
@@ -324,6 +333,7 @@ function mod:OnEnable()
 	Skada:RegisterForCL(SpellDamage, 'SPELL_BUILDING_DAMAGE', {dst_is_interesting_nopets = true})
 	Skada:RegisterForCL(SpellDamage, 'RANGE_DAMAGE', {dst_is_interesting_nopets = true})
 	Skada:RegisterForCL(SwingDamage, 'SWING_DAMAGE', {dst_is_interesting_nopets = true})
+	Skada:RegisterForCL(SpellMissed, 'SPELL_MISSED', {dst_is_interesting_nopets = true})
 	
 	Skada:AddMode(self)
 	Skada:AddMode(combined)
