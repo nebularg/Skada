@@ -87,6 +87,7 @@ end
 function mod:OnEnable()
 	mod.metadata = {showspots = true}
 	
+	Skada:RegisterForCL(SpellDispel, 'SPELL_STOLEN', {src_is_interesting = true})
 	Skada:RegisterForCL(SpellDispel, 'SPELL_DISPEL', {src_is_interesting = true})
 	Skada:RegisterForCL(SpellInterrupt, 'SPELL_INTERRUPT', {src_is_interesting = true})
 	
