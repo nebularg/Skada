@@ -230,6 +230,10 @@ local function SpellMissed(timestamp, eventtype, srcGUID, srcName, srcFlags, dst
 	end
 end
 
+local function SwingMissed(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
+	SpellMissed(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, nil, nil, nil, ...)
+end
+
 function mod:Update(win, set)
 	local nr = 1
 	local max = 0
@@ -334,6 +338,10 @@ function mod:OnEnable()
 	Skada:RegisterForCL(SpellDamage, 'RANGE_DAMAGE', {dst_is_interesting_nopets = true})
 	Skada:RegisterForCL(SwingDamage, 'SWING_DAMAGE', {dst_is_interesting_nopets = true})
 	Skada:RegisterForCL(SpellMissed, 'SPELL_MISSED', {dst_is_interesting_nopets = true})
+	Skada:RegisterForCL(SpellMissed, 'SPELL_PERIODIC_MISSED', {dst_is_interesting_nopets = true})
+	Skada:RegisterForCL(SpellMissed, 'SPELL_BUILDING_MISSED', {dst_is_interesting_nopets = true})
+	Skada:RegisterForCL(SpellMissed, 'RANGE_MISSED', {dst_is_interesting_nopets = true})
+	Skada:RegisterForCL(SwingMissed, 'SWING_MISSED', {dst_is_interesting_nopets = true})
 	
 	Skada:AddMode(self)
 	Skada:AddMode(combined)
