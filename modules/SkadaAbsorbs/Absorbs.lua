@@ -14,6 +14,9 @@ local AbsorbSpellDuration =
 	[48707] = 5, -- Anti-Magic Shell (DK) Rank 1 -- Does not currently seem to show tracable combat log events. It shows energizes which do not reveal the amount of damage absorbed
 	[51052] = 10, -- Anti-Magic Zone (DK)( Rank 1 (Correct spellID?)
 		-- Does DK Spell Deflection show absorbs in the CL?
+	[51271] = 20, -- Unbreakable Armor (DK)
+	-- Druid
+	[62606] = 10, -- Savage Defense proc. (Druid) Tooltip of the original spell doesn't clearly state that this is an absorb, but the buff does.
 	-- Mage
 	[11426] = 60, -- Ice Barrier (Mage) Rank 1
 	[13031] = 60,
@@ -142,14 +145,24 @@ local AbsorbSpellDuration =
 	[37515] = 15, -- Warbringer Armor Proc
 	[42137] = 86400, -- Greater Rune of Warding Proc
 	[26467] = 30, -- Scarab Brooch proc
+	[26470] = 8, -- Scarab Brooch proc (actual)
 	[27539] = 6, -- Thick Obsidian Breatplate proc
 	[28810] = 30, -- Faith Set Proc Armor of Faith
 	[54808] = 12, -- Noise Machine proc Sonic Shield 
 	[55019] = 12, -- Sonic Shield (one of these too ought to be wrong)
+	[64411] = 15, -- Blessing of the Ancient (Val'anyr Hammer of Ancient Kings equip effect)
+	[64413] = 8, -- Val'anyr, Hammer of Ancient Kings proc Protection of Ancient Kings
 	-- Misc
 	[40322] = 30, -- Teron's Vengeful Spirit Ghost - Spirit Shield
-	
-	[62606] = 10, -- Savage Defense (Druid, absorb 25% of AP after a crit)
+	-- Boss abilities
+	[65874] = 15, -- Twin Val'kyr's Shield of Darkness 175000
+	[67257] = 15, -- 300000
+	[67256] = 15, -- 700000
+	[67258] = 15, -- 1200000
+	[65858] = 15, -- Twin Val'kyr's Shield of Lights 175000
+	[67260] = 15, -- 300000
+	[67259] = 15, -- 700000
+	[67261] = 15, -- 1200000
 }
 
 local shields = {}
