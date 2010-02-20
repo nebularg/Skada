@@ -312,3 +312,10 @@ L["Damage done"] = "Damage done"
 L["Active time"] = "Active time"
 L["Segment time"] = "Segment time"
 L["Absorbs and healing"] = "Absorbs and healing"
+
+L["Show rank numbers"] = "Show rank numbers"
+L["Shows numbers for relative ranks for modes where it is applicable."] = "Shows numbers for relative ranks for modes where it is applicable."
+
+L["Use focus target"] = "Use focus target"
+L["Shows threat on focus target, or focus target's target, when available."] = "Shows threat on focus target, or focus target's target, when available."
+L["APS"] = "APS"

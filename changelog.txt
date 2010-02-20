@@ -1,3 +1,8 @@
+1.2-26:
+* Threat mode now respects the class color option.
+* Added a global option to show rank numbers.
+* Threat mode now shows target of target if target is friendly, and optionally focus target (or focus target's target).
+
 1.2-25:
 * Added X-Part-Of headers for the ACP crowd.
 * Added tooltip to DPS mode showing the very simple calculation used.

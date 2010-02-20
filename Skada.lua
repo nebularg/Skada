@@ -65,25 +65,6 @@ function Skada:GetWindows()
 	return windows
 end
 
--- explode(seperator, string)
-local function explode(d,p)
-  local t, ll
-  t={}
-  ll=0
-  if(#p == 1) then return p end
-    while true do
-      l=string.find(p,d,ll+1,true) -- find the next d in the string
-      if l~=nil then -- if "not not" found then..
-        table.insert(t, string.sub(p,ll,l-1)) -- Save it in our array.
-        ll=l+1 -- save just after where we found it for searching next time.
-      else
-        table.insert(t, string.sub(p,ll)) -- Save what's left in our array.
-        break -- Break at end, as it should be, according to the lua manual.
-      end
-    end
-  return t
-end
-
 local function find_mode(name)
 	for i, mode in ipairs(modes) do
 		if mode:GetName() == name then
@@ -323,7 +304,9 @@ end
 local function click_on_mode(win, id, label, button)
 	if button == "LeftButton" then
 		local mode = find_mode(id)
-		win:DisplayMode(mode)
+		if mode then
+			win:DisplayMode(mode)
+		end
 	elseif button == "RightButton" then
 		win:RightClick()
 	end
@@ -360,7 +343,7 @@ function Window:DisplayModes(settime)
 			end
 		end
 	end
-
+	
 	self.metadata.click = click_on_mode
 	self.metadata.maxvalue = 1
 	self.metadata.sortfunc = function(a,b) return a.name < b.name end
@@ -542,11 +525,11 @@ function Skada:Command(param)
 		local max = 0
 		local chantype = "preset"
 		
-		local words = explode(" ", param)
+		local w1, w2, w3, w4 = self:GetArgs(param, 4)
 		
-		local chan = words[2] or "say"
-		local report_mode_name = words[3] or L["Damage"]
-		local max = tonumber(words[4] or 10)
+		local chan = w1 or "say"
+		local report_mode_name = w2 or L["Damage"]
+		local max = tonumber(w3 or 10)
 		
 		-- Sanity checks.
 		if chan and (chan == "say" or chan == "guild" or chan == "raid" or chan == "party" or chan == "officer") and (report_mode_name and find_mode(report_mode_name)) then
@@ -1646,20 +1629,18 @@ end
 local band = bit.band
 local PET_FLAGS = COMBATLOG_OBJECT_TYPE_PET + COMBATLOG_OBJECT_TYPE_GUARDIAN
 local RAID_FLAGS = COMBATLOG_OBJECT_AFFILIATION_MINE + COMBATLOG_OBJECT_AFFILIATION_PARTY + COMBATLOG_OBJECT_AFFILIATION_RAID
-local RAID_AND_PET_FLAGS = COMBATLOG_OBJECT_AFFILIATION_MINE + COMBATLOG_OBJECT_AFFILIATION_PARTY + COMBATLOG_OBJECT_AFFILIATION_RAID + COMBATLOG_OBJECT_TYPE_PET + COMBATLOG_OBJECT_TYPE_GUARDIAN
 
 -- The basic idea for CL processing:
 -- Modules register for interest in a certain event, along with the function to call and the flags determining if the particular event is interesting.
 -- On a new event, loop through the interested parties.
 -- The flags are checked, and the flag value (say, that the SRC must be interesting, ie, one of the raid) is only checked once, regardless
 -- of how many modules are interested in the event. The check is also only done on the first flag that requires it.
--- The exception is src_is_interesting, which we always check to determine combat start - I would like to get rid of this, but am not sure how. [disabled for now]
 function Skada:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
 	if disabled then
 		return
 	end
 	
-	local src_is_interesting = nil --self:UnitIsInteresting(srcName, srcGUID)
+	local src_is_interesting = nil
 	local dst_is_interesting = nil
 	local src_is_interesting_nopets = nil
 	local dst_is_interesting_nopets = nil
@@ -1673,7 +1654,6 @@ function Skada:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID,
 			if not fail and mod.flags.src_is_interesting_nopets then
 				if src_is_interesting_nopets == nil then
 					src_is_interesting_nopets = band(srcFlags, RAID_FLAGS) ~= 0 and band(srcFlags, PET_FLAGS) == 0
-					--self:UnitIsInterestingNoPets(srcName, srcGUID)
 					if src_is_interesting_nopets then
 						src_is_interesting = true
 					end
@@ -1687,7 +1667,6 @@ function Skada:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID,
 			if not fail and mod.flags.dst_is_interesting_nopets then
 				if dst_is_interesting_nopets == nil then
 					dst_is_interesting_nopets = band(dstFlags, RAID_FLAGS) ~= 0 and band(dstFlags, PET_FLAGS) == 0
-					-- self:UnitIsInterestingNoPets(dstName, dstGUID)
 					if dst_is_interesting_nopets then
 						dst_is_interesting = true
 					end
@@ -1700,7 +1679,6 @@ function Skada:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID,
 			if not fail and mod.flags.src_is_interesting or mod.flags.src_is_not_interesting then
 				if src_is_interesting == nil then
 					src_is_interesting = band(srcFlags, RAID_FLAGS) ~= 0 or (band(srcFlags, PET_FLAGS) ~= 0 and pets[srcGUID])
-					--self:UnitIsInteresting(srcName, srcGUID)
 				end
 				if mod.flags.src_is_interesting and not src_is_interesting then
 --				self:Print("fail on src_is_interesting")
@@ -1713,7 +1691,6 @@ function Skada:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID,
 			if not fail and mod.flags.dst_is_interesting or mod.flags.dst_is_not_interesting then
 				if dst_is_interesting_ == nil then
 					dst_is_interesting = band(dstFlags, RAID_FLAGS) ~= 0 or (band(dstFlags, PET_FLAGS) ~= 0 and pets[dstGUID])
-					-- self:UnitIsInteresting(dstName, dstGUID)
 				end
 				if mod.flags.dst_is_interesting and not dst_is_interesting then
 --				self:Print("fail on dst_is_interesting")
@@ -2073,6 +2050,20 @@ end
 -- Playerid and playername are exchanged for the pet owner's, and spellname is modified to include pet name.
 function Skada:FixPets(action)
 	if action and not UnitIsPlayer(action.playername) then
+	
+		-- Fix for guardians; requires "playerflags" to be set from CL.
+		if action.playerflags and bit.band(action.playerflags, COMBATLOG_OBJECT_TYPE_GUARDIAN) ~= 0 then
+			if bit.band(action.playerflags, COMBATLOG_OBJECT_AFFILIATION_MINE) ~=0 then
+				if action.spellname then
+					action.spellname = action.playername..": "..action.spellname
+				end
+				action.playername = UnitName("player")
+				action.playerid = UnitGUID("player")
+			else
+				-- Nothing in place here yet.
+			end
+		end
+	
 		local pet = pets[action.playerid]
 		if pet then
 			if action.spellname then

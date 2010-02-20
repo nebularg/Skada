@@ -100,6 +100,7 @@ local function SpellDamage(timestamp, eventtype, srcGUID, srcName, srcFlags, dst
 		local spellId, spellName, spellSchool, samount, soverkill, sschool, sresisted, sblocked, sabsorbed, scritical, sglancing, scrushing = ...
 		
 		dmg.playerid = srcGUID
+		dmg.playerflags = srcFlags
 		dmg.dstname = dstName
 		dmg.playername = srcName
 		dmg.spellid = spellId
@@ -127,6 +128,7 @@ local function SwingDamage(timestamp, eventtype, srcGUID, srcName, srcFlags, dst
 		
 		dmg.playerid = srcGUID
 		dmg.playername = srcName
+		dmg.playerflags = srcFlags
 		dmg.dstname = dstName
 		dmg.spellid = 6603
 		dmg.spellname = L["Attack"]
@@ -152,6 +154,7 @@ local function SwingMissed(timestamp, eventtype, srcGUID, srcName, srcFlags, dst
 
 		dmg.playerid = srcGUID
 		dmg.playername = srcName
+		dmg.playerflags = srcFlags
 		dmg.dstname = dstName
 		dmg.spellid = 6603
 		dmg.spellname = L["Attack"]
@@ -177,6 +180,7 @@ local function SpellMissed(timestamp, eventtype, srcGUID, srcName, srcFlags, dst
 		local spellId, spellName, spellSchool, missType, samount = ...
 		dmg.playerid = srcGUID
 		dmg.playername = srcName
+		dmg.playerflags = srcFlags
 		dmg.dstname = dstName
 		dmg.spellid = spellId
 		dmg.spellname = spellName
@@ -200,7 +204,7 @@ end
 function mod:Update(win, set)
 	-- Max value.
 	local max = 0
- 
+	
 	local nr = 1
 	for i, player in ipairs(set.players) do
 		if player.damage > 0 then

@@ -46,6 +46,7 @@ Skada.defaults = {
 		reset={instance=1, join=3, leave=1},
 		icon = {hide = false, radius = 80, minimapPos = 195},
 		numberformat=1,
+		showranks=true,
 		setstokeep=10,
 		tooltips=true,
 		tooltippos="default",
@@ -335,6 +336,18 @@ Skada.options = {
 								order=11,
 							},
 							
+							showranks = {
+							        type="toggle",
+							        name=L["Show rank numbers"],
+							        desc=L["Shows numbers for relative ranks for modes where it is applicable."],
+							        order=9,
+							        get=function() return Skada.db.profile.hidedisables end,
+							        set=function()
+							        			Skada.db.profile.hidedisables = not Skada.db.profile.hidedisables
+							        			Skada:ApplySettings()
+							        		end,
+							},
+
 							datafeed = {
 								type="select",
 								name=L["Data feed"],

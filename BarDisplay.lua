@@ -259,7 +259,7 @@ function mod:Update(win)
 				bar.order = i
 			end
 			
-			if win.metadata.showspots then
+			if win.metadata.showspots and Skada.db.profile.showranks then
 				bar:SetLabel(("%2u. %s"):format(nr, data.label))
 			else
 				bar:SetLabel(data.label)

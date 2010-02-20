@@ -89,6 +89,15 @@ local opts = {
 				order=2,
 			},
 			
+			focustarget = {
+				type = "toggle",
+				name = L["Use focus target"],
+				desc = L["Shows threat on focus target, or focus target's target, when available."],
+				get = function() return Skada.db.profile.modules.threatfocustarget end,
+				set = function() Skada.db.profile.modules.threatfocustarget = not Skada.db.profile.modules.threatfocustarget end,
+				order=2,
+			},
+			
 		},
 	}
 }
@@ -127,9 +136,9 @@ local nr = 1
 -- Max threat value.
 local max = 0
 
-local function add_to_threattable(win, name)
+local function add_to_threattable(win, name, target)
 	if name and UnitExists(name) then
-		local isTanking, status, threatpct, rawthreatpct, threatvalue = UnitDetailedThreatSituation(name, "target")
+		local isTanking, status, threatpct, rawthreatpct, threatvalue = UnitDetailedThreatSituation(name, target)
 
 		if Skada.db.profile.threatraw then
 			if threatvalue then
@@ -162,7 +171,7 @@ local function add_to_threattable(win, name)
 				local d = win.dataset[nr] or {}
 				win.dataset[nr] = d
 				d.label = name
-				d.color =  Skada.classcolors[select(2, UnitClass(name))]
+				d.class = select(2, UnitClass(name))
 				d.id = name
 				d.value = threatpct
 				d.isTanking = isTanking
@@ -199,9 +208,20 @@ end
 local last_warn = time()
 
 function mod:Update(win, set)
+	local target = nil
 	if UnitExists("target") and not UnitIsFriend("player", "target") then
+		target = "target"
+	elseif Skada.db.profile.modules.threatfocustarget and UnitExists("focus") and not UnitIsFriend("player", "focus") then
+		target = "focus"
+	elseif Skada.db.profile.modules.threatfocustarget and UnitExists("focustarget") and not UnitIsFriend("player", "focustarget") then
+		target = "focustarget"
+	elseif UnitExists("target") and UnitIsFriend("player", "target") and UnitExists("targettarget") and not UnitIsFriend("player", "targettarget") then
+		target = "targettarget"
+	end
+	
+	if target then
 		-- Set window title.
-		win.metadata.title = UnitName("target")
+		win.metadata.title = UnitName(target)
 	
 		-- Reset our counter which we use to keep track of current index in the dataset.
 		nr = 1
@@ -214,10 +234,10 @@ function mod:Update(win, set)
 			for i = 1, 40, 1 do
 				local name, rank, subgroup, level, class, fileName, zone, online, isDead, role, isML = GetRaidRosterInfo(i);
 				if name then
-					add_to_threattable(win, name)
+					add_to_threattable(win, name, target)
 					
 					if UnitExists("raid"..i.."pet") then
-						add_to_threattable(win, select(1, UnitName("raid"..i.."pet")))
+						add_to_threattable(win, select(1, UnitName("raid"..i.."pet")), target)
 					end
 				end
 			end
@@ -226,28 +246,28 @@ function mod:Update(win, set)
 			for i = 1, 5, 1 do
 				local name = (UnitName("party"..tostring(i)))
 				if name then
-					add_to_threattable(win, name)
+					add_to_threattable(win, name, target)
 	
 					if UnitExists("party"..i.."pet") then
-						add_to_threattable(win, select(1, UnitName("party"..i.."pet")))
+						add_to_threattable(win, select(1, UnitName("party"..i.."pet")), target)
 					end
 				end
 			end
 			
 			-- Don't forget ourselves.
-			add_to_threattable(win, UnitName("player"))
+			add_to_threattable(win, UnitName("player"), target)
 			
 			-- Maybe we have a pet?
 			if UnitExists("pet") then
-				add_to_threattable(win, UnitName("pet"))
+				add_to_threattable(win, UnitName("pet"), target)
 			end
 		else
 			-- We are all alone.
-			add_to_threattable(win, UnitName("player"))
+			add_to_threattable(win, UnitName("player"), target)
 			
 			-- Maybe we have a pet?
 			if UnitExists("pet") then
-				add_to_threattable(win, UnitName("pet"))
+				add_to_threattable(win, UnitName("pet"), target)
 			end
 		end
 	
