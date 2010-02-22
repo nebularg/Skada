@@ -2,6 +2,7 @@
 * Threat mode now respects the class color option.
 * Added a global option to show rank numbers.
 * Threat mode now shows target of target if target is friendly, and optionally focus target (or focus target's target).
+* Partial fix for guardian spammage.
 
 1.2-25:
 * Added X-Part-Of headers for the ACP crowd.

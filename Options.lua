@@ -341,9 +341,9 @@ Skada.options = {
 							        name=L["Show rank numbers"],
 							        desc=L["Shows numbers for relative ranks for modes where it is applicable."],
 							        order=9,
-							        get=function() return Skada.db.profile.hidedisables end,
+							        get=function() return Skada.db.profile.showranks end,
 							        set=function()
-							        			Skada.db.profile.hidedisables = not Skada.db.profile.hidedisables
+							        			Skada.db.profile.showranks = not Skada.db.profile.showranks
 							        			Skada:ApplySettings()
 							        		end,
 							},

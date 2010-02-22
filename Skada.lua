@@ -2060,7 +2060,8 @@ function Skada:FixPets(action)
 				action.playername = UnitName("player")
 				action.playerid = UnitGUID("player")
 			else
-				-- Nothing in place here yet.
+				-- Nothing decent in place here yet. Modify guid so that there will only be 1 similar entry at least. Yes, it won't work for cross-realm.
+				action.playerid = action.playername
 			end
 		end
 	
