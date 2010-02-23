@@ -140,7 +140,7 @@ local function add_to_threattable(win, name, target)
 	if name and UnitExists(name) then
 		local isTanking, status, threatpct, rawthreatpct, threatvalue = UnitDetailedThreatSituation(name, target)
 
-		if Skada.db.profile.threatraw then
+		if Skada.db.profile.modules.threatraw then
 			if threatvalue then
 
 				local d = win.dataset[nr] or {}
@@ -153,10 +153,7 @@ local function add_to_threattable(win, name, target)
 				if threatvalue < 0 then
 					-- Show real threat.
 					d.value = threatvalue + 410065408
-					-- Fade a little.
-					if d.color then
-						d.a = 0.5
-					end
+					d.threat = threatvalue + 410065408
 				else
 					d.value = threatvalue
 				end
@@ -272,7 +269,7 @@ function mod:Update(win, set)
 		end
 	
 		-- If we are going by raw threat we got the max threat from above; otherwise it's always 100.
-		if not Skada.db.profile.threatraw then
+		if not Skada.db.profile.modules.threatraw then
 			maxthreat = 100
 		end
 		
