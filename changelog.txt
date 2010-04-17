@@ -1,3 +1,9 @@
+1.2-27:
+* Fixed raw threat option.
+* Fixed Mirror Image threat display.
+* Added option to disable spark effect.
+* Background window is now named.
+
 1.2-26:
 * Threat mode now respects the class color option.
 * Added a global option to show rank numbers.

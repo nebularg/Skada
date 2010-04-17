@@ -418,6 +418,7 @@ function Skada:OnInitialize()
 	media:Register("statusbar", "Perl",				[[Interface\Addons\Skada\statusbar\Perl]])
 	media:Register("statusbar", "Smooth",			[[Interface\Addons\Skada\statusbar\Smooth]])
 	media:Register("statusbar", "Round",			[[Interface\Addons\Skada\statusbar\Round]])
+	media:Register("statusbar", "TukTex",			[[Interface\Addons\Skada\statusbar\normTex]])
 
 	-- Some sounds (copied from Omen).
 	media:Register("sound", "Rubber Ducky", [[Sound\Doodad\Goblin_Lottery_Open01.wav]])
@@ -2051,17 +2052,19 @@ end
 function Skada:FixPets(action)
 	if action and not UnitIsPlayer(action.playername) then
 	
-		-- Fix for guardians; requires "playerflags" to be set from CL.
-		if action.playerflags and bit.band(action.playerflags, COMBATLOG_OBJECT_TYPE_GUARDIAN) ~= 0 then
-			if bit.band(action.playerflags, COMBATLOG_OBJECT_AFFILIATION_MINE) ~=0 then
-				if action.spellname then
-					action.spellname = action.playername..": "..action.spellname
+		if not pets[action.playerid] then
+			-- Fix for guardians; requires "playerflags" to be set from CL.
+			if action.playerflags and bit.band(action.playerflags, COMBATLOG_OBJECT_TYPE_GUARDIAN) ~= 0 then
+				if bit.band(action.playerflags, COMBATLOG_OBJECT_AFFILIATION_MINE) ~=0 then
+					if action.spellname then
+						action.spellname = action.playername..": "..action.spellname
+					end
+					action.playername = UnitName("player")
+					action.playerid = UnitGUID("player")
+				else
+					-- Nothing decent in place here yet. Modify guid so that there will only be 1 similar entry at least. Yes, it won't work for cross-realm.
+					action.playerid = action.playername
 				end
-				action.playername = UnitName("player")
-				action.playerid = UnitGUID("player")
-			else
-				-- Nothing decent in place here yet. Modify guid so that there will only be 1 similar entry at least. Yes, it won't work for cross-realm.
-				action.playerid = action.playername
 			end
 		end
 	

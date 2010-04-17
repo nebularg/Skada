@@ -450,15 +450,17 @@ function mod:ApplySettings(win)
 	-- Spark.
 	local bars = win.bargroup:GetBars()
 	for name, bar in pairs(bars) do
-		if true then
+		if p.spark then
 			bar.spark:Show()
+		else
+			bar.spark:Hide()
 		end
 	end
 	
 	-- Window
 	if p.enablebackground then
 		if g.bgframe == nil then
-			g.bgframe = CreateFrame("Frame", nil, g)
+			g.bgframe = CreateFrame("Frame", p.name.."BG", g)
 			g.bgframe:SetFrameStrata("BACKGROUND")
 			g.bgframe:EnableMouse()
 			g.bgframe:EnableMouseWheel()
@@ -706,13 +708,24 @@ function mod:AddDisplayOptions(win, options)
 			        type="toggle",
 			        name=L["Class color text"],
 			        desc=L["When possible, bar text will be colored according to player class."],
-			        order=30,
+			        order=31,
 			        get=function() return db.classcolortext end,
 			        set=function() 
 			        		db.classcolortext = not db.classcolortext
 		         			Skada:ApplySettings()
 			        	end,
 			},
+			
+			spark = {
+			        type="toggle",
+			        name=L["Show spark effect"],
+			        order=32,
+			        get=function() return db.spark end,
+			        set=function() 
+			        		db.spark = not db.spark
+		         			Skada:ApplySettings()
+			        	end,
+			},			
 
 		}
 	}
