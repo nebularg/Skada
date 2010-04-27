@@ -226,6 +226,13 @@ function mod:Update(win)
 				bar:SetScript("OnLeave", function(bar) BarLeave(win, barid, barlabel) end)
 				bar:SetScript("OnMouseDown", function(bar, button) BarClick(win, barid, barlabel, button) end)
 				
+				-- Spark.
+				if win.db.spark then
+					bar.spark:Show()
+				else
+					bar.spark:Hide()
+				end
+						
 				if data.color then
 					-- Explicit color from dataset.
 					bar:SetColorAt(0, data.color.r, data.color.g, data.color.b, data.color.a or 1)
@@ -436,6 +443,15 @@ function mod:ApplySettings(win)
 		g:HideAnchor()
 	end
 	
+	-- Spark.
+	for i, bar in pairs(g:GetBars()) do
+		if p.spark then
+			bar.spark:Show()
+		else
+			bar.spark:Hide()
+		end
+	end
+	
 	-- Header config button
 	g.optbutton:ClearAllPoints()
 	g.optbutton:SetPoint("TOPRIGHT", g.button, "TOPRIGHT", -5, 0 - (math.max(g.button:GetHeight() - g.optbutton:GetHeight(), 1) / 2))
@@ -445,16 +461,6 @@ function mod:ApplySettings(win)
 		g.optbutton:Show()
 	else
 		g.optbutton:Hide()
-	end
-	
-	-- Spark.
-	local bars = win.bargroup:GetBars()
-	for name, bar in pairs(bars) do
-		if p.spark then
-			bar.spark:Show()
-		else
-			bar.spark:Hide()
-		end
 	end
 	
 	-- Window

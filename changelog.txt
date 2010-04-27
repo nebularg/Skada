@@ -1,6 +1,6 @@
 1.2-27:
 * Fixed raw threat option.
-* Fixed Mirror Image threat display.
+* Fixed Mirror Image threat display when using raw threat.
 * Added option to disable spark effect.
 * Background window is now named.
 
