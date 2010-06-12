@@ -1,3 +1,6 @@
+1.2-28:
+* Added a damage taken by spell mode.
+
 1.2-27:
 * Fixed raw threat option.
 * Fixed Mirror Image threat display when using raw threat.

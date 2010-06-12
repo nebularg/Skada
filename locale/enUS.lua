@@ -320,3 +320,7 @@ L["Use focus target"] = "Use focus target"
 L["Shows threat on focus target, or focus target's target, when available."] = "Shows threat on focus target, or focus target's target, when available."
 
 L["Show spark effect"] = "Show spark effect"
+
+L["List of damaged players"] = "List of damaged players"
+L["Damage taken by spell"] = "Damage taken by spell"
+L["targets"] = "targets"
