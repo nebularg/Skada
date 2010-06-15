@@ -1468,8 +1468,10 @@ function Skada:StartCombat()
 	-- Remove old bars.
 	self:Wipe()
 	
-	-- Create a new current set.
-	self.current = createSet(L["Current"])
+	-- Create a new current set unless we are already have one (combat detection kicked in).
+	if not self.current then
+		self.current = createSet(L["Current"])
+	end
 
 	-- Also start the total set if it is nil.
 	if self.total == nil then
@@ -1627,6 +1629,20 @@ function Skada:RegisterForCL(func, event, flags)
 	tinsert(combatlogevents[event], {["func"] = func, ["flags"] = flags})
 end
 
+-- This flag is used to mark a possible combat start.
+-- It is a count of captured events.
+-- When we hit our treshold (let's say 5), combat starts.
+-- If we have not hit our treshold after a certain time (let's say 3 seconds) combat start failed.
+local tentative = nil
+
+-- AceTimer handle for reverting combat start.
+local tentativehandle= nil
+
+function Skada:StopTentativeCombat()
+	tentative = false
+	self.current = nil
+end
+
 local band = bit.band
 local PET_FLAGS = COMBATLOG_OBJECT_TYPE_PET + COMBATLOG_OBJECT_TYPE_GUARDIAN
 local RAID_FLAGS = COMBATLOG_OBJECT_AFFILIATION_MINE + COMBATLOG_OBJECT_AFFILIATION_PARTY + COMBATLOG_OBJECT_AFFILIATION_RAID
@@ -1645,6 +1661,38 @@ function Skada:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID,
 	local dst_is_interesting = nil
 	local src_is_interesting_nopets = nil
 	local dst_is_interesting_nopets = nil
+	
+		-- Tentative combat detection.
+        if not self.current and srcName and dstName and srcGUID ~= dstGUID and (eventtype == 'SPELL_DAMAGE' or eventtype == 'SPELL_BUILDING_DAMAGE' or eventtype == 'RANGE_DAMAGE' or eventtype == 'SWING_DAMAGE' or eventtype == 'SPELL_PERIODIC_DAMAGE') then
+                if not self.current then
+                        src_is_interesting = band(srcFlags, RAID_FLAGS) ~= 0 or (band(srcFlags, PET_FLAGS) ~= 0 and pets[srcGUID])
+                        -- AWS: To avoid incoming periodic damage (e.g. from a debuff) triggering combat, we simply do not initialize
+                        --      dst_is_interesting for periodic damage...
+                        if eventtype ~= 'SPELL_PERIODIC_DAMAGE' then
+                                dst_is_interesting = band(dstFlags, RAID_FLAGS) ~= 0 or (band(dstFlags, PET_FLAGS) ~= 0 and pets[dstGUID])
+                        end
+                        if src_is_interesting or dst_is_interesting then
+                        	-- Create a current set and set our "tentative" flag to true.
+                        	self.current = createSet(L["Current"])
+                        	
+                        	-- Also create total set if needed.
+                        	if not self.total then
+								self.total = createSet(L["Total"])
+							end
+							
+							-- Schedule an end to this tentative combat situation in 3 second.
+							tentativehandle = self:ScheduleTimer(
+												function()
+													tentative = nil
+													self.current = nil
+													--self:Print("tentative combat start FAILED!")
+												end, 1)
+							
+                        	tentative = 0
+							--self:Print("tentative combat start INIT!")
+                        end
+                end
+        end
 	
 	if self.current and combatlogevents[eventtype] then
 		for i, mod in ipairs(combatlogevents[eventtype]) do
@@ -1705,20 +1753,23 @@ function Skada:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID,
 			-- Pass along event if it did not fail our tests.
 			if not fail then
 				mod.func(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
+				
+				-- If our "tentative" flag is set and reached the treshold, this means combat really did start.
+				if tentative ~= nil then
+					tentative = tentative + 1
+					if tentative == 5 then
+						--self:Print("tentative combat start SUCCESS!")
+						self:CancelTimer(tentativehandle)
+						self:StartCombat()
+					end
+				end
 			end
 			
 		end
 	end
 
-	-- Detect combat start.
-	-- Not happy about this, really. Why can't there be a UNIT_ENTERED_COMBAT?
-	--[[
-	if not self.current and srcName and srcGUID ~= dstGUID and dstName and src_is_interesting and (eventtype == 'SPELL_DAMAGE' or eventtype == 'SPELL_PERIODIC_DAMAGE' or eventtype == 'SPELL_BUILDING_DAMAGE' or eventtype == 'RANGE_DAMAGE' or eventtype == "SWING_DAMAGE") then
-		self:StartCombat()
-	else
-	--]]
-
-	if self.current and srcName and srcGUID ~= dstGUID and dstName and src_is_interesting and (eventtype == 'SPELL_DAMAGE' or eventtype == 'SPELL_PERIODIC_DAMAGE' or eventtype == 'SPELL_BUILDING_DAMAGE' or eventtype == 'RANGE_DAMAGE' or eventtype == "SWING_DAMAGE") then
+	-- Note: relies on src_is_interesting having been checked.
+	if self.current and src_is_interesting then
 		-- Store mob name for set name. For now, just save first unfriendly name available, or first boss available.
 		if not self.current.gotboss and boss.BossIDs[tonumber(dstGUID:sub(9, 12), 16)] then
 			self.current.mobname = dstName
