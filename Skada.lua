@@ -1464,7 +1464,21 @@ function Skada:PLAYER_REGEN_DISABLED()
 	end
 end
 
+-- This flag is used to mark a possible combat start.
+-- It is a count of captured events.
+-- When we hit our treshold (let's say 5), combat starts.
+-- If we have not hit our treshold after a certain time (let's say 3 seconds) combat start failed.
+local tentative = nil
+
+-- AceTimer handle for reverting combat start.
+local tentativehandle= nil
+
 function Skada:StartCombat()
+	-- Cancel cancelling combat if needed.
+	if tentativehandle ~= nil then
+		self:CancelTimer(tentativehandle)
+	end
+
 	-- Remove old bars.
 	self:Wipe()
 	
@@ -1627,20 +1641,6 @@ function Skada:RegisterForCL(func, event, flags)
 		combatlogevents[event] = {}
 	end
 	tinsert(combatlogevents[event], {["func"] = func, ["flags"] = flags})
-end
-
--- This flag is used to mark a possible combat start.
--- It is a count of captured events.
--- When we hit our treshold (let's say 5), combat starts.
--- If we have not hit our treshold after a certain time (let's say 3 seconds) combat start failed.
-local tentative = nil
-
--- AceTimer handle for reverting combat start.
-local tentativehandle= nil
-
-function Skada:StopTentativeCombat()
-	tentative = false
-	self.current = nil
 end
 
 local band = bit.band
