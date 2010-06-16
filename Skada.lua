@@ -1477,6 +1477,7 @@ function Skada:StartCombat()
 	-- Cancel cancelling combat if needed.
 	if tentativehandle ~= nil then
 		self:CancelTimer(tentativehandle)
+		tentativehandle = nil
 	end
 
 	-- Remove old bars.
@@ -1684,6 +1685,7 @@ function Skada:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID,
 							tentativehandle = self:ScheduleTimer(
 												function()
 													tentative = nil
+													tentativehandle = nil
 													self.current = nil
 													--self:Print("tentative combat start FAILED!")
 												end, 1)
@@ -1760,6 +1762,7 @@ function Skada:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID,
 					if tentative == 5 then
 						--self:Print("tentative combat start SUCCESS!")
 						self:CancelTimer(tentativehandle)
+						tentativehandle = nil
 						self:StartCombat()
 					end
 				end
