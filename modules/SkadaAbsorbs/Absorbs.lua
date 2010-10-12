@@ -15,6 +15,7 @@ local AbsorbSpellDuration =
 	[51052] = 10, -- Anti-Magic Zone (DK)( Rank 1 (Correct spellID?)
 		-- Does DK Spell Deflection show absorbs in the CL?
 	[51271] = 20, -- Unbreakable Armor (DK)
+	[77535] = 10, -- Blood Shield (DK)
 	-- Druid
 	[62606] = 10, -- Savage Defense proc. (Druid) Tooltip of the original spell doesn't clearly state that this is an absorb, but the buff does.
 	-- Mage
