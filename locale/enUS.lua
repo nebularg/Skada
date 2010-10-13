@@ -324,3 +324,6 @@ L["Show spark effect"] = "Show spark effect"
 L["List of damaged players"] = "List of damaged players"
 L["Damage taken by spell"] = "Damage taken by spell"
 L["targets"] = "targets"
+
+L["Aggressive combat detection"] = "Aggressive combat detection"
+L["Skada usually uses a very conservative (simple) combat detection scheme that works best in raids. With this option Skada attempts to emulate other damage meters. Useful for running dungeons. Meaningless on boss encounters."] = "Skada usually uses a very conservative (simple) combat detection scheme that works best in raids. With this option Skada attempts to emulate other damage meters. Useful for running dungeons. Meaningless on boss encounters."

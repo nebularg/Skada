@@ -1663,38 +1663,38 @@ function Skada:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID,
 	local src_is_interesting_nopets = nil
 	local dst_is_interesting_nopets = nil
 	
-		-- Tentative combat detection.
-        if not self.current and srcName and dstName and srcGUID ~= dstGUID and (eventtype == 'SPELL_DAMAGE' or eventtype == 'SPELL_BUILDING_DAMAGE' or eventtype == 'RANGE_DAMAGE' or eventtype == 'SWING_DAMAGE' or eventtype == 'SPELL_PERIODIC_DAMAGE') then
-                if not self.current then
-                        src_is_interesting = band(srcFlags, RAID_FLAGS) ~= 0 or (band(srcFlags, PET_FLAGS) ~= 0 and pets[srcGUID])
-                        -- AWS: To avoid incoming periodic damage (e.g. from a debuff) triggering combat, we simply do not initialize
-                        --      dst_is_interesting for periodic damage...
-                        if eventtype ~= 'SPELL_PERIODIC_DAMAGE' then
-                                dst_is_interesting = band(dstFlags, RAID_FLAGS) ~= 0 or (band(dstFlags, PET_FLAGS) ~= 0 and pets[dstGUID])
-                        end
-                        if src_is_interesting or dst_is_interesting then
-                        	-- Create a current set and set our "tentative" flag to true.
-                        	self.current = createSet(L["Current"])
-                        	
-                        	-- Also create total set if needed.
-                        	if not self.total then
-								self.total = createSet(L["Total"])
-							end
-							
-							-- Schedule an end to this tentative combat situation in 3 second.
-							tentativehandle = self:ScheduleTimer(
-												function()
-													tentative = nil
-													tentativehandle = nil
-													self.current = nil
-													--self:Print("tentative combat start FAILED!")
-												end, 1)
-							
-                        	tentative = 0
-							--self:Print("tentative combat start INIT!")
-                        end
-                end
-        end
+		-- Optional tentative combat detection.
+		-- Instead of simply checking when we enter combat, combat start is also detected based on needing a certain
+		-- amount of interesting (as defined by our modules) CL events.
+        if not self.current and Skada.db.profile.tentativecombatstart and srcName and dstName and srcGUID ~= dstGUID and (eventtype == 'SPELL_DAMAGE' or eventtype == 'SPELL_BUILDING_DAMAGE' or eventtype == 'RANGE_DAMAGE' or eventtype == 'SWING_DAMAGE' or eventtype == 'SPELL_PERIODIC_DAMAGE') then
+			src_is_interesting = band(srcFlags, RAID_FLAGS) ~= 0 or (band(srcFlags, PET_FLAGS) ~= 0 and pets[srcGUID])
+			-- AWS: To avoid incoming periodic damage (e.g. from a debuff) triggering combat, we simply do not initialize
+			--      dst_is_interesting for periodic damage...
+			if eventtype ~= 'SPELL_PERIODIC_DAMAGE' then
+				dst_is_interesting = band(dstFlags, RAID_FLAGS) ~= 0 or (band(dstFlags, PET_FLAGS) ~= 0 and pets[dstGUID])
+			end
+			if src_is_interesting or dst_is_interesting then
+				-- Create a current set and set our "tentative" flag to true.
+				self.current = createSet(L["Current"])
+			
+				-- Also create total set if needed.
+				if not self.total then
+				self.total = createSet(L["Total"])
+			end
+			
+			-- Schedule an end to this tentative combat situation in 3 seconds.
+			tentativehandle = self:ScheduleTimer(
+								function()
+									tentative = nil
+									tentativehandle = nil
+									self.current = nil
+									--self:Print("tentative combat start FAILED!")
+								end, 1)
+			
+	                   	tentative = 0
+			--self:Print("tentative combat start INIT!")
+			end
+		end
 	
 	if self.current and combatlogevents[eventtype] then
 		for i, mod in ipairs(combatlogevents[eventtype]) do
@@ -1772,13 +1772,15 @@ function Skada:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID,
 	end
 
 	-- Note: relies on src_is_interesting having been checked.
-	if self.current and src_is_interesting then
+	if self.current and src_is_interesting and not self.current.gotboss then
 		-- Store mob name for set name. For now, just save first unfriendly name available, or first boss available.
-		if not self.current.gotboss and boss.BossIDs[tonumber(dstGUID:sub(9, 12), 16)] then
-			self.current.mobname = dstName
-			self.current.gotboss = true
-		elseif not self.current.mobname then
-			self.current.mobname = dstName
+		if bit.band(dstFlags, COMBATLOG_OBJECT_REACTION_HOSTILE) ~=0 then
+			if not self.current.gotboss and boss.BossIDs[tonumber(dstGUID:sub(9, 12), 16)] then
+				self.current.mobname = dstName
+				self.current.gotboss = true
+			elseif not self.current.mobname then
+				self.current.mobname = dstName
+			end
 		end
 	end
 	

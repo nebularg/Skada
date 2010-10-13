@@ -55,6 +55,7 @@ Skada.defaults = {
 		tooltiprows=3,
 		informativetooltips=true,
 		onlykeepbosses=false,
+		tentativecombatstart=false,
 		hidesolo=false,
 		hidepvp=false,
 		hidedisables=true,
@@ -379,6 +380,15 @@ Skada.options = {
 								set=function(self, val) Skada.db.profile.setstokeep = val end,
 								order=13,
 							},
+							
+							tenativecombatstart = {
+							        type="toggle",
+							        name=L["Aggressive combat detection"],
+							        desc=L["Skada usually uses a very conservative (simple) combat detection scheme that works best in raids. With this option Skada attempts to emulate other damage meters. Useful for running dungeons. Meaningless on boss encounters."],
+							        order=10,
+							        get=function() return Skada.db.profile.tentativecombatstart end,
+							        set=function() Skada.db.profile.tentativecombatstart = not Skada.db.profile.tentativecombatstart end,
+							},							
 							
 						}
 	        		},
