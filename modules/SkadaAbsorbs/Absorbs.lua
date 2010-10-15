@@ -164,6 +164,7 @@ local AbsorbSpellDuration =
 	[67260] = 15, -- 300000
 	[67259] = 15, -- 700000
 	[67261] = 15, -- 1200000
+	[86273] = 6,	-- Illuminated Healing, Pala Mastery
 }
 
 local shields = {}
