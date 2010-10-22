@@ -1166,8 +1166,8 @@ function Skada:OpenMenu(window)
 															hasEditBox = 1,
 															timeout = 30, 
 															hideOnEscape = 1, 
-															OnAccept = 	function()
-																			Skada.db.profile.report.channel = getglobal(this:GetParent():GetName().."EditBox"):GetText()
+															OnAccept = 	function(self)
+																			Skada.db.profile.report.channel = self.editBox:GetText()
 																			Skada:Report(Skada.db.profile.report.channel, Skada.db.profile.report.chantype, Skada.db.profile.report.mode, Skada.db.profile.report.set, Skada.db.profile.report.number, window)
 																		end,
 														}
@@ -2129,6 +2129,11 @@ function Skada:FixPets(action)
 			if action.spellname then
 				action.spellname = action.playername..": "..action.spellname
 			end
+
+			if pets[pet.id] then
+				pet = pets[pet.id]
+			end			
+			
 			action.playername = pet.name
 			action.playerid = pet.id
 		end
