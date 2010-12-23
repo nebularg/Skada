@@ -327,3 +327,6 @@ L["targets"] = "targets"
 
 L["Aggressive combat detection"] = "Aggressive combat detection"
 L["Skada usually uses a very conservative (simple) combat detection scheme that works best in raids. With this option Skada attempts to emulate other damage meters. Useful for running dungeons. Meaningless on boss encounters."] = "Skada usually uses a very conservative (simple) combat detection scheme that works best in raids. With this option Skada attempts to emulate other damage meters. Useful for running dungeons. Meaningless on boss encounters."
+
+L["Clickthrough"] = "Clickthrough"
+L["Disables mouse clicks on bars."] = "Disables mouse clicks on bars."

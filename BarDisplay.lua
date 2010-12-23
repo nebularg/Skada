@@ -331,6 +331,7 @@ function mod:Update(win)
 		win.bargroup:SetSortFunction(nil)
 		win.bargroup:SortBars()
 	end
+	
 end
 
 function mod:AdjustBackgroundHeight(win)
@@ -522,6 +523,12 @@ function mod:ApplySettings(win)
 		g.bgframe:Hide()
 	end
 	
+	-- Clickthrough
+	g:EnableMouse(not p.clickthrough)
+	for i, bar in pairs(g:GetBars()) do
+		bar:EnableMouse(not p.clickthrough)
+	end
+	
 	g:SortBars()
 end
 
@@ -679,7 +686,7 @@ function mod:AddDisplayOptions(win, options)
 						db.barcolor = {["r"] = r, ["g"] = g, ["b"] = b, ["a"] = a}
 						Skada:ApplySettings()
 					end,
-				order=20,
+				order=21,
 			},
 
 			altcolor = {
@@ -695,7 +702,7 @@ function mod:AddDisplayOptions(win, options)
 						db.baraltcolor = {["r"] = r, ["g"] = g, ["b"] = b, ["a"] = a}
 						Skada:ApplySettings()
 					end,
-				order=21,
+				order=22,
 			},
 
 			classcolorbars = {
@@ -731,8 +738,20 @@ function mod:AddDisplayOptions(win, options)
 			        		db.spark = not db.spark
 		         			Skada:ApplySettings()
 			        	end,
-			},			
-
+			},
+			
+			clickthrough = {
+			        type="toggle",
+			        name=L["Clickthrough"],
+			        desc=L["Disables mouse clicks on bars."],
+			        order=20,
+			        get=function() return db.clickthrough end,
+			        set=function() 
+			        		db.clickthrough = not db.clickthrough
+		         			Skada:ApplySettings()
+			        	end,
+			},
+			
 		}
 	}
    	

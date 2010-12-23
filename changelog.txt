@@ -1,4 +1,18 @@
+1.2-31:
+* Clickthrough option for bar style.
+* Strip realm name from cross-realm players.
+
+1.2-30:
+* Added Holy Paladin mastery shield absorbs.
+* Fixed broken whisper reports.
+* Added a fix for certain pets being displayed separately.
+
+1.2-29:
+* Fixed module .tocs - 453:th time I forgot on a major patch.
+
 1.2-28:
+* Made aggressive combat detection an option, off by default.
+* TOC update.
 * Added a damage taken by spell mode.
 
 1.2-27:

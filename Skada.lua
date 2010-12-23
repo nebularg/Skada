@@ -1613,7 +1613,12 @@ function Skada:get_player(set, playerid, playername)
 		if not playername then
 			return
 		end
-		player = {id = playerid, class = select(2, UnitClass(playername)), name = playername, first = time(), ["time"] = 0}
+		
+		-- Strip realm name
+		local player_name, realm = string.split("-", playername, 2)		
+		player_name = player_name or playername
+		
+		player = {id = playerid, class = select(2, UnitClass(playername)), name = player_name, first = time(), ["time"] = 0}
 		
 		-- Tell each mode to apply its needed attributes.
 		for i, mode in ipairs(modes) do
