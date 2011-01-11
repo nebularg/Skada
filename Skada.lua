@@ -1799,6 +1799,10 @@ function Skada:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, srcGUID,
 
 end
 
+function Skada:AssignPet(ownerguid, ownername, petguid)
+	pets[petguid] = {id = ownerguid, name = ownername}
+end
+
 --
 -- Data broker
 --
