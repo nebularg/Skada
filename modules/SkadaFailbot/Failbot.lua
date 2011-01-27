@@ -34,6 +34,7 @@ end
 
 local function onFail(event, who, fatal)
 --   print(event, who, fatal)
+	if not Skada.modules.Fails.enabledState then return end
 	if event and who then
 		-- Always log to Total set. Current only if we are active.
 		-- Idea: let modes force-start a set, so we can get a set
@@ -42,7 +43,7 @@ local function onFail(event, who, fatal)
 			local unitGUID = UnitGUID(who)
 			local player = Skada:get_player(Skada.current, unitGUID, who)
 			player.fails = player.fails + 1
-			
+
 			if player.failevents[event] then
 				player.failevents[event] = player.failevents[event] + 1
 			else
@@ -50,12 +51,12 @@ local function onFail(event, who, fatal)
 			end
 			Skada.current.fails = Skada.current.fails + 1
 		end
-		
+
 		if Skada.total then
 			local unitGUID = UnitGUID(who)
 			local player = Skada:get_player(Skada.total, unitGUID, who)
 			player.fails = player.fails + 1
-		
+
 			if player.failevents[event] then
 				player.failevents[event] = player.failevents[event] + 1
 			else
@@ -76,24 +77,24 @@ function mod:Update(win, set)
 	local max = 0
 	for i, player in ipairs(set.players) do
 		if player.fails > 0 then
-		
+
 			local d = win.dataset[nr] or {}
 			win.dataset[nr] = d
-			
+
 			d.id = player.id
 			d.value = player.fails
 			d.label = player.name
 			d.class = player.class
 			d.valuetext = tostring(player.fails)
-			
+
 			if player.fails > max then
 				max = player.fails
 			end
-			
+
 			nr = nr + 1
 		end
 	end
-		
+
 	win.metadata.maxvalue = max
 end
 
@@ -105,24 +106,24 @@ end
 -- Detail view of a player.
 function playermod:Update(win, set)
 	-- View spells for this player.
-		
+
 	local player = Skada:find_player(set, self.playerid)
 	local nr = 1
 	if player then
 		for event, fails in pairs(player.failevents) do
-			
+
 			local d = win.dataset[nr] or {}
 			win.dataset[nr] = d
-			
+
 			d.id = event
 			d.value = fails
 			d.label = event
 			d.valuetext = fails
-			
+
 			nr = nr + 1
 		end
 	end
-	
+
 	win.metadata.maxvalue = player.fails
 end
 
