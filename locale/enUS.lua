@@ -296,6 +296,7 @@ L["Percent"] = "Percent"
 L["TPS"] = "TPS"
 
 L["%s dies"] = "%s dies"
+L["Timestamp"] = "Timestamp"
 L["Change"] = "Change"
 L["Health"] = "Health"
 

@@ -1,4 +1,4 @@
-## Interface: 40000
+## Interface: 40100
 ## Title: Skada |r[|caaedc99fDamage|r]
 ## Notes: Adds a Damage mode and data collection to Skada.
 ## Author: Zarnivoop

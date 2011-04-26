@@ -1,4 +1,4 @@
-## Interface: 40000
+## Interface: 40100
 ## Title: Skada |r[|caaedc99fHealing|r]
 ## Notes: Adds Healing and Overhealing modes and data collection to Skada.
 ## Author: Zarnivoop
