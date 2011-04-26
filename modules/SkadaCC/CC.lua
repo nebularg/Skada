@@ -6,26 +6,22 @@ local mod = Skada:NewModule(L["CC breakers"])
 
 -- CC spell IDs shamelessly stolen from Recount - thanks!
 local CCId={
-	[118]=true, -- Polymorph (rank 1)
-	[12824]=true, -- Polymorph (rank 2)
-	[12825]=true, -- Polymorph (rank 3)
-	[12826]=true, -- Polymorph (rank 4)
-	[28272]=true, -- Polymorph (rank 1:pig)
-	[28271]=true, -- Polymorph (rank 1:turtle)
-	[9484]=true, -- Shackle Undead (rank 1)
-	[9485]=true, -- Shackle Undead (rank 2)
-	[10955]=true, -- Shackle Undead (rank 3)
-	[3355]=true, -- Freezing Trap Effect (rank 1)
-	[14308]=true, -- Freezing Trap Effect (rank 2)
-	[14309]=true, -- Freezing Trap Effect (rank 3)
-	[2637]=true, -- Hibernate (rank 1)
-	[18657]=true, -- Hibernate (rank 2)
-	[18658]=true, -- Hibernate (rank 3)
-	[6770]=true, -- Sap (rank 1)
-	[2070]=true, -- Sap (rank 2)
-	[11297]=true, -- Sap (rank 3)
-	[6358]=true, -- Seduction (succubus)
-	[60210]=true, -- Freezing Arrow (rank 1)
+    [118]=true, -- Polymorph
+    [28272]=true, -- Polymorph Pig
+    [28271]=true, -- Polymorph Turtle
+    [61305]=true, -- Polymorph Black Cat
+    [61721]=true, -- Polymorph Rabbit
+    [61780]=true, -- Polymorph Turkey
+    [9484]=true, -- Shackle Undead
+    [3355]=true, -- Freezing Trap
+    [19386]=true, -- Wyvern Sting
+    [339]=true, -- Entangling Roots
+    [2637]=true, -- Hibernate
+    [6770]=true, -- Sap
+    [6358]=true, -- Seduction (succubus)
+    [20066]=true, -- Repentance
+    [51514]=true, -- Hex
+    [76780]=true, -- Bind Elemental
 }
 
 local function log_ccbreak(set, srcGUID, srcName)
