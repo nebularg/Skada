@@ -124,7 +124,6 @@ function spellplayers:Update(win, set)
 	win.metadata.maxvalue = max
 end
 
-
 function mod:Update(win, set)
 	local max = 0
 	
@@ -134,9 +133,17 @@ function mod:Update(win, set)
 			local d = win.dataset[nr] or {}
 			win.dataset[nr] = d
 
+			local totaltime = Skada:PlayerActiveTime(set, player)
+			local dtps = player.damagetaken / math.max(1,totaltime)
+			
 			d.label = player.name
 			d.value = player.damagetaken
-			d.valuetext = Skada:FormatNumber(player.damagetaken)..(" (%02.1f%%)"):format(player.damagetaken / set.damagetaken * 100)
+
+			d.valuetext = Skada:FormatValueText(
+											Skada:FormatNumber(player.damagetaken), self.metadata.columns.Damage, 
+											string.format("%02.1f", dtps), self.metadata.columns.DTPS,
+											string.format("%02.1f%%", player.damagetaken / set.damagetaken * 100), self.metadata.columns.Percent
+										)
 			d.id = player.id
 			d.class = player.class
 			
@@ -184,7 +191,7 @@ end
 
 function mod:OnEnable()
 	playermod.metadata 		= {}
-	mod.metadata 			= {click1 = playermod, showspots = true}
+	mod.metadata 			= {click1 = playermod, showspots = true, columns = {Damage = true, DTPS = true, Percent = true}}
 	spelloverview.metadata	= {click1 = spellplayers, showspots = true}
 
 	Skada:RegisterForCL(SpellDamage, 'SPELL_DAMAGE', {dst_is_interesting_nopets = true})

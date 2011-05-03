@@ -262,7 +262,16 @@ function mod:Update(win, set)
 			d.id = player.id
 			d.value = player.totalabsorbs
 			d.label = player.name
-			d.valuetext = Skada:FormatNumber(player.totalabsorbs)..(" (%02.1f%%)"):format(player.totalabsorbs / set.absorbs * 100)
+
+			local totaltime = Skada:PlayerActiveTime(set, player)
+			local hps = player.totalabsorbs / math.max(1,totaltime)
+			
+			d.valuetext = Skada:FormatValueText(
+											Skada:FormatNumber(player.totalabsorbs), self.metadata.columns.Absorbs, 
+											string.format("%02.1f", hps), self.metadata.columns.HPS,
+											string.format("%02.1f%%", player.totalabsorbs / set.absorbs * 100), self.metadata.columns.Percent
+											)
+
 			d.class = player.class
 
 			if player.totalabsorbs > max then
@@ -296,6 +305,7 @@ function playermod:Update(win, set)
 			d.id = dstName
 			d.value = absorbed
 			d.label = dstName
+
 			d.valuetext = Skada:FormatNumber(absorbed)..(" (%02.1f%%)"):format(absorbed / player.totalabsorbs * 100)
 			d.class = select(2, UnitClass(dstName))
 
@@ -321,10 +331,19 @@ function combined:Update(win, set)
 			local d = win.dataset[nr] or {}
 			win.dataset[nr] = d
 			
+			local totaltime = Skada:PlayerActiveTime(set, player)
+			local hps = ((player.healing or 0) + player.totalabsorbs) / math.max(1,totaltime)
+
 			d.id = player.id
 			d.value = player.totalabsorbs + (player.healing or 0)
 			d.label = player.name
-			d.valuetext = Skada:FormatNumber(player.totalabsorbs + (player.healing or 0))..(" (%02.1f%%)"):format((player.totalabsorbs + (player.healing or 0)) / (set.absorbs + (set.healing or 0)) * 100)
+
+			d.valuetext = Skada:FormatValueText(
+											Skada:FormatNumber(player.totalabsorbs + (player.healing or 0)), self.metadata.columns.Healing, 
+											string.format("%02.1f", hps), self.metadata.columns.HPS,
+											string.format("%02.1f%%", (player.totalabsorbs + (player.healing or 0)) / (set.absorbs + (set.healing or 0)) * 100), self.metadata.columns.Percent
+											)
+			
 			d.class = player.class
 
 			if (player.totalabsorbs + player.healing) > max then
@@ -339,8 +358,8 @@ function combined:Update(win, set)
 end
 
 function mod:OnEnable()
-	combined.metadata 	= {showspots = 1, click1 = playermod}
-	mod.metadata 		= {showspots = 1, click1 = playermod}
+	combined.metadata 	= {showspots = 1, click1 = playermod, columns = {Healing = true, HPS = true, Percent = true}}
+	mod.metadata 		= {showspots = 1, click1 = playermod, columns = {Healing = true, HPS = true, Percent = true}}
 	playermod.metadata 	= {}
 
 	Skada:RegisterForCL(AuraApplied, 'SPELL_AURA_REFRESH', {src_is_interesting_nopets = true})
