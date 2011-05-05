@@ -17,7 +17,6 @@ externals:
     lib/LibWindow-1.1:       svn://svn.wowace.com/wow/libwindow-1-1/mainline/trunk/LibWindow-1.1
     lib/AceGUI-3.0-SharedMediaWidgets:   svn://svn.wowace.com/wow/ace-gui-3-0-shared-media-widgets/mainline/trunk/AceGUI-3.0-SharedMediaWidgets
     lib/LibBossIDs-1.0:      svn://svn.wowace.com/wow/libbossids-1-0/mainline/trunk
-    lib/LibFail-1.0:         svn://svn.wowace.com/wow/libfail-1-0/mainline/trunk
 
 move-folders:
     Skada/modules/SkadaThreat: SkadaThreat
@@ -25,7 +24,6 @@ move-folders:
     Skada/modules/SkadaDebuffs: SkadaDebuffs
     Skada/modules/SkadaDamage: SkadaDamage
     Skada/modules/SkadaHealing: SkadaHealing
-    Skada/modules/SkadaFailbot: SkadaFailbot
     Skada/modules/SkadaDamageTaken: SkadaDamageTaken
     Skada/modules/SkadaDispels: SkadaDispels
     Skada/modules/SkadaEnemies: SkadaEnemies
