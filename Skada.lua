@@ -7,6 +7,9 @@ local boss = LibStub("LibBossIDs-1.0")
 
 local dataobj = ldb:NewDataObject("Skada", {label = "Skada", type = "data source", icon = "Interface\\Icons\\Spell_Lightning_LightningBolt01", text = "n/a"})
 
+-- Client version number
+local CLIENT_VERSION = tonumber((select(4, GetBuildInfo())))
+
 -- Keybindings
 BINDING_HEADER_Skada = "Skada"
 BINDING_NAME_SKADA_TOGGLE = L["Toggle window"]
@@ -396,66 +399,6 @@ function Window:RightClick(group, button)
 	end
 end
 
-function Skada:OnInitialize()
-	-- Register some SharedMedia goodies.
-	media:Register("font", "Adventure",				[[Interface\Addons\Skada\fonts\Adventure.ttf]])
-	media:Register("font", "ABF",					[[Interface\Addons\Skada\fonts\ABF.ttf]])
-	media:Register("font", "Vera Serif",			[[Interface\Addons\Skada\fonts\VeraSe.ttf]])
-	media:Register("font", "Diablo",				[[Interface\Addons\Skada\fonts\Avqest.ttf]])
-	media:Register("font", "Accidental Presidency",	[[Interface\Addons\Skada\fonts\Accidental Presidency.ttf]])
-	media:Register("statusbar", "Aluminium",		[[Interface\Addons\Skada\statusbar\Aluminium]])
-	media:Register("statusbar", "Armory",			[[Interface\Addons\Skada\statusbar\Armory]])
-	media:Register("statusbar", "BantoBar",			[[Interface\Addons\Skada\statusbar\BantoBar]])
-	media:Register("statusbar", "Glaze2",			[[Interface\Addons\Skada\statusbar\Glaze2]])
-	media:Register("statusbar", "Gloss",			[[Interface\Addons\Skada\statusbar\Gloss]])
-	media:Register("statusbar", "Graphite",			[[Interface\Addons\Skada\statusbar\Graphite]])
-	media:Register("statusbar", "Grid",				[[Interface\Addons\Skada\statusbar\Grid]])
-	media:Register("statusbar", "Healbot",			[[Interface\Addons\Skada\statusbar\Healbot]])
-	media:Register("statusbar", "LiteStep",			[[Interface\Addons\Skada\statusbar\LiteStep]])
-	media:Register("statusbar", "Minimalist",		[[Interface\Addons\Skada\statusbar\Minimalist]])
-	media:Register("statusbar", "Otravi",			[[Interface\Addons\Skada\statusbar\Otravi]])
-	media:Register("statusbar", "Outline",			[[Interface\Addons\Skada\statusbar\Outline]])
-	media:Register("statusbar", "Perl",				[[Interface\Addons\Skada\statusbar\Perl]])
-	media:Register("statusbar", "Smooth",			[[Interface\Addons\Skada\statusbar\Smooth]])
-	media:Register("statusbar", "Round",			[[Interface\Addons\Skada\statusbar\Round]])
-	media:Register("statusbar", "TukTex",			[[Interface\Addons\Skada\statusbar\normTex]])
-
-	-- Some sounds (copied from Omen).
-	media:Register("sound", "Rubber Ducky", [[Sound\Doodad\Goblin_Lottery_Open01.wav]])
-	media:Register("sound", "Cartoon FX", [[Sound\Doodad\Goblin_Lottery_Open03.wav]])
-	media:Register("sound", "Explosion", [[Sound\Doodad\Hellfire_Raid_FX_Explosion05.wav]])
-	media:Register("sound", "Shing!", [[Sound\Doodad\PortcullisActive_Closed.wav]])
-	media:Register("sound", "Wham!", [[Sound\Doodad\PVP_Lordaeron_Door_Open.wav]])
-	media:Register("sound", "Simon Chime", [[Sound\Doodad\SimonGame_LargeBlueTree.wav]])
-	media:Register("sound", "War Drums", [[Sound\Event Sounds\Event_wardrum_ogre.wav]])
-	media:Register("sound", "Cheer", [[Sound\Event Sounds\OgreEventCheerUnique.wav]])
-	media:Register("sound", "Humm", [[Sound\Spells\SimonGame_Visual_GameStart.wav]])
-	media:Register("sound", "Short Circuit", [[Sound\Spells\SimonGame_Visual_BadPress.wav]])
-	media:Register("sound", "Fel Portal", [[Sound\Spells\Sunwell_Fel_PortalStand.wav]])
-	media:Register("sound", "Fel Nova", [[Sound\Spells\SeepingGaseous_Fel_Nova.wav]])
-	media:Register("sound", "You Will Die!", [[Sound\Creature\CThun\CThunYouWillDIe.wav]])
-
-	-- DB
-	self.db = LibStub("AceDB-3.0"):New("SkadaDB", self.defaults, "Default")
-	LibStub("AceConfig-3.0"):RegisterOptionsTable("Skada", self.options)
-	self.optionsFrame = LibStub("AceConfigDialog-3.0"):AddToBlizOptions("Skada", "Skada")
-
-	-- Profiles
-	LibStub("AceConfig-3.0"):RegisterOptionsTable("Skada-Profiles", LibStub("AceDBOptions-3.0"):GetOptionsTable(self.db))
-	self.profilesFrame = LibStub("AceConfigDialog-3.0"):AddToBlizOptions("Skada-Profiles", "Profiles", "Skada")
-	
-	self:RegisterChatCommand("skada", "Command")
-	self.db.RegisterCallback(self, "OnProfileChanged", "ReloadSettings")
-	self.db.RegisterCallback(self, "OnProfileCopied", "ReloadSettings")
-	self.db.RegisterCallback(self, "OnProfileReset", "ReloadSettings")
-
-	self:ReloadSettings()
-	
-	-- Instead of listening for callbacks on SharedMedia we simply wait a few seconds and then re-apply settings
-	-- to catch any missing media. Lame? Yes.
-	self:ScheduleTimer("ApplySettings", 2)
-end
-
 function Skada:tcopy(to, from)
   for k,v in pairs(from) do
     if(type(v)=="table") then
@@ -519,7 +462,7 @@ function Skada:Command(param)
 	elseif param == "toggle" then
 		self:ToggleWindow()
 	elseif param == "config" then
-		self:OpenOptions()
+		InterfaceOptionsFrame_OpenToCategory("Skada")
 	elseif param:sub(1,6) == "report" then
 		param = param:sub(7)
 		local chan = "say"
@@ -635,10 +578,6 @@ function Skada:RefreshMMButton()
 	end
 end
 
-function Skada:OpenOptions()
-	InterfaceOptionsFrame_OpenToCategory("Skada")
-end
-
 function Skada:PetDebug()
 	self:CheckPets()
 	self:Print("pets:")
@@ -660,19 +599,6 @@ function Skada:SetActive(enable)
 		if self.db.profile.hidedisables then
 			disabled = true
 		end
-	end
-end
-
-function Skada:OnEnable()
-	self:RegisterEvent("PLAYER_ENTERING_WORLD")
-	self:RegisterEvent("PARTY_MEMBERS_CHANGED")
-	self:RegisterEvent("RAID_ROSTER_UPDATE")
-	self:RegisterEvent("UNIT_PET")
-	self:RegisterEvent("PLAYER_REGEN_DISABLED")
-	self:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
-	
-	if type(CUSTOM_CLASS_COLORS) == "table" then
-		Skada.classcolors = CUSTOM_CLASS_COLORS
 	end
 end
 
@@ -854,16 +780,6 @@ function Skada:UNIT_PET()
 	self:CheckPets()
 end
 
-function Skada:OnDisable()
-	-- Save some settings.
-	self.db.profile.selectedset = selectedset
-	if selectedmode then
-		self.db.profile.set = selectedmode.name
-	else
-		self.db.profile.mode = nil
-	end
-end
-
 -- Toggles all windows.
 function Skada:ToggleWindow()
 	for i, win in ipairs(windows) do
@@ -919,6 +835,7 @@ end
 -- Delete a set.
 function Skada:DeleteSet(set)
 	if not set then return end
+
 
 	for i, s in ipairs(sets) do
 		if s == set then
@@ -1016,7 +933,7 @@ function Skada:OpenMenu(window)
 
 	        wipe(info)
 	        info.text = L["Configure"]
-	        info.func = function() Skada:OpenOptions() end
+	        info.func = function() InterfaceOptionsFrame_OpenToCategory("Skada") end
 	        info.notCheckable = 1
 	        UIDropDownMenu_AddButton(info, level)
 
@@ -1658,54 +1575,55 @@ local RAID_FLAGS = COMBATLOG_OBJECT_AFFILIATION_MINE + COMBATLOG_OBJECT_AFFILIAT
 -- On a new event, loop through the interested parties.
 -- The flags are checked, and the flag value (say, that the SRC must be interesting, ie, one of the raid) is only checked once, regardless
 -- of how many modules are interested in the event. The check is also only done on the first flag that requires it.
-function Skada:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, hideCaster, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
+--function Skada:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, hideCaster, srcGUID, srcName, srcFlags, srcRaidFlags, dstGUID, dstName, dstFlags, dstRaidFlags, ...)
+--function Skada:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, hideCaster, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
+local function COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, hideCaster, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
 	if disabled then
 		return
 	end
-	
+
 	local src_is_interesting = nil
 	local dst_is_interesting = nil
 	local src_is_interesting_nopets = nil
 	local dst_is_interesting_nopets = nil
 	
-		-- Optional tentative combat detection.
-		-- Instead of simply checking when we enter combat, combat start is also detected based on needing a certain
-		-- amount of interesting (as defined by our modules) CL events.
-        if not self.current and Skada.db.profile.tentativecombatstart and srcName and dstName and srcGUID ~= dstGUID and (eventtype == 'SPELL_DAMAGE' or eventtype == 'SPELL_BUILDING_DAMAGE' or eventtype == 'RANGE_DAMAGE' or eventtype == 'SWING_DAMAGE' or eventtype == 'SPELL_PERIODIC_DAMAGE') then
-			src_is_interesting = band(srcFlags, RAID_FLAGS) ~= 0 or (band(srcFlags, PET_FLAGS) ~= 0 and pets[srcGUID])
-			-- AWS: To avoid incoming periodic damage (e.g. from a debuff) triggering combat, we simply do not initialize
-			--      dst_is_interesting for periodic damage...
-			if eventtype ~= 'SPELL_PERIODIC_DAMAGE' then
-				dst_is_interesting = band(dstFlags, RAID_FLAGS) ~= 0 or (band(dstFlags, PET_FLAGS) ~= 0 and pets[dstGUID])
-			end
-			if src_is_interesting or dst_is_interesting then
-				-- Create a current set and set our "tentative" flag to true.
-				self.current = createSet(L["Current"])
-			
-				-- Also create total set if needed.
-				if not self.total then
-				self.total = createSet(L["Total"])
-			end
-			
-			-- Schedule an end to this tentative combat situation in 3 seconds.
-			tentativehandle = self:ScheduleTimer(
-								function()
-									tentative = nil
-									tentativehandle = nil
-									self.current = nil
-									--self:Print("tentative combat start FAILED!")
-								end, 1)
-			
-	                   	tentative = 0
-			--self:Print("tentative combat start INIT!")
-			end
+	-- Optional tentative combat detection.
+	-- Instead of simply checking when we enter combat, combat start is also detected based on needing a certain
+	-- amount of interesting (as defined by our modules) CL events.
+	if not Skada.current and Skada.db.profile.tentativecombatstart and srcName and dstName and srcGUID ~= dstGUID and (eventtype == 'SPELL_DAMAGE' or eventtype == 'SPELL_BUILDING_DAMAGE' or eventtype == 'RANGE_DAMAGE' or eventtype == 'SWING_DAMAGE' or eventtype == 'SPELL_PERIODIC_DAMAGE') then
+		src_is_interesting = band(srcFlags, RAID_FLAGS) ~= 0 or (band(srcFlags, PET_FLAGS) ~= 0 and pets[srcGUID])
+		-- AWS: To avoid incoming periodic damage (e.g. from a debuff) triggering combat, we simply do not initialize
+		--      dst_is_interesting for periodic damage...
+		if eventtype ~= 'SPELL_PERIODIC_DAMAGE' then
+			dst_is_interesting = band(dstFlags, RAID_FLAGS) ~= 0 or (band(dstFlags, PET_FLAGS) ~= 0 and pets[dstGUID])
 		end
-	
-	if self.current and combatlogevents[eventtype] then
+		if src_is_interesting or dst_is_interesting then
+			-- Create a current set and set our "tentative" flag to true.
+			Skada.current = createSet(L["Current"])
+		
+			-- Also create total set if needed.
+			if not Skada.total then
+			Skada.total = createSet(L["Total"])
+		end
+		
+		-- Schedule an end to this tentative combat situation in 3 seconds.
+		tentativehandle = Skada:ScheduleTimer(
+							function()
+								tentative = nil
+								tentativehandle = nil
+								Skada.current = nil
+								--self:Print("tentative combat start FAILED!")
+							end, 1)
+		
+					tentative = 0
+		--self:Print("tentative combat start INIT!")
+		end
+	end
+
+	if Skada.current and combatlogevents[eventtype] then
 		for i, mod in ipairs(combatlogevents[eventtype]) do
 			local fail = false
 	
---			self:Print("event, "..eventtype)
 			-- Lua can not use assignments as expressions... grmbl. 
 			if not fail and mod.flags.src_is_interesting_nopets then
 				if src_is_interesting_nopets == nil then
@@ -1716,7 +1634,7 @@ function Skada:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, hideCast
 				end
 				-- Lua does not have a "continue"... grmbl.
 				if not src_is_interesting_nopets then
---				self:Print("fail on src_is_interesting_nopets")
+				--self:Print("fail on src_is_interesting_nopets")
 					fail = true
 				end
 			end
@@ -1728,7 +1646,7 @@ function Skada:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, hideCast
 					end
 				end
 				if not dst_is_interesting_nopets then
---				self:Print("fail on dst_is_interesting_nopets")
+				--self:Print("fail on dst_is_interesting_nopets")
 					fail = true
 				end
 			end
@@ -1737,7 +1655,7 @@ function Skada:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, hideCast
 					src_is_interesting = band(srcFlags, RAID_FLAGS) ~= 0 or (band(srcFlags, PET_FLAGS) ~= 0 and pets[srcGUID])
 				end
 				if mod.flags.src_is_interesting and not src_is_interesting then
---				self:Print("fail on src_is_interesting")
+				--self:Print("fail on src_is_interesting")
 					fail = true
 				end
 				if mod.flags.src_is_not_interesting and src_is_interesting then
@@ -1749,7 +1667,7 @@ function Skada:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, hideCast
 					dst_is_interesting = band(dstFlags, RAID_FLAGS) ~= 0 or (band(dstFlags, PET_FLAGS) ~= 0 and pets[dstGUID])
 				end
 				if mod.flags.dst_is_interesting and not dst_is_interesting then
---				self:Print("fail on dst_is_interesting")
+				--self:Print("fail on dst_is_interesting")
 					fail = true
 				end
 				if mod.flags.dst_is_not_interesting and dst_is_interesting then
@@ -1766,9 +1684,9 @@ function Skada:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, hideCast
 					tentative = tentative + 1
 					if tentative == 5 then
 						--self:Print("tentative combat start SUCCESS!")
-						self:CancelTimer(tentativehandle)
+						Skada:CancelTimer(tentativehandle)
 						tentativehandle = nil
-						self:StartCombat()
+						Skada:StartCombat()
 					end
 				end
 			end
@@ -1777,14 +1695,14 @@ function Skada:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, hideCast
 	end
 
 	-- Note: relies on src_is_interesting having been checked.
-	if self.current and src_is_interesting and not self.current.gotboss then
+	if Skada.current and src_is_interesting and not Skada.current.gotboss then
 		-- Store mob name for set name. For now, just save first unfriendly name available, or first boss available.
 		if bit.band(dstFlags, COMBATLOG_OBJECT_REACTION_HOSTILE) ~=0 then
-			if not self.current.gotboss and boss.BossIDs[tonumber(dstGUID:sub(7, 10), 16)] then
-				self.current.mobname = dstName
-				self.current.gotboss = true
-			elseif not self.current.mobname then
-				self.current.mobname = dstName
+			if not Skada.current.gotboss and boss.BossIDs[tonumber(dstGUID:sub(7, 10), 16)] then
+				Skada.current.mobname = dstName
+				Skada.current.gotboss = true
+			elseif not Skada.current.mobname then
+				Skada.current.mobname = dstName
 			end
 		end
 	end
@@ -1797,6 +1715,15 @@ function Skada:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, hideCast
 		pets[dstGUID] = {id = srcGUID, name = srcName}
 	end
 
+end
+
+-- 4.2 compatibility
+if CLIENT_VERSION >= 40200 then
+	Skada:Print("Using temporary 4.2 compatibility.")
+	local old_def = COMBAT_LOG_EVENT_UNFILTERED
+	COMBAT_LOG_EVENT_UNFILTERED = function(event, timestamp, eventtype, hideCaster, srcGUID, srcName, srcFlags, srcRaidFlags, dstGUID, dstName, dstFlags, dstRaidFlags, ...)
+											old_def(event, timestamp, eventtype, hideCaster, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
+										end
 end
 
 function Skada:AssignPet(ownerguid, ownername, petguid)
@@ -2255,6 +2182,88 @@ function Skada:AddSubviewToTooltip(tooltip, win, mode, id, label)
 	end
 end
 
+function Skada:OnInitialize()
+	-- Register some SharedMedia goodies.
+	media:Register("font", "Adventure",				[[Interface\Addons\Skada\fonts\Adventure.ttf]])
+	media:Register("font", "ABF",					[[Interface\Addons\Skada\fonts\ABF.ttf]])
+	media:Register("font", "Vera Serif",			[[Interface\Addons\Skada\fonts\VeraSe.ttf]])
+	media:Register("font", "Diablo",				[[Interface\Addons\Skada\fonts\Avqest.ttf]])
+	media:Register("font", "Accidental Presidency",	[[Interface\Addons\Skada\fonts\Accidental Presidency.ttf]])
+	media:Register("statusbar", "Aluminium",		[[Interface\Addons\Skada\statusbar\Aluminium]])
+	media:Register("statusbar", "Armory",			[[Interface\Addons\Skada\statusbar\Armory]])
+	media:Register("statusbar", "BantoBar",			[[Interface\Addons\Skada\statusbar\BantoBar]])
+	media:Register("statusbar", "Glaze2",			[[Interface\Addons\Skada\statusbar\Glaze2]])
+	media:Register("statusbar", "Gloss",			[[Interface\Addons\Skada\statusbar\Gloss]])
+	media:Register("statusbar", "Graphite",			[[Interface\Addons\Skada\statusbar\Graphite]])
+	media:Register("statusbar", "Grid",				[[Interface\Addons\Skada\statusbar\Grid]])
+	media:Register("statusbar", "Healbot",			[[Interface\Addons\Skada\statusbar\Healbot]])
+	media:Register("statusbar", "LiteStep",			[[Interface\Addons\Skada\statusbar\LiteStep]])
+	media:Register("statusbar", "Minimalist",		[[Interface\Addons\Skada\statusbar\Minimalist]])
+	media:Register("statusbar", "Otravi",			[[Interface\Addons\Skada\statusbar\Otravi]])
+	media:Register("statusbar", "Outline",			[[Interface\Addons\Skada\statusbar\Outline]])
+	media:Register("statusbar", "Perl",				[[Interface\Addons\Skada\statusbar\Perl]])
+	media:Register("statusbar", "Smooth",			[[Interface\Addons\Skada\statusbar\Smooth]])
+	media:Register("statusbar", "Round",			[[Interface\Addons\Skada\statusbar\Round]])
+	media:Register("statusbar", "TukTex",			[[Interface\Addons\Skada\statusbar\normTex]])
+
+	-- Some sounds (copied from Omen).
+	media:Register("sound", "Rubber Ducky", [[Sound\Doodad\Goblin_Lottery_Open01.wav]])
+	media:Register("sound", "Cartoon FX", [[Sound\Doodad\Goblin_Lottery_Open03.wav]])
+	media:Register("sound", "Explosion", [[Sound\Doodad\Hellfire_Raid_FX_Explosion05.wav]])
+	media:Register("sound", "Shing!", [[Sound\Doodad\PortcullisActive_Closed.wav]])
+	media:Register("sound", "Wham!", [[Sound\Doodad\PVP_Lordaeron_Door_Open.wav]])
+	media:Register("sound", "Simon Chime", [[Sound\Doodad\SimonGame_LargeBlueTree.wav]])
+	media:Register("sound", "War Drums", [[Sound\Event Sounds\Event_wardrum_ogre.wav]])
+	media:Register("sound", "Cheer", [[Sound\Event Sounds\OgreEventCheerUnique.wav]])
+	media:Register("sound", "Humm", [[Sound\Spells\SimonGame_Visual_GameStart.wav]])
+	media:Register("sound", "Short Circuit", [[Sound\Spells\SimonGame_Visual_BadPress.wav]])
+	media:Register("sound", "Fel Portal", [[Sound\Spells\Sunwell_Fel_PortalStand.wav]])
+	media:Register("sound", "Fel Nova", [[Sound\Spells\SeepingGaseous_Fel_Nova.wav]])
+	media:Register("sound", "You Will Die!", [[Sound\Creature\CThun\CThunYouWillDIe.wav]])
+
+	-- DB
+	self.db = LibStub("AceDB-3.0"):New("SkadaDB", self.defaults, "Default")
+	LibStub("AceConfig-3.0"):RegisterOptionsTable("Skada", self.options)
+	self.optionsFrame = LibStub("AceConfigDialog-3.0"):AddToBlizOptions("Skada", "Skada")
+
+	-- Profiles
+	LibStub("AceConfig-3.0"):RegisterOptionsTable("Skada-Profiles", LibStub("AceDBOptions-3.0"):GetOptionsTable(self.db))
+	self.profilesFrame = LibStub("AceConfigDialog-3.0"):AddToBlizOptions("Skada-Profiles", "Profiles", "Skada")
+	
+	self:RegisterChatCommand("skada", "Command")
+	self.db.RegisterCallback(self, "OnProfileChanged", "ReloadSettings")
+	self.db.RegisterCallback(self, "OnProfileCopied", "ReloadSettings")
+	self.db.RegisterCallback(self, "OnProfileReset", "ReloadSettings")
+
+	self:ReloadSettings()
+	
+	-- Instead of listening for callbacks on SharedMedia we simply wait a few seconds and then re-apply settings
+	-- to catch any missing media. Lame? Yes.
+	self:ScheduleTimer("ApplySettings", 2)
+end
+
+function Skada:OnEnable()
+	self:RegisterEvent("PLAYER_ENTERING_WORLD")
+	self:RegisterEvent("PARTY_MEMBERS_CHANGED")
+	self:RegisterEvent("RAID_ROSTER_UPDATE")
+	self:RegisterEvent("UNIT_PET")
+	self:RegisterEvent("PLAYER_REGEN_DISABLED")
+	self:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED", COMBAT_LOG_EVENT_UNFILTERED)
+	
+	if type(CUSTOM_CLASS_COLORS) == "table" then
+		Skada.classcolors = CUSTOM_CLASS_COLORS
+	end
+end
+
+function Skada:OnDisable()
+	-- Save some settings.
+	self.db.profile.selectedset = selectedset
+	if selectedmode then
+		self.db.profile.set = selectedmode.name
+	else
+		self.db.profile.mode = nil
+	end
+end
 
 -- A minimal mode showing test data. Used by the config.
 --[[
@@ -2273,3 +2282,4 @@ local testmod = {
 			end
 }
 --]]
+

@@ -10,18 +10,13 @@ local function log_deathlog(set, playerid, playername, spellid, spellname, amoun
 	
 	table.insert(player.deathlog, 1, {["spellid"] = spellid, ["spellname"] = spellname, ["amount"] = amount, ["ts"] = timestamp, hp = UnitHealth(playername)})
 	
-	-- Max health.
-	if player.maxhp == 0 then
-		player.maxhp = UnitHealthMax(playername)
-	end
-	
 	-- Trim.
 	while #player.deathlog > 15 do table.remove(player.deathlog) end
 end
 
 local function log_death(set, playerid, playername, timestamp)
 	local player = Skada:get_player(set, playerid, playername)
-	
+
 	-- Add a death along with it's timestamp.
 	table.insert(player.deaths, 1, {["ts"] = timestamp, ["log"] = player.deathlog})
 
@@ -94,9 +89,9 @@ local function SpellHeal(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGU
 	local spellId, spellName, spellSchool, samount, soverhealing, absorbed, scritical = ...
 	smount = min(0, samount - soverhealing)
 	
-	srcGUID, srcName = Skada:FixMyPets(srcGUID, srcName)
+	srcGUID, srcName_modified = Skada:FixMyPets(srcGUID, srcName)
 	dstGUID, dstName = Skada:FixMyPets(dstGUID, dstName)
-	log_deathlog(Skada.current, dstGUID, dstName, spellId, srcName..L["'s "]..spellName, samount, timestamp)
+	log_deathlog(Skada.current, dstGUID, dstName, spellId, (srcName_modified or srcName)..L["'s "]..spellName, samount, timestamp)
 	log_deathlog(Skada.total, dstGUID, dstName, spellId, srcName..L["'s "]..spellName, samount, timestamp)
 end
 
@@ -241,7 +236,6 @@ function mod:SetComplete(set)
 		-- Remove pending logs
 		wipe(player.deathlog)
 		player.deathlog = nil
-		player.maxhp = nil
 		-- Remove deaths collection from all who did not die
 		if #player.deaths == 0 then
 			wipe(player.deaths)
@@ -263,7 +257,7 @@ function mod:AddPlayerAttributes(player)
 	if not player.deaths or type(player.deaths) ~= "table" then
 		player.deathlog = {}
 		player.deaths = {}
-		player.maxhp = 0
+		player.maxhp = UnitHealthMax(player.name)
 	end
 end
 
