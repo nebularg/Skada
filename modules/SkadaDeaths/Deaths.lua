@@ -114,15 +114,15 @@ function mod:Update(win, set)
 			end
 			
 			d.id = player.id
-			d.value = #player.deaths
+			d.value = maxdeathts
 			d.label = player.name
 			d.class = player.class
 			d.valuetext = Skada:FormatValueText(
 										tostring(#player.deaths), self.metadata.columns.Deaths,
 										date("%H:%M:%S", maxdeathts), self.metadata.columns.Timestamp
 									)
-			if #player.deaths > max then
-				max = #player.deaths
+			if maxdeathts > max then
+				max = maxdeathts
 			end
 			
 			nr = nr + 1
