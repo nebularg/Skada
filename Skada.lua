@@ -1531,11 +1531,7 @@ function Skada:get_player(set, playerid, playername)
 			return
 		end
 		
-		-- Strip realm name
-		local player_name, realm = string.split("-", playername, 2)		
-		player_name = player_name or playername
-		
-		player = {id = playerid, class = select(2, UnitClass(playername)), name = player_name, first = time(), ["time"] = 0}
+		player = {id = playerid, class = select(2, UnitClass(playername)), name = playername, first = time(), ["time"] = 0}
 		
 		-- Tell each mode to apply its needed attributes.
 		for i, mode in ipairs(modes) do
@@ -1543,6 +1539,11 @@ function Skada:get_player(set, playerid, playername)
 				mode:AddPlayerAttributes(player)
 			end
 		end
+
+		-- Strip realm name
+		-- This is done after module processing due to cross-realm names messing with modules (death log for example, which needs to do UnitHealthMax on the playername).
+		local player_name, realm = string.split("-", playername, 2)		
+		player.name = player_name or playername
 		
 		table.insert(set.players, player)
 	end
