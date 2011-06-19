@@ -5,6 +5,7 @@ local Skada = Skada
 local mod = Skada:NewModule(L["Healing"])
 local spellsmod = Skada:NewModule(L["Healing spell list"])
 local healedmod = Skada:NewModule(L["Healed players"])
+local healingtaken = Skada:NewModule(L["Healing taken"])
 
 local function log_heal(set, heal)
 	-- Get the player from set.
@@ -78,6 +79,58 @@ local function getHPS(set, player)
 	local totaltime = Skada:PlayerActiveTime(set, player)
 	
 	return player.healing / math.max(1,totaltime)
+end
+
+local function getHPSByValue(set, player, healing)
+	local totaltime = Skada:PlayerActiveTime(set, player)
+	
+	return healing / math.max(1,totaltime)
+end
+
+function healingtaken:Update(win, set)
+	local nr = 1
+	local max = 0
+	
+	for i, player in ipairs(set.players) do
+		-- Iterate over all players and add to this player's healing taken.
+		local totalhealing = 0
+		for j, p in ipairs(set.players) do
+			
+			-- Iterate over each healed player this player did.
+			-- Bit expensive doing this once for each player in raid; can be done differently.
+			for name, heal in pairs(p.healed) do
+				if name == player.name then
+					totalhealing = totalhealing + heal.amount
+				end
+			end
+			
+		end
+		
+		-- Now we have a total healing value for this player.
+		if totalhealing > 0 then
+			local d = win.dataset[nr] or {}
+			win.dataset[nr] = d
+			
+			d.id = player.id
+			d.label = player.name
+			d.value = totalhealing
+			
+			d.valuetext = Skada:FormatValueText(
+											Skada:FormatNumber(totalhealing), self.metadata.columns.Healing,
+											string.format("%02.1f", getHPSByValue(set, player, totalhealing)), self.metadata.columns.HPS,
+											string.format("%02.1f%%", totalhealing / set.healing * 100), self.metadata.columns.Percent
+										)
+			d.class = player.class
+			
+			if totalhealing > max then
+				max = totalhealing
+			end
+			
+			nr = nr + 1
+		end
+			
+	end
+	win.metadata.maxvalue = max
 end
 
 function mod:Update(win, set)
@@ -215,15 +268,18 @@ function mod:OnEnable()
 	mod.metadata		= {showspots = true, click1 = spellsmod, click2 = healedmod, columns = {Healing = true, HPS = true, Percent = true}}
 	spellsmod.metadata	= {tooltip = spell_tooltip, columns = {Healing = true, Percent = true}}
 	healedmod.metadata 	= {showspots = true, columns = {Healing = true, Percent = true}}
-	
+	healingtaken.metadata = {showspots = true, columns = {Healing = true, HPS = true, Percent = true}}
+
 	Skada:RegisterForCL(SpellHeal, 'SPELL_HEAL', {src_is_interesting = true})
 	Skada:RegisterForCL(SpellHeal, 'SPELL_PERIODIC_HEAL', {src_is_interesting = true})
 
 	Skada:AddMode(self)
+	Skada:AddMode(healingtaken)
 end
 
 function mod:OnDisable()
 	Skada:RemoveMode(self)
+	Skada:RemoveMode(healingtaken)
 end
 
 function mod:AddToTooltip(set, tooltip)

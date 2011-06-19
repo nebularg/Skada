@@ -332,3 +332,4 @@ L["Skada usually uses a very conservative (simple) combat detection scheme that 
 L["Clickthrough"] = "Clickthrough"
 L["Disables mouse clicks on bars."] = "Disables mouse clicks on bars."
 L["DTPS"] = "DTPS"
+L["Healing taken"] = "Healing taken"
