@@ -1,4 +1,4 @@
-## Interface: 40100
+## Interface: 40200
 ## Title: Skada |r[|caaedc99fDamage Taken|r]
 ## Notes: Adds a Damage Taken mode and data collection to Skada.
 ## Author: Zarnivoop
