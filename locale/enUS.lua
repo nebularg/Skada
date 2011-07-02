@@ -333,3 +333,6 @@ L["Clickthrough"] = "Clickthrough"
 L["Disables mouse clicks on bars."] = "Disables mouse clicks on bars."
 L["DTPS"] = "DTPS"
 L["Healing taken"] = "Healing taken"
+
+L["Wipe mode"] = "Wipe mode"
+L["Automatically switch to set 'Current' and this mode after a wipe."] = "Automatically switch to set 'Current' and this mode after a wipe."

@@ -30,6 +30,7 @@ Skada.windowdefaults = {
 	reversegrowth=false,
 	modeincombat="",
 	returnaftercombat=false,
+	wipemode="",
 	
 	hidden = false,
 	enabletitle = true, 

@@ -184,11 +184,27 @@ function Window:AddOptions()
 				order=21,
 			},
 			
+			wipemode = {
+				type="select",
+				name=L["Wipe mode"],
+				desc=L["Automatically switch to set 'Current' and this mode after a wipe."],
+				values=	function()
+							local modes = {}
+							modes[""] = L["None"]
+							for i, mode in ipairs(Skada:GetModes()) do
+								modes[mode:GetName()] = mode:GetName()
+							end
+							return modes
+						end,
+				get=function() return db.wipemode end,
+				set=function(win, mode) db.wipemode = mode end,
+				order=21,
+			},			
 			returnaftercombat = {
 				type="toggle",
                	name=L["Return after combat"],
              			desc=L["Return to the previous set and mode after combat ends."],
-                order=22,
+                order=23,
      			        get=function() return db.returnaftercombat end,
          			    set=function() db.returnaftercombat = not db.returnaftercombat end,
          			    disabled=function() return db.returnaftercombat == nil end,
@@ -1280,7 +1296,32 @@ local function IsRaidInCombat()
 				return true
 			end
 		end
+	elseif UnitAffectingCombat("player") then
+		return true
 	end
+end
+
+-- Returns true if the party/raid/us are dead/ghost.
+local function IsRaidDead()
+	if GetNumRaidMembers() > 0 then
+		-- We are in a raid.
+		for i = 1, GetNumRaidMembers(), 1 do
+			if UnitExists("raid"..i) and not UnitIsDeadOrGhost("raid"..i) then
+				return false
+			end
+		end
+	elseif GetNumPartyMembers() > 0 then
+		-- In party.
+		for i = 1, GetNumPartyMembers(), 1 do
+			if UnitExists("party"..i) and not UnitIsDeadOrGhost("party"..i) then
+				return false
+			end
+		end
+	elseif not UnitIsDeadOrGhost("player") then
+		return false
+	end
+	
+	return true
 end
 
 -- Our scheme for segmenting fights:
@@ -1288,7 +1329,7 @@ end
 -- check if anyone in raid is in combat; if so, close up shop.
 -- We can not simply rely on PLAYER_REGEN_ENABLED since it is fired if we die and the fight continues.
 function Skada:Tick()
-	if not disabled and self.current and not InCombatLockdown() and not UnitIsDead("player") and not IsRaidInCombat() then
+	if not disabled and self.current and not InCombatLockdown() and not IsRaidInCombat() then
 		self:EndSegment()
 	end
 end
@@ -1347,13 +1388,17 @@ function Skada:EndSegment()
 			numsets = numsets - 1
 		end
 	end
-
+	
 	for i, win in ipairs(windows) do
 		win:Wipe()
 		changed = true
 	
-		-- Auto-switch back to previous set/mode.
-		if win.db.returnaftercombat and win.restore_mode and win.restore_set then
+		-- Wipe mode - switch to current set and specific mode if no party/raid members are alive.
+		-- Restore mode is not changed.
+		if win.db.wipemode ~= "" and IsRaidDead() then
+			self:RestoreView(win, "current", win.db.wipemode)
+		elseif win.db.returnaftercombat and win.restore_mode and win.restore_set then
+			-- Auto-switch back to previous set/mode.
 			if win.restore_set ~= win.selectedset or win.restore_mode ~= win.selectedmode then
 				
 				self:RestoreView(win, win.restore_set, win.restore_mode)
@@ -1576,9 +1621,7 @@ local RAID_FLAGS = COMBATLOG_OBJECT_AFFILIATION_MINE + COMBATLOG_OBJECT_AFFILIAT
 -- On a new event, loop through the interested parties.
 -- The flags are checked, and the flag value (say, that the SRC must be interesting, ie, one of the raid) is only checked once, regardless
 -- of how many modules are interested in the event. The check is also only done on the first flag that requires it.
---function Skada:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, hideCaster, srcGUID, srcName, srcFlags, srcRaidFlags, dstGUID, dstName, dstFlags, dstRaidFlags, ...)
---function Skada:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, hideCaster, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
-local function COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, hideCaster, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
+local function COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, hideCaster, srcGUID, srcName, srcFlags, srcRaidFlags, dstGUID, dstName, dstFlags, dstRaidFlags, ...)
 	if disabled then
 		return
 	end
@@ -1716,15 +1759,6 @@ local function COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, hideCast
 		pets[dstGUID] = {id = srcGUID, name = srcName}
 	end
 
-end
-
--- 4.2 compatibility
-if CLIENT_VERSION >= 40200 then
-	Skada:Print("Using temporary 4.2 compatibility.")
-	local old_def = COMBAT_LOG_EVENT_UNFILTERED
-	COMBAT_LOG_EVENT_UNFILTERED = function(event, timestamp, eventtype, hideCaster, srcGUID, srcName, srcFlags, srcRaidFlags, dstGUID, dstName, dstFlags, dstRaidFlags, ...)
-											old_def(event, timestamp, eventtype, hideCaster, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
-										end
 end
 
 function Skada:AssignPet(ownerguid, ownername, petguid)
