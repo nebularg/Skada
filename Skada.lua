@@ -331,6 +331,10 @@ local function click_on_mode(win, id, label, button)
 	end
 end
 
+function Skada:GetSets()
+	return sets
+end
+
 -- Sets up the mode list.
 function Window:DisplayModes(settime)
 	self.history = {}
@@ -862,349 +866,6 @@ function Skada:DeleteSet(set)
 	self:UpdateDisplay(true)
 end
 	
--- Open a menu. Supply a window to tailor it to that window, else generic.
-function Skada:OpenMenu(window)
-	if not self.skadamenu then
-		self.skadamenu = CreateFrame("Frame", "SkadaMenu")
-	end
-	local skadamenu = self.skadamenu
-	
-	skadamenu.displayMode = "MENU"
-	local info = {}
-	skadamenu.initialize = function(self, level)
-	    if not level then return end
-	    wipe(info)
-	    if level == 1 then
-	        -- Create the title of the menu
-	        info.isTitle = 1
-	        info.text = L["Skada Menu"]
-	        info.notCheckable = 1
-	        UIDropDownMenu_AddButton(info, level)
-	        
-			for i, win in ipairs(windows) do
-		        wipe(info)
-		        info.text = win.db.name
-		        info.hasArrow = 1
-		        info.value = win
-		        info.notCheckable = 1
-		        UIDropDownMenu_AddButton(info, level)
-			end
-
-	        -- Add a blank separator
-	        wipe(info)
-	        info.disabled = 1
-	        info.notCheckable = 1
-	        UIDropDownMenu_AddButton(info, level)
-
-			-- Can't report if we are not in a mode.
-			if not window or (window or window.selectedmode) then
-		        wipe(info)
-		        info.text = L["Report"]
-		        info.hasArrow = 1
-		        info.value = "report"
-		        info.notCheckable = 1
-		        UIDropDownMenu_AddButton(info, level)
-		    end
-	        
-	        wipe(info)
-	        info.text = L["Delete segment"]
-	        info.func = function() Skada:DeleteSet() end
-	        info.hasArrow = 1
-	        info.notCheckable = 1
-	        info.value = "delete"
-	        UIDropDownMenu_AddButton(info, level)
-	        
-	        wipe(info)
-	        info.text = L["Keep segment"]
-	        info.func = function() Skada:KeepSet() end
-	        info.notCheckable = 1
-	        info.hasArrow = 1
-	        info.value = "keep"
-	        UIDropDownMenu_AddButton(info, level)
-
-	        -- Add a blank separator
-	        wipe(info)
-	        info.disabled = 1
-	        info.notCheckable = 1
-	        UIDropDownMenu_AddButton(info, level)
-	        
-	        wipe(info)
-	        info.text = L["Toggle window"]
-	        info.func = function() Skada:ToggleWindow() end
-	        info.notCheckable = 1
-	        UIDropDownMenu_AddButton(info, level)
-
-	        wipe(info)
-	        info.text = L["Reset"]
-	        info.func = function() Skada:Reset() end
-	        info.notCheckable = 1
-	        UIDropDownMenu_AddButton(info, level)
-	        
-	        wipe(info)
-	        info.text = L["Start new segment"]
-	        info.func = function() Skada:NewSegment() end
-	        info.notCheckable = 1
-	        UIDropDownMenu_AddButton(info, level)
-
-
-	        wipe(info)
-	        info.text = L["Configure"]
-	        info.func = function() InterfaceOptionsFrame_OpenToCategory("Skada") end
-	        info.notCheckable = 1
-	        UIDropDownMenu_AddButton(info, level)
-
-	        -- Close menu item
-	        wipe(info)
-	        info.text         = CLOSE
-	        info.func         = function() CloseDropDownMenus() end
-	        info.checked      = nil
-	        info.notCheckable = 1
-	        UIDropDownMenu_AddButton(info, level)
-	    elseif level == 2 then
-	    	if type(UIDROPDOWNMENU_MENU_VALUE) == "table" then
-	    		local window = UIDROPDOWNMENU_MENU_VALUE
-	    		-- Display list of modes with current ticked; let user switch mode by checking one.
-		        wipe(info)
-		        info.isTitle = 1
-		        info.text = L["Mode"]
-		        UIDropDownMenu_AddButton(info, level)
-		        
-		        for i, module in ipairs(Skada:GetModes()) do
-			        wipe(info)
-		            info.text = module:GetName()
-		            info.func = function() window:DisplayMode(module) end
-		            info.checked = (window.selectedmode == module)
-		            UIDropDownMenu_AddButton(info, level)
-		        end
-		        
-		        -- Separator
-		        wipe(info)
-		        info.disabled = 1
-		        info.notCheckable = 1
-		        UIDropDownMenu_AddButton(info, level)
-	        
-		        -- Display list of sets with current ticked; let user switch set by checking one.
-		        wipe(info)
-		        info.isTitle = 1
-		        info.text = L["Segment"]
-		        UIDropDownMenu_AddButton(info, level)
-		        
-		        wipe(info)
-	            info.text = L["Total"]
-	            info.func = function()
-	            				window.selectedset = "total"
-	            				Skada:Wipe()
-	            				Skada:UpdateDisplay(true)
-	            			end
-	            info.checked = (window.selectedset == "total")
-	            UIDropDownMenu_AddButton(info, level)
-		        wipe(info)
-	            info.text = L["Current"]
-	            info.func = function()
-	            				window.selectedset = "current"
-	            				Skada:Wipe()
-	            				Skada:UpdateDisplay(true)
-	            			end
-	            info.checked = (window.selectedset == "current")
-	            UIDropDownMenu_AddButton(info, level)
-
-		        for i, set in ipairs(sets) do
-			        wipe(info)
-		            info.text = set.name..": "..date("%H:%M",set.starttime).." - "..date("%H:%M",set.endtime)
-		            info.func = function() 
-		            				window.selectedset = i
-		            				Skada:Wipe()
-		            				Skada:UpdateDisplay(true)
-		            			end
-		            info.checked = (window.selectedset == set.starttime)
-		            UIDropDownMenu_AddButton(info, level)
-		        end
-
-		        -- Add a blank separator
-		        wipe(info)
-		        info.disabled = 1
-		        info.notCheckable = 1
-		        UIDropDownMenu_AddButton(info, level)
-	        
-		        wipe(info)
-	            info.text = L["Lock window"]
-	            info.func = function()
-	            				window.db.barslocked = not window.db.barslocked
-	            				Skada:ApplySettings()
-	            			end
-	            info.checked = window.db.barslocked
-		        UIDropDownMenu_AddButton(info, level)
-			        	    	
-		    elseif UIDROPDOWNMENU_MENU_VALUE == "delete" then
-		        for i, set in ipairs(sets) do
-			        wipe(info)
-		            info.text = set.name..": "..date("%H:%M",set.starttime).." - "..date("%H:%M",set.endtime)
-		            info.func = function() Skada:DeleteSet(set) end
-			        info.notCheckable = 1
-		            UIDropDownMenu_AddButton(info, level)
-		        end
-		    elseif UIDROPDOWNMENU_MENU_VALUE == "keep" then
-		        for i, set in ipairs(sets) do
-			        wipe(info)
-		            info.text = set.name..": "..date("%H:%M",set.starttime).." - "..date("%H:%M",set.endtime)
-		            info.func = function() 
-		            				set.keep = not set.keep
-		            				Skada:Wipe()
-		            				Skada:UpdateDisplay(true)
-		            			end
-		            info.checked = set.keep
-		            UIDropDownMenu_AddButton(info, level)
-		        end
-		    elseif UIDROPDOWNMENU_MENU_VALUE == "report" then
-		    	if not window then
-			        wipe(info)
-			        info.text = L["Mode"]
-			        info.hasArrow = 1
-			        info.value = "modes"
-			        info.notCheckable = 1
-			        UIDropDownMenu_AddButton(info, level)
-	
-			        wipe(info)
-			        info.hasArrow = 1
-			        info.value = "segment"
-			        info.notCheckable = 1
-			        info.text = L["Segment"]
-			        UIDropDownMenu_AddButton(info, level)
-			    end
-		        
-		        wipe(info)
-		        info.text = L["Channel"]
-		        info.hasArrow = 1
-		        info.value = "channel"
-		        info.notCheckable = 1
-		        UIDropDownMenu_AddButton(info, level)
-		        
-		        wipe(info)
-		        info.text = L["Lines"]
-		        info.hasArrow = 1
-		        info.value = "number"
-		        info.notCheckable = 1
-		        UIDropDownMenu_AddButton(info, level)
-		        
-		        wipe(info)
-		        info.text = L["Send report"]
-		        info.func = function()
-		        				if Skada.db.profile.report.mode ~= nil and Skada.db.profile.report.set ~= nil then
-		        				
-									if Skada.db.profile.report.chantype == "whisper" then
-										StaticPopupDialogs["SkadaReportDialog"] = {
-															text = L["Name of recipient"], 
-															button1 = ACCEPT, 
-															button2 = CANCEL,
-															hasEditBox = 1,
-															timeout = 30, 
-															hideOnEscape = 1, 
-															OnAccept = 	function(self)
-																			Skada.db.profile.report.channel = self.editBox:GetText()
-																			Skada:Report(Skada.db.profile.report.channel, Skada.db.profile.report.chantype, Skada.db.profile.report.mode, Skada.db.profile.report.set, Skada.db.profile.report.number, window)
-																		end,
-														}
-										StaticPopup_Show("SkadaReportDialog")
-									else
-										Skada:Report(Skada.db.profile.report.channel, Skada.db.profile.report.chantype, Skada.db.profile.report.mode, Skada.db.profile.report.set, Skada.db.profile.report.number, window)
-									end
-								else
-									Skada:Print(L["No mode or segment selected for report."])
-								end
-		        			end
-		        info.notCheckable = 1
-		        UIDropDownMenu_AddButton(info, level)
-		    end
-		elseif level == 3 then
-		    if UIDROPDOWNMENU_MENU_VALUE == "modes" then
-
-		        for i, module in ipairs(Skada:GetModes()) do
-			        wipe(info)
-		            info.text = module:GetName()
-		            info.checked = (Skada.db.profile.report.mode == module:GetName())
-		            info.func = function() Skada.db.profile.report.mode = module:GetName() end
-		            UIDropDownMenu_AddButton(info, level)
-		        end
-		    elseif UIDROPDOWNMENU_MENU_VALUE == "segment" then
-		        wipe(info)
-	            info.text = L["Total"]
-	            info.func = function() Skada.db.profile.report.set = "total" end
-	            info.checked = (Skada.db.profile.report.set == "total")
-	            UIDropDownMenu_AddButton(info, level)
-	            
-	            info.text = L["Current"]
-	            info.func = function() Skada.db.profile.report.set = "current" end
-	            info.checked = (Skada.db.profile.report.set == "current")
-	            UIDropDownMenu_AddButton(info, level)
-
-		        for i, set in ipairs(sets) do
-		            info.text = set.name..": "..date("%H:%M",set.starttime).." - "..date("%H:%M",set.endtime)
-		            info.func = function() Skada.db.profile.report.set = i end
-		            info.checked = (Skada.db.profile.report.set == i)
-		            UIDropDownMenu_AddButton(info, level)
-		        end
-		    elseif UIDROPDOWNMENU_MENU_VALUE == "number" then
-		        for i = 1,25 do
-			        wipe(info)
-		            info.text = i
-		            info.checked = (Skada.db.profile.report.number == i)
-		            info.func = function() Skada.db.profile.report.number = i end
-		            UIDropDownMenu_AddButton(info, level)
-		        end
-		    elseif UIDROPDOWNMENU_MENU_VALUE == "channel" then
-		        wipe(info)
-		        info.text = L["Whisper"]
-		        info.checked = (Skada.db.profile.report.chantype == "whisper")
-		        info.func = function() Skada.db.profile.report.channel = "Whisper"; Skada.db.profile.report.chantype = "whisper" end
-		        UIDropDownMenu_AddButton(info, level)
-		        
-		        info.text = L["Say"]
-		        info.checked = (Skada.db.profile.report.channel == "Say")
-		        info.func = function() Skada.db.profile.report.channel = "Say"; Skada.db.profile.report.chantype = "preset" end
-		        UIDropDownMenu_AddButton(info, level)
-        
-	            info.text = L["Raid"]
-	            info.checked = (Skada.db.profile.report.channel == "Raid")
-	            info.func = function() Skada.db.profile.report.channel = "Raid"; Skada.db.profile.report.chantype = "preset" end
-	            UIDropDownMenu_AddButton(info, level)
-
-	            info.text = L["Party"]
-	            info.checked = (Skada.db.profile.report.channel == "Party")
-	            info.func = function() Skada.db.profile.report.channel = "Party"; Skada.db.profile.report.chantype = "preset" end
-	            UIDropDownMenu_AddButton(info, level)
-	            
-	            info.text = L["Guild"]
-	            info.checked = (Skada.db.profile.report.channel == "Guild")
-	            info.func = function() Skada.db.profile.report.channel = "Guild"; Skada.db.profile.report.chantype = "preset" end
-	            UIDropDownMenu_AddButton(info, level)
-	            
-	            info.text = L["Officer"]
-	            info.checked = (Skada.db.profile.report.channel == "Officer")
-	            info.func = function() Skada.db.profile.report.channel = "Officer"; Skada.db.profile.report.chantype = "preset" end
-	            UIDropDownMenu_AddButton(info, level)
-	            
-	            info.text = L["Self"]
-	            info.checked = (Skada.db.profile.report.chantype == "self")
-	            info.func = function() Skada.db.profile.report.channel = "Self"; Skada.db.profile.report.chantype = "self" end
-	            UIDropDownMenu_AddButton(info, level)
-	            
-				local list = {GetChannelList()}
-				for i=1,table.getn(list)/2 do
-					info.text = list[i*2]
-					info.checked = (Skada.db.profile.report.channel == list[i*2])
-					info.func = function() Skada.db.profile.report.channel = list[i*2]; Skada.db.profile.report.chantype = "channel" end
-					UIDropDownMenu_AddButton(info, level)
-				end	            
-	            
-		    end
-		
-	    end
-	end
-	
-	local x,y = GetCursorPosition(UIParent);
-	ToggleDropDownMenu(1, nil, skadamenu, "UIParent", x / UIParent:GetEffectiveScale() , y / UIParent:GetEffectiveScale())
-end
-
 function Skada:ReloadSettings()
 	-- Delete all existing windows in case of a profile change.
 	for i, win in ipairs(windows) do
@@ -1755,10 +1416,19 @@ local function COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, hideCast
 	-- Pet scheme: save the GUID in a table along with the GUID of the owner.
 	-- Note to self: this needs 1) to be made self-cleaning so it can't grow too much, and 2) saved persistently.
 	-- Now also done on raid roster/party changes.
-	if eventtype == 'SPELL_SUMMON' and band(srcFlags, RAID_FLAGS) ~= 0 then
+	if eventtype == 'SPELL_SUMMON' and ( (band(srcFlags, RAID_FLAGS) ~= 0) or (band(srcFlags,(COMBATLOG_OBJECT_TYPE_NPC+COMBATLOG_OBJECT_CONTROL_NPC)) ~= 0) or ( (band(srcFlags, PET_FLAGS)) ~= 0 ) or ((band(dstFlags, PET_FLAGS) ~= 0) and pets[dstGUID])  )  then
+		-- assign pet normally
 		pets[dstGUID] = {id = srcGUID, name = srcName}
-	end
-
+		-- fix the table by searching through the complete list
+		for pet, owner in pairs(pets) do
+			if (pets[owner.id]) then
+				-- the pets owner is a pet -> change it to the owner of the pet
+				Skada:AssignPet(pets[owner.id].id, pets[owner.id].name, pet)
+				break
+			end
+		end
+	end	
+	
 end
 
 function Skada:AssignPet(ownerguid, ownername, petguid)
@@ -2078,35 +1748,22 @@ end
 -- Playerid and playername are exchanged for the pet owner's, and spellname is modified to include pet name.
 function Skada:FixPets(action)
 	if action and not UnitIsPlayer(action.playername) then
-	
-		if not pets[action.playerid] then
-			-- Fix for guardians; requires "playerflags" to be set from CL.
-			if action.playerflags and bit.band(action.playerflags, COMBATLOG_OBJECT_TYPE_GUARDIAN) ~= 0 then
-				if bit.band(action.playerflags, COMBATLOG_OBJECT_AFFILIATION_MINE) ~=0 then
-					if action.spellname then
-						action.spellname = action.playername..": "..action.spellname
-					end
-					action.playername = UnitName("player")
-					action.playerid = UnitGUID("player")
-				else
-					-- Nothing decent in place here yet. Modify guid so that there will only be 1 similar entry at least. Yes, it won't work for cross-realm.
-					action.playerid = action.playername
-				end
-			end
-		end
-	
 		local pet = pets[action.playerid]
 		if pet then
-			if action.spellname then
-				action.spellname = action.playername..": "..action.spellname
+		
+			if (self.db.profile.mergepets) then
+				if action.spellname then
+					action.spellname = action.playername..": "..action.spellname
+				end
+				action.playername = pet.name
+				action.playerid = pet.id
+			else
+				action.playername = pet.name..": "..action.playername
+				-- create a unique ID for each player for each type of pet
+				petMobID=action.playerid:sub(7,10); -- Get Pet creature ID 
+				action.playerid = pet.id .. petMobID; -- just append it to the pets owner id
 			end
-
-			if pets[pet.id] then
-				pet = pets[pet.id]
-			end			
 			
-			action.playername = pet.name
-			action.playerid = pet.id
 		end
 	end
 end
@@ -2254,7 +1911,7 @@ function Skada:OnInitialize()
 	media:Register("sound", "Short Circuit", [[Sound\Spells\SimonGame_Visual_BadPress.wav]])
 	media:Register("sound", "Fel Portal", [[Sound\Spells\Sunwell_Fel_PortalStand.wav]])
 	media:Register("sound", "Fel Nova", [[Sound\Spells\SeepingGaseous_Fel_Nova.wav]])
-	media:Register("sound", "You Will Die!", [[Sound\Creature\CThun\CThunYouWillDIe.wav]])
+	media:Register("sound", "You Will Die!", [[Sound\Creature\CThun\CThunYouWillDie.wav]])
 
 	-- DB
 	self.db = LibStub("AceDB-3.0"):New("SkadaDB", self.defaults, "Default")
@@ -2270,6 +1927,13 @@ function Skada:OnInitialize()
 	self.db.RegisterCallback(self, "OnProfileCopied", "ReloadSettings")
 	self.db.RegisterCallback(self, "OnProfileReset", "ReloadSettings")
 
+	-- Migrate old settings.
+	if self.db.profile.barmax then
+		self:Print("Migrating old settings somewhat gracefully. This should only happen once.")
+		self.db.profile.barmax = nil
+		self.db.profile.background.height = 200
+	end
+	
 	self:ReloadSettings()
 	
 	-- Instead of listening for callbacks on SharedMedia we simply wait a few seconds and then re-apply settings

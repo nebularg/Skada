@@ -6,7 +6,6 @@ Skada.resetoptions = {[1] = L["No"], [2] = L["Yes"], [3] = L["Ask"]}
 Skada.windowdefaults = {
 	name = "Skada",
 	
-	barmax=10,
 	barspacing=0,
 	bartexture="BantoBar",
 	barfont="Accidental Presidency",
@@ -25,7 +24,7 @@ Skada.windowdefaults = {
 	spark = true,
 	
 	title = {menubutton = true, font="Accidental Presidency", fontsize=11,margin=0, texture="Round", bordertexture="None", borderthickness=2, color = {r=0,g=0,b=0,a=0.6}},
-	background = {margin=0, height=150, texture="None", bordertexture="None", borderthickness=0, color = {r=0,g=0,b=0.5,a=0.5}},
+	background = {margin=0, height=200, texture="None", bordertexture="None", borderthickness=0, color = {r=0,g=0,b=0.5,a=0.5}},
 
 	reversegrowth=false,
 	modeincombat="",
@@ -34,7 +33,6 @@ Skada.windowdefaults = {
 	
 	hidden = false,
 	enabletitle = true, 
-	enablebackground = false,
 	
 	set = "current",
 	mode = nil,
@@ -47,6 +45,7 @@ Skada:tcopy(windefaultscopy, Skada.windowdefaults)
 
 Skada.defaults = {
 	profile = {
+		version=1,
 		reset={instance=1, join=3, leave=1},
 		icon = {hide = false, radius = 80, minimapPos = 195},
 		numberformat=1,
@@ -62,6 +61,7 @@ Skada.defaults = {
 		hidepvp=false,
 		hidedisables=true,
 		hidecombat=false,
+		mergepets=true,
 		feed = "",
 		sets = {},
 		total = nil,
@@ -272,7 +272,14 @@ Skada.options = {
 							        	end,
 							},
 
-
+							mergepets = {
+							        type="toggle",
+							        name=L["Merge pets"],
+							        desc=L["Merges pets with their owners. Changing this only affects new data."],
+							        order=2,
+							        get=function() return Skada.db.profile.mergepets end,
+							        set=function() Skada.db.profile.mergepets = not Skada.db.profile.mergepets end,
+							},
 							
 							onlykeepbosses = {
 							        type="toggle",

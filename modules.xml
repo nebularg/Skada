@@ -8,8 +8,6 @@
 <Script file="modules\SkadaHealing\TotalHealing.lua"/>
 <Script file="modules\SkadaDamageTaken\DamageTaken.lua"/>
 <Script file="modules\SkadaDeaths\Deaths.lua"/>
-<Script file="modules\SkadaFailbot\LibFail-1.0\LibFail-1.0.lua"/>
-<Script file="modules\SkadaFailbot\Failbot.lua"/>
 <Script file="modules\SkadaDebuffs\Debuffs.lua"/>
 <Script file="modules\SkadaDispels\Dispels.lua"/>
 <Script file="modules\SkadaDispels\Interrupts.lua"/>

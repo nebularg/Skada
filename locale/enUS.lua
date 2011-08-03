@@ -336,3 +336,6 @@ L["Healing taken"] = "Healing taken"
 
 L["Wipe mode"] = "Wipe mode"
 L["Automatically switch to set 'Current' and this mode after a wipe."] = "Automatically switch to set 'Current' and this mode after a wipe."
+
+L["Merge pets"] = "Merge pets"
+L["Merges pets with their owners. Changing this only affects new data."] = "Merges pets with their owners. Changing this only affects new data."

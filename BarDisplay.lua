@@ -30,15 +30,25 @@ function mod:Create(window)
 		-- Clear callbacks.
 		window.bargroup.callbacks = LibStub:GetLibrary("CallbackHandler-1.0"):New(window.bargroup)
 	else
-		window.bargroup = mod:NewBarGroup(window.db.name, nil, window.db.barwidth, window.db.barheight, "SkadaBarWindow"..window.db.name)
+		window.bargroup = mod:NewBarGroup(window.db.name, nil, window.db.background.height, window.db.barwidth, window.db.barheight, "SkadaBarWindow"..window.db.name)
 	end
 	window.bargroup.win = window
 	window.bargroup.RegisterCallback(mod, "AnchorMoved")
 	window.bargroup.RegisterCallback(mod, "AnchorClicked")
-	window.bargroup.RegisterCallback(mod, "ConfigClicked")
+	window.bargroup.RegisterCallback(mod, "WindowResized")
 	window.bargroup:EnableMouse(true)
 	window.bargroup:SetScript("OnMouseDown", function(win, button) if button == "RightButton" then window:RightClick() end end)
 	window.bargroup:HideIcon()
+	
+	window.bargroup.button:GetFontString():SetPoint("LEFT", window.bargroup.button, "LEFT", 10, 1)
+	window.bargroup.button:GetFontString():SetJustifyH("LEFT")
+	
+	-- Add window buttons.
+	window.bargroup:AddButton("Configure", "Interface\\Addons\\Skada\\images\\icon-config", "Interface\\Addons\\Skada\\icon-config", function() Skada:OpenMenu(window) end)
+	window.bargroup:AddButton("Reset", "Interface\\Addons\\Skada\\images\\icon-reset", "Interface\\Addons\\Skada\\icon-reset", function() StaticPopup_Show("ResetSkadaDialog") end)
+	window.bargroup:AddButton("Segment", "Interface\\Buttons\\UI-GuildButton-PublicNote-Up", "Interface\\Buttons\\UI-GuildButton-PublicNote-Up", function() Skada:SegmentMenu(window) end)
+	window.bargroup:AddButton("Mode", "Interface\\Buttons\\UI-GuildButton-PublicNote-Up", "Interface\\Buttons\\UI-GuildButton-PublicNote-Up", function() Skada:ModeMenu(window) end)
+	window.bargroup:AddButton("Report", "Interface\\Buttons\\UI-GuildButton-MOTD-Up", "Interface\\Buttons\\UI-GuildButton-MOTD-Up", function() Skada:OpenReportWindow(window) end)
 	
 	-- Register with LibWindow-1.0.
 	libwindow.RegisterConfig(window.bargroup, window.db)
@@ -314,11 +324,6 @@ function mod:Update(win)
 		end
 	end
 	
-	-- Adjust our background frame if background height is dynamic.
-	if win.bargroup.bgframe and win.db.background.height == 0 then
-		self:AdjustBackgroundHeight(win)
-	end
-
 	-- Sort by the order in the data table if we are using "ordersort".
 	if win.metadata.ordersort then
 		if win.db.reversegrowth then
@@ -334,21 +339,6 @@ function mod:Update(win)
 	
 end
 
-function mod:AdjustBackgroundHeight(win)
-	local numbars = 0
-	if win.bargroup:GetBars() ~= nil then
-		for name, bar in pairs(win.bargroup:GetBars()) do if bar:IsShown() then numbars = numbars + 1 end end
-		local height = numbars * (win.db.barheight + win.db.barspacing) + win.db.background.borderthickness
-		if win.bargroup.bgframe:GetHeight() ~= height then
-			win.bargroup.bgframe:SetHeight(height)
-		end
-	end
-end
-
-function mod:ConfigClicked(cbk, group, button)
-	Skada:OpenMenu(group.win)
-end
-
 function mod:AnchorClicked(cbk, group, button)
 	if IsShiftKeyDown() then
 		Skada:OpenMenu(group.win)
@@ -359,6 +349,14 @@ end
 
 function mod:AnchorMoved(cbk, group, x, y)
 	libwindow.SavePosition(group)
+end
+
+function mod:WindowResized(cbk, group)
+	libwindow.SavePosition(group)
+	
+	-- Also save size.
+	group.win.db.background.height = group:GetHeight()
+	group.win.db.barsize = group:GetWidth()
 end
 
 function mod:Show(win)
@@ -382,9 +380,10 @@ local function getNumberOfBars(win)
 end
 
 function mod:OnMouseWheel(win, frame, direction)
+	local maxbars = win.db.background.height / win.db.barheight
 	if direction == 1 and win.bargroup:GetBarOffset() > 0 then
 		win.bargroup:SetBarOffset(win.bargroup:GetBarOffset() - 1)
-	elseif direction == -1 and ((getNumberOfBars(win) - win.bargroup:GetMaxBars() - win.bargroup:GetBarOffset()) > 0) then
+	elseif direction == -1 and ((getNumberOfBars(win) - maxbars - win.bargroup:GetBarOffset()) > 0) then
 		win.bargroup:SetBarOffset(win.bargroup:GetBarOffset() + 1)
 	end
 end
@@ -405,14 +404,14 @@ function mod:ApplySettings(win)
 	local p = win.db
 	g:ReverseGrowth(p.reversegrowth)
 	g:SetOrientation(p.barorientation)
-	g:SetHeight(p.barheight)
-	g:SetWidth(p.barwidth)
+	g:SetBarHeight(p.barheight)
+	g:SetBarWidth(p.barwidth)
+	g:SetHeight(p.background.height)
 	g:SetTexture(media:Fetch('statusbar', p.bartexture))
 	g:SetFont(media:Fetch('font', p.barfont), p.barfontsize)
 	g:SetSpacing(p.barspacing)
 	g:UnsetAllColors()
 	g:SetColorAt(0,p.barcolor.r,p.barcolor.g,p.barcolor.b, p.barcolor.a)
-	g:SetMaxBars(p.barmax)
 	if p.barslocked then
 		g:Lock()
 	else
@@ -453,76 +452,32 @@ function mod:ApplySettings(win)
 		end
 	end
 	
-	-- Header config button
-	g.optbutton:ClearAllPoints()
-	g.optbutton:SetPoint("TOPRIGHT", g.button, "TOPRIGHT", -5, 0 - (math.max(g.button:GetHeight() - g.optbutton:GetHeight(), 1) / 2))
+	-- Adjust button positions
+	g:AdjustButtons()
 	
 	-- Menu button - default on.
 	if p.title.menubutton == nil or p.title.menubutton then
-		g.optbutton:Show()
+		g:ShowButton("Configure")
 	else
-		g.optbutton:Hide()
+		g:HideButton("Configure")
 	end
 	
 	-- Window
-	if p.enablebackground then
-		if g.bgframe == nil then
-			g.bgframe = CreateFrame("Frame", p.name.."BG", g)
-			g.bgframe:SetFrameStrata("BACKGROUND")
-			g.bgframe:EnableMouse()
-			g.bgframe:EnableMouseWheel()
-			g.bgframe:SetScript("OnMouseDown", function(frame, btn) 
-													if IsShiftKeyDown() then
-														Skada:OpenMenu(win)
-													elseif btn == "RightButton" then 
-														win:RightClick()
-													end
-												end)
-			g.bgframe:SetScript("OnMouseWheel", win.OnMouseWheel)
-		end
-
-		local inset = p.background.margin
-		windowbackdrop.bgFile = media:Fetch("background", p.background.texture)
-		if p.background.borderthickness > 0 then
-			windowbackdrop.edgeFile = media:Fetch("border", p.background.bordertexture)
-		else
-			windowbackdrop.edgeFile = nil
-		end
-		windowbackdrop.tile = false
-		windowbackdrop.tileSize = 0
-		windowbackdrop.edgeSize = p.background.borderthickness
-		windowbackdrop.insets = {left = inset, right = inset, top = inset, bottom = inset}
-		g.bgframe:SetBackdrop(windowbackdrop)
-		local color = p.background.color
-		g.bgframe:SetBackdropColor(color.r, color.g, color.b, color.a or 1)
-		g.bgframe:SetWidth(g:GetWidth() + (p.background.borderthickness * 2))
-		g.bgframe:SetHeight(p.background.height)
-
-		g.bgframe:ClearAllPoints()
-		if p.reversegrowth then
-			g.bgframe:SetPoint("LEFT", g.button, "LEFT", -p.background.borderthickness, 0)
-			g.bgframe:SetPoint("RIGHT", g.button, "RIGHT", p.background.borderthickness, 0)
-			g.bgframe:SetPoint("BOTTOM", g.button, "TOP", 0, 0)
-		else
-			g.bgframe:SetPoint("LEFT", g.button, "LEFT", -p.background.borderthickness, 0)
-			g.bgframe:SetPoint("RIGHT", g.button, "RIGHT", p.background.borderthickness, 0)
-			g.bgframe:SetPoint("TOP", g.button, "BOTTOM", 0, 5)
-		end
-		g.bgframe:Show()
-		
-		-- Calculate max number of bars to show if our height is not dynamic.
-		if p.background.height > 0 then
-			local maxbars = math.floor(p.background.height / math.max(1, p.barheight + p.barspacing))
-			g:SetMaxBars(maxbars)
-		else
-			-- Adjust background height according to current bars.
-			self:AdjustBackgroundHeight(win)
-		end
-		
-	elseif g.bgframe then
-		g.bgframe:Hide()
+	local inset = p.background.margin
+	windowbackdrop.bgFile = media:Fetch("background", p.background.texture)
+	if p.background.borderthickness > 0 then
+		windowbackdrop.edgeFile = media:Fetch("border", p.background.bordertexture)
+	else
+		windowbackdrop.edgeFile = nil
 	end
-	
+	windowbackdrop.tile = false
+	windowbackdrop.tileSize = 0
+	windowbackdrop.edgeSize = p.background.borderthickness
+	windowbackdrop.insets = {left = inset, right = inset, top = inset, bottom = inset}
+	g:SetBackdrop(windowbackdrop)
+	local color = p.background.color
+	g:SetBackdropColor(color.r, color.g, color.b, color.a or 1)
+
 	-- Clickthrough
 	g:EnableMouse(not p.clickthrough)
 	for i, bar in pairs(g:GetBars()) do
@@ -633,21 +588,6 @@ function mod:AddDisplayOptions(win, options)
 				order=14,
 			},
 													
-			barmax = {
-				type="range",
-				name=L["Max bars"],
-				desc=L["The maximum number of bars shown."],
-				min=0,
-				max=100,
-				step=1,
-				get=function() return db.barmax end,
-				set=function(win, max)
-							db.barmax = max
-		         			Skada:ApplySettings()
-						end,
-				order=15,
-			},
-
 			barorientation = {
 				type="select",
 				name=L["Bar orientation"],
@@ -890,7 +830,7 @@ function mod:AddDisplayOptions(win, options)
 			},
 					
 		}
-  		}
+	}
 
 	options.windowoptions = {
 		type = "group",
@@ -898,18 +838,6 @@ function mod:AddDisplayOptions(win, options)
 		order=2,
 		args = {
 
-			enablebackground = {
-			        type="toggle",
-			        name=L["Enable"],
-			        desc=L["Adds a background frame under the bars. The height of the background frame determines how many bars are shown. This will override the max number of bars setting."],
-			        order=0,
-			        get=function() return db.enablebackground end,
-			        set=function() 
-			        		db.enablebackground = not db.enablebackground
-		         			Skada:ApplySettings()
-			        	end,
-			},
-			
 		    texture = {
 		         type = 'select',
 		         dialogControl = 'LSM30_Background',
@@ -968,21 +896,6 @@ function mod:AddDisplayOptions(win, options)
 				order=4,
 			},							
 
-			height = {
-				type="range",
-				name=L["Window height"],
-				desc=L["The height of the window. If this is 0 the height is dynamically changed according to how many bars exist."],
-				min=0,
-				max=600,
-				step=1,
-				get=function() return db.background.height end,
-				set=function(win, height)
-							db.background.height = height
-		         			Skada:ApplySettings()
-						end,
-				order=5,
-			},
-			
 			color = {
 				type="color",
 				name=L["Background color"],
