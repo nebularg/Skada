@@ -1,7 +1,4 @@
--- LibBars-1.0 by Antiarc, all glory to him.
--- Specialized ( = uglified) for Skada
--- Note to self: don't forget to notify original author of changes
--- in the unlikely event they end up being usable outside of Skada.
+-- LibBars-1.0 by Antiarc, all glory to him, ripped into pieces for Skada.
 local MAJOR = "SpecializedLibBars-1.0"
 local MINOR = 90000 + tonumber(("$Revision: 1 $"):match("%d+"))
 
@@ -427,7 +424,6 @@ do
 		list.button:SetScript("OnMouseUp", stopMove)
 		list.button:SetBackdropColor(0,0,0,1)
 		list.button:RegisterForClicks("LeftButtonUp", "RightButtonUp", "MiddleButtonUp", "Button4Up", "Button5Up")
-		list.button:SetScript("OnClick", buttonClick)
 		
 		-- MODIFIED
 		list.buttons = {}
@@ -468,6 +464,15 @@ do
 				if(button == "LeftButton") then 
 					self:GetParent().isResizing = true
 					self:GetParent():StartSizing("BOTTOMRIGHT")
+					
+					self:GetParent():SetScript("OnUpdate", function()
+								if self:GetParent().isResizing then
+									-- Adjust bar sizes.
+									self:GetParent():SetLength(self:GetParent():GetWidth())
+								else
+									self:GetParent():SetScript("OnUpdate", nil)
+								end
+							end)
 				end 
 			end)
 		list.resizebutton:SetScript("OnMouseUp", 
@@ -674,29 +679,6 @@ barListPrototype.GetBar = lib.GetBar
 barListPrototype.GetBars = lib.GetBars
 barListPrototype.HasAnyBar = lib.HasAnyBar
 barListPrototype.IterateBars = lib.IterateBars
-
-function barListPrototype:MoveBarToGroup(bar, group)
-	if type(bar) ~= "table" then
-		bar = bars[self][bar]
-	end
-	if not bar then
-		error("Cannot find bar passed to MoveBarToGroup")
-	end
-	bars[group] = bars[group] or {}
-	if bars[group][bar.name] then
-		error("Cannot move " .. bar.name .. " to this group; a bar with that name already exists.")
-	end
-	for k, v in pairs(bars[self]) do
-		if v == bar then
-			bars[self][k] = nil
-			bar = v
-			break
-		end
-	end
-	bar:SetParent(group)
-	bar.ownerGroup = group
-	bars[group][bar.name] = bar
-end
 
 function barListPrototype:RemoveBar(bar)
 	lib.ReleaseBar(self, bar)
@@ -937,10 +919,8 @@ do
 		local ct = 0
 		if not bars[self] then return end
 		for k, v in pairs(bars[self]) do
-			if not v.isAnimating then
-				ct = ct + 1
-				values[ct] = v
-			end
+			ct = ct + 1
+			values[ct] = v
 		end
 		for i = ct + 1, #values do
 			values[i] = nil
@@ -1115,7 +1095,6 @@ function barPrototype:OnBarReleased()
 	self.callbacks:Fire('BarReleased', self, self.name)
 
 	-- Reset our attributes
-	self.isAnimating = false
 	self.isTimer = false
 	self.ownerGroup = nil
 	self.fill = false
@@ -1239,54 +1218,6 @@ end
 
 function barPrototype:IsIconShown()
 	return self.showIcon
-end
-
-function barPrototype:OnAnimateFinished()
-	self.callbacks:Fire("AnimateFinished", self, self.name)
-end
-
-local function animate(self, elapsed)
-	self.aniST = self.aniST + elapsed
-	local amt = min(1, self.aniST / self.aniT)
-	local x = self.aniSX + ((self.aniX - self.aniSX) * amt)
-	local y = self.aniSY + ((self.aniY - self.aniSY) * amt)
-	local s = self.aniSS + ((self.aniS - self.aniSS) * amt)
-	self:ClearAllPoints()
-	self:SetPoint("TOPLEFT", UIParent, "TOPLEFT", x, y)
-	self:SetScale(s)
-
-	if amt == 1 then
-		self.isAnimating = false
-		self:RemoveOnUpdate(animate)
-		safecall(self.OnAnimateFinished, self)
-		if self.ownerGroup then
-			self:ClearAllPoints()
-			self.ownerGroup:SortBars()
-			self:UpdateColor()
-			self:SetParent(self.ownerGroup)
-			self:SetScale(1)
-		end
-	end
-end
-
-function barPrototype:AnimateTo(x, y, scale, t)
-	self.isAnimating = true
-	self.aniSX, self.aniSY, self.aniSS, self.aniST = self:GetLeft(), self:GetTop(), self:GetScale(), 0
-	self.aniX, self.aniY, self.aniS, self.aniT = x, y, scale, t
-	self:AddOnUpdate(animate)
-	animate(0)
-end
-
-function barPrototype:AnimateToGroup(group)
-	self.isAnimating = true
-	self.ownerGroup:SortBars()
-	self.ownerGroup:MoveBarToGroup(self, group)
-	self:SetParent(UIParent)
-
-	local x, y = group:GetBarAttachPoint()
-	x = x / UIParent:GetScale()
-	y = y / UIParent:GetScale()
-	self:AnimateTo(x, y, group:GetScale(), 0.75)
 end
 
 function barPrototype:SetLabel(text)

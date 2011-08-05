@@ -21,7 +21,7 @@ Skada.windowdefaults = {
 	classcolorbars = true,
 	classcolortext = false,
 	
-	title = {menubutton = true, font="Accidental Presidency", fontsize=11,margin=0, texture="Round", bordertexture="None", borderthickness=2, color = {r=0,g=0,b=0,a=0.6}},
+	title = {menubutton = true, font="Accidental Presidency", fontsize=11,margin=0, texture="Aluminium", bordertexture="None", borderthickness=2, color = {r=0,g=0,b=0,a=0.6}},
 	background = {margin=0, height=200, texture="Solid", bordertexture="None", borderthickness=0, color = {r=0,g=0,b=0.5,a=0.2}},
 
 	reversegrowth=false,

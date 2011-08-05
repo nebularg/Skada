@@ -31,25 +31,24 @@ function mod:Create(window)
 		window.bargroup.callbacks = LibStub:GetLibrary("CallbackHandler-1.0"):New(window.bargroup)
 	else
 		window.bargroup = mod:NewBarGroup(window.db.name, nil, window.db.background.height, window.db.barwidth, window.db.barheight, "SkadaBarWindow"..window.db.name)
+		
+		-- Add window buttons.
+		window.bargroup:AddButton("Configure", "Interface\\Addons\\Skada\\images\\icon-config", "Interface\\Addons\\Skada\\icon-config", function() Skada:OpenMenu(window) end)
+		window.bargroup:AddButton("Reset", "Interface\\Addons\\Skada\\images\\icon-reset", "Interface\\Addons\\Skada\\icon-reset", function() StaticPopup_Show("ResetSkadaDialog") end)
+		window.bargroup:AddButton("Segment", "Interface\\Buttons\\UI-GuildButton-PublicNote-Up", "Interface\\Buttons\\UI-GuildButton-PublicNote-Up", function() Skada:SegmentMenu(window) end)
+		window.bargroup:AddButton("Mode", "Interface\\Buttons\\UI-GuildButton-PublicNote-Up", "Interface\\Buttons\\UI-GuildButton-PublicNote-Up", function() Skada:ModeMenu(window) end)
+		window.bargroup:AddButton("Report", "Interface\\Buttons\\UI-GuildButton-MOTD-Up", "Interface\\Buttons\\UI-GuildButton-MOTD-Up", function() Skada:OpenReportWindow(window) end)
 	end
 	window.bargroup.win = window
 	window.bargroup.RegisterCallback(mod, "AnchorMoved")
-	window.bargroup.RegisterCallback(mod, "AnchorClicked")
 	window.bargroup.RegisterCallback(mod, "WindowResized")
 	window.bargroup:EnableMouse(true)
-	window.bargroup:SetScript("OnMouseDown", function(win, button) if button == "RightButton" then window:RightClick() end end)
-	window.bargroup.button:SetScript("OnClick", function(win, button) if button == "RightButton" then window:RightClick() end end)
+	window.bargroup:SetScript("OnMouseDown", function(win, button) if IsShiftKeyDown() then Skada:OpenMenu(window) elseif button == "RightButton" then window:RightClick() end end)
+	window.bargroup.button:SetScript("OnClick", function(win, button) if IsShiftKeyDown() then Skada:OpenMenu(window) elseif button == "RightButton" then window:RightClick() end end)
 	window.bargroup:HideIcon()
 	
 	window.bargroup.button:GetFontString():SetPoint("LEFT", window.bargroup.button, "LEFT", 10, 1)
 	window.bargroup.button:GetFontString():SetJustifyH("LEFT")
-	
-	-- Add window buttons.
-	window.bargroup:AddButton("Configure", "Interface\\Addons\\Skada\\images\\icon-config", "Interface\\Addons\\Skada\\icon-config", function() Skada:OpenMenu(window) end)
-	window.bargroup:AddButton("Reset", "Interface\\Addons\\Skada\\images\\icon-reset", "Interface\\Addons\\Skada\\icon-reset", function() StaticPopup_Show("ResetSkadaDialog") end)
-	window.bargroup:AddButton("Segment", "Interface\\Buttons\\UI-GuildButton-PublicNote-Up", "Interface\\Buttons\\UI-GuildButton-PublicNote-Up", function() Skada:SegmentMenu(window) end)
-	window.bargroup:AddButton("Mode", "Interface\\Buttons\\UI-GuildButton-PublicNote-Up", "Interface\\Buttons\\UI-GuildButton-PublicNote-Up", function() Skada:ModeMenu(window) end)
-	window.bargroup:AddButton("Report", "Interface\\Buttons\\UI-GuildButton-MOTD-Up", "Interface\\Buttons\\UI-GuildButton-MOTD-Up", function() Skada:OpenReportWindow(window) end)
 	
 	-- Register with LibWindow-1.0.
 	libwindow.RegisterConfig(window.bargroup, window.db)
@@ -331,14 +330,6 @@ function mod:Update(win)
 		win.bargroup:SortBars()
 	end
 	
-end
-
-function mod:AnchorClicked(cbk, group, button)
-	if IsShiftKeyDown() then
-		Skada:OpenMenu(group.win)
-	elseif button == "RightButton" then
-		group.win:RightClick()
-	end
 end
 
 function mod:AnchorMoved(cbk, group, x, y)

@@ -39,7 +39,7 @@ function Skada:OpenMenu(window)
 			if not window or (window or window.selectedmode) then
 		        wipe(info)
 		        info.text = L["Report"]
-				info.func = function() Skada:OpenReportWindow() end
+				info.func = function() Skada:OpenReportWindow(window) end
 		        info.value = "report"
 		        UIDropDownMenu_AddButton(info, level)
 		    end
