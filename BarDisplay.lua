@@ -38,6 +38,7 @@ function mod:Create(window)
 	window.bargroup.RegisterCallback(mod, "WindowResized")
 	window.bargroup:EnableMouse(true)
 	window.bargroup:SetScript("OnMouseDown", function(win, button) if button == "RightButton" then window:RightClick() end end)
+	window.bargroup.button:SetScript("OnClick", function(win, button) if button == "RightButton" then window:RightClick() end end)
 	window.bargroup:HideIcon()
 	
 	window.bargroup.button:GetFontString():SetPoint("LEFT", window.bargroup.button, "LEFT", 10, 1)
@@ -236,13 +237,6 @@ function mod:Update(win)
 				bar:SetScript("OnLeave", function(bar) BarLeave(win, barid, barlabel) end)
 				bar:SetScript("OnMouseDown", function(bar, button) BarClick(win, barid, barlabel, button) end)
 				
-				-- Spark.
-				if win.db.spark then
-					bar.spark:Show()
-				else
-					bar.spark:Hide()
-				end
-						
 				if data.color then
 					-- Explicit color from dataset.
 					bar:SetColorAt(0, data.color.r, data.color.g, data.color.b, data.color.a or 1)
@@ -405,7 +399,6 @@ function mod:ApplySettings(win)
 	g:ReverseGrowth(p.reversegrowth)
 	g:SetOrientation(p.barorientation)
 	g:SetBarHeight(p.barheight)
-	g:SetBarWidth(p.barwidth)
 	g:SetHeight(p.background.height)
 	g:SetTexture(media:Fetch('statusbar', p.bartexture))
 	g:SetFont(media:Fetch('font', p.barfont), p.barfontsize)
@@ -443,15 +436,6 @@ function mod:ApplySettings(win)
 		g:HideAnchor()
 	end
 	
-	-- Spark.
-	for i, bar in pairs(g:GetBars()) do
-		if p.spark then
-			bar.spark:Show()
-		else
-			bar.spark:Hide()
-		end
-	end
-	
 	-- Adjust button positions
 	g:AdjustButtons()
 	
@@ -479,10 +463,7 @@ function mod:ApplySettings(win)
 	g:SetBackdropColor(color.r, color.g, color.b, color.a or 1)
 
 	-- Clickthrough
-	g:EnableMouse(not p.clickthrough)
-	for i, bar in pairs(g:GetBars()) do
-		bar:EnableMouse(not p.clickthrough)
-	end
+	g:SetEnableMouse(not p.clickthrough)
 	
 	g:SortBars()
 end
@@ -573,21 +554,6 @@ function mod:AddDisplayOptions(win, options)
 				order=14,
 			},
 			
-			barwidth = {
-				type="range",
-				name=L["Bar width"],
-				desc=L["The width of the bars."],
-				min=80,
-				max=400,
-				step=1,
-				get=function() return db.barwidth end,
-				set=function(win, width)
-							db.barwidth = width
-		         			Skada:ApplySettings()
-						end,
-				order=14,
-			},
-													
 			barorientation = {
 				type="select",
 				name=L["Bar orientation"],
@@ -665,17 +631,6 @@ function mod:AddDisplayOptions(win, options)
 			        get=function() return db.classcolortext end,
 			        set=function() 
 			        		db.classcolortext = not db.classcolortext
-		         			Skada:ApplySettings()
-			        	end,
-			},
-			
-			spark = {
-			        type="toggle",
-			        name=L["Show spark effect"],
-			        order=32,
-			        get=function() return db.spark end,
-			        set=function() 
-			        		db.spark = not db.spark
 		         			Skada:ApplySettings()
 			        	end,
 			},

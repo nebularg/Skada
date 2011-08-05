@@ -374,12 +374,12 @@ function Skada:OpenReportWindow(window)
 end
 
 local function destroywindow()
-	if mod.ReportWindow then
-		mod.ReportWindow:ReleaseChildren()
-		mod.ReportWindow:Hide()
-		mod.ReportWindow:Release()
+	if Skada.ReportWindow then
+		Skada.ReportWindow:ReleaseChildren()
+		Skada.ReportWindow:Hide()
+		Skada.ReportWindow:Release()
 	end
-	mod.ReportWindow = nil
+	Skada.ReportWindow = nil
 end
 
 function Skada:CreateReportWindow(window)

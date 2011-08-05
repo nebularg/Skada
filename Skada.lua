@@ -316,7 +316,7 @@ function Window:DisplayMode(mode)
 	-- Save for posterity.
 	self.db.mode = name
 	self.metadata.title = name
-
+	
 	Skada:UpdateDisplay(true)
 end
 
@@ -329,10 +329,6 @@ local function click_on_mode(win, id, label, button)
 	elseif button == "RightButton" then
 		win:RightClick()
 	end
-end
-
-function Skada:GetSets()
-	return sets
 end
 
 -- Sets up the mode list.
@@ -836,7 +832,7 @@ function Skada:Reset()
 	if self.total ~= nil then
 		wipe(self.total)
 		self.total = createSet(L["Total"])
-		self.db.profile.total = self.total
+		self.char.total = self.total
 	end
 	self.last = nil
 
@@ -879,8 +875,8 @@ function Skada:ReloadSettings()
 		self:CreateWindow(win.name, win)
 	end
 
-	self.total = self.db.profile.total
-	sets = self.db.profile.sets
+	self.total = self.char.total
+	sets = self.char.sets or {}
 	
 	-- Minimap button.
 	if icon and not icon:IsRegistered("Skada") then
@@ -1114,7 +1110,7 @@ function Skada:StartCombat()
 	-- Also start the total set if it is nil.
 	if self.total == nil then
 		self.total = createSet(L["Total"])
-		self.db.profile.total = self.total
+		self.char.total = self.total
 	end
 	
 	-- Auto-switch set/mode if configured.
@@ -1588,16 +1584,20 @@ function Skada:UpdateDisplay(force)
 	changed = false
 end
 		
-function Skada:GetModes()
-	return modes
-end
-
 --[[
 
 API
 Everything below this is OK to use in modes.
 
 --]]
+
+function Skada:GetSets()
+	return sets
+end
+
+function Skada:GetModes()
+	return modes
+end
 
 -- Formats a number into human readable form.
 function Skada:FormatNumber(number)
@@ -1915,6 +1915,8 @@ function Skada:OnInitialize()
 
 	-- DB
 	self.db = LibStub("AceDB-3.0"):New("SkadaDB", self.defaults, "Default")
+	SkadaPerCharDB = SkadaPerCharDB or {}
+	self.char = SkadaPerCharDB
 	LibStub("AceConfig-3.0"):RegisterOptionsTable("Skada", self.options)
 	self.optionsFrame = LibStub("AceConfigDialog-3.0"):AddToBlizOptions("Skada", "Skada")
 
@@ -1932,6 +1934,11 @@ function Skada:OnInitialize()
 		self:Print("Migrating old settings somewhat gracefully. This should only happen once.")
 		self.db.profile.barmax = nil
 		self.db.profile.background.height = 200
+	end
+	if self.db.profile.total then
+		self.db.profile.current = nil
+		self.db.profile.total = nil
+		self.db.profile.sets = nil
 	end
 	
 	self:ReloadSettings()
@@ -1956,11 +1963,11 @@ end
 
 function Skada:OnDisable()
 	-- Save some settings.
-	self.db.profile.selectedset = selectedset
+	self.char.selectedset = selectedset
 	if selectedmode then
-		self.db.profile.set = selectedmode.name
+		self.char.set = selectedmode.name
 	else
-		self.db.profile.mode = nil
+		self.char.mode = nil
 	end
 end
 

@@ -394,6 +394,7 @@ do
 		local list = setmetatable(CreateFrame("Frame", frameName, UIParent), barListPrototype_mt)
 		list:SetMovable(true)
 		list:SetClampedToScreen(true)
+		list.enablemouse = true
 
 		list.callbacks = list.callbacks or CallbackHandler:New(list)
 		barLists[self][name] = list
@@ -451,6 +452,7 @@ do
 		list:SetMinResize(140,70)
 		list:SetMaxResize(800,800)
 		list:SetHeight(height)
+		list:SetWidth(length)
 
 		list.resizebutton = CreateFrame("Button", "BarGroupResizeButton", list)
 		list.resizebutton:Show()
@@ -506,7 +508,17 @@ function barListPrototype:NewBarFromPrototype(prototype, ...)
 	bar.RegisterCallback(self, "FadeFinished")
 	bar.RegisterCallback(self, "TimerFinished")
 	bar:SetParent(self)
+	
+	bar:EnableMouse(self.enablemouse)
 	return bar, isNew
+end
+
+function barListPrototype:SetEnableMouse(enablemouse)
+	self.enablemouse = enablemouse
+	self:EnableMouse(enablemouse)
+	for i, bar in pairs(self:GetBars()) do
+		bar:EnableMouse(enablemouse)
+	end
 end
 
 function barListPrototype:SetBarWidth(width)
@@ -880,16 +892,6 @@ function barListPrototype:GetBarOffset()
 	return self.offset
 end
 
--- MODIFIED
-function barListPrototype:SetUseSpark(use)
-	self.usespark = use
-	if bars[self] then
-		for k, v in pairs(bars[self]) do
-			v:SetUseSpark(use)
-		end
-	end
-end
-
 -- group:SetSortFunction(group.NOOP) to disable sorting
 function barListPrototype.NOOP() end
 
@@ -1035,14 +1037,6 @@ do
 			for k, v in pairs(self.timeLeftTriggers) do
 				self.timeLeftTriggers[k] = false
 			end
-		end
-	
-		if not self.spark then
-			self.spark = self:CreateTexture(nil, "OVERLAY")
-			self.spark:SetTexture([[Interface\CastingBar\UI-CastingBar-Spark]])
-			self.spark:SetWidth(10)
-			self.spark:SetHeight(10)
-			self.spark:SetBlendMode("ADD")
 		end
 	
 		self.bgtexture = self.bgtexture or self:CreateTexture(nil, "BACKGROUND")
@@ -1397,12 +1391,6 @@ do
 			self.icon:ClearAllPoints()
 			self.icon:SetPoint("RIGHT", self, "LEFT", 0, 0)
 
-			t = self.spark
-			t:ClearAllPoints()
-			t:SetPoint("TOP", self.texture, "TOPRIGHT", 0, 7)
-			t:SetPoint("BOTTOM", self.texture, "BOTTOMRIGHT", 0, -7)
-			t:SetTexCoord(0, 1, 0, 1)
-
 			t = self.texture
 			t.SetValue = t.SetWidth
 			t:ClearAllPoints()
@@ -1427,12 +1415,6 @@ do
 		elseif o == lib.BOTTOM_TO_TOP then
 			self.icon:ClearAllPoints()
 			self.icon:SetPoint("TOP", self, "BOTTOM", 0, 0)
-
-			t = self.spark
-			t:ClearAllPoints()
-			t:SetPoint("LEFT", self.texture, "TOPLEFT", -7, 0)
-			t:SetPoint("RIGHT", self.texture, "TOPRIGHT", 7, 0)
-			t:SetTexCoord(0, 1, 1, 1, 0, 0, 1, 0)
 
 			t = self.texture
 			t.SetValue = t.SetHeight
@@ -1460,12 +1442,6 @@ do
 			self.icon:ClearAllPoints()
 			self.icon:SetPoint("LEFT", self, "RIGHT", 0, 0)
 
-			t = self.spark
-			t:ClearAllPoints()
-			t:SetPoint("TOP", self.texture, "TOPLEFT", 0, 7)
-			t:SetPoint("BOTTOM", self.texture, "BOTTOMLEFT", 0, -7)
-			t:SetTexCoord(0, 1, 0, 1)
-
 			t = self.texture
 			t.SetValue = t.SetWidth
 			t:ClearAllPoints()
@@ -1490,12 +1466,6 @@ do
 		elseif o == lib.TOP_TO_BOTTOM then
 			self.icon:ClearAllPoints()
 			self.icon:SetPoint("BOTTOM", self, "TOP", 0, 0)
-
-			t = self.spark
-			t:ClearAllPoints()
-			t:SetPoint("LEFT", self.texture, "BOTTOMLEFT", -7, 0)
-			t:SetPoint("RIGHT", self.texture, "BOTTOMRIGHT", 7, 0)
-			t:SetTexCoord(0, 1, 1, 1, 0, 0, 1, 0)
 
 			t = self.texture
 			t.SetValue = t.SetHeight
@@ -1579,11 +1549,6 @@ function barPrototype:SetValue(val)
 		displayMax = self.maxValue
 	end
 	local amt = min(1, val / displayMax)
-	if amt == 1 or amt == 0 then
-		self.spark:Hide()
-	else
-		self.spark:Show()
-	end
 	local dist = (ownerGroup and ownerGroup:GetLength()) or self.length
 	self:SetTextureValue(max(amt, 0.000001), dist)
 	self:UpdateColor()
