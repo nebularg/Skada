@@ -568,10 +568,16 @@ function barListPrototype:NewTimerBar(name, text, time, maxTime, icon, flashTrig
 end
 
 function barListPrototype:Lock()
+	-- Hide resize button.
+	self.resizebutton:Hide()
+	
 	self.locked = true
 end
 
 function barListPrototype:Unlock()
+	-- Show resize button.
+	self.resizebutton:Show()
+
 	self.locked = false
 end
 
