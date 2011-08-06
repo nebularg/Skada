@@ -437,7 +437,6 @@ do
 		list.buttons = {}
 		
 		list:SetPoint("TOPLEFT", UIParent, "CENTER")
-		list:ReverseGrowth(false)
 
 		list.showIcon = true
 		list.showLabel = true
@@ -465,13 +464,16 @@ do
 		list.resizebutton:SetHighlightTexture("Interface\\AddOns\\Skada\\images\\ResizeGripRight")
 		list.resizebutton:SetWidth(16)
 		list.resizebutton:SetHeight(16)
-		list.resizebutton:SetPoint("BOTTOMRIGHT", list, "BOTTOMRIGHT", 0, 0)
 		list.resizebutton:EnableMouse(true)
 		list.resizebutton:SetScript("OnMouseDown", 
 			function(self,button) 
 				if(button == "LeftButton") then 
 					self:GetParent().isResizing = true
-					self:GetParent():StartSizing("BOTTOMRIGHT")
+					if self:GetParent().growup then 
+						self:GetParent():StartSizing("TOPRIGHT")
+					else 
+						self:GetParent():StartSizing("BOTTOMRIGHT")
+					end
 					
 					self:GetParent():SetScript("OnUpdate", function()
 								if self:GetParent().isResizing then
@@ -487,11 +489,18 @@ do
 			function(self,button)
 				if self:GetParent().isResizing == true then
 					self:GetParent():StopMovingOrSizing()
+					
+					-- Snap to best fit height.
+					local maxbars = math.floor(self:GetParent():GetHeight() / thickness)
+					self:GetParent():SetHeight(maxbars * list.thickness)
+					
 					self:GetParent().callbacks:Fire("WindowResized", self:GetParent())
 					self:GetParent().isResizing = false
 					self:GetParent():SortBars()
 				end
 			end)
+			
+		list:ReverseGrowth(false)
 
 		return list
 	end
@@ -789,12 +798,22 @@ function barListPrototype:ReverseGrowth(reverse)
 	self.button:ClearAllPoints()
 
 	if reverse then
-		self.button:SetPoint("BOTTOMLEFT", self, "BOTTOMLEFT")
-		self.button:SetPoint("BOTTOMRIGHT", self, "BOTTOMRIGHT")
+		self.button:SetPoint("TOPLEFT", self, "BOTTOMLEFT")
+		self.button:SetPoint("TOPRIGHT", self, "BOTTOMRIGHT")
 	else
 		self.button:SetPoint("BOTTOMLEFT", self, "TOPLEFT")
 		self.button:SetPoint("BOTTOMRIGHT", self, "TOPRIGHT")
 	end
+	
+	if self.resizebutton then
+		self.resizebutton:ClearAllPoints()
+		if reverse then
+			self.resizebutton:SetPoint("TOPRIGHT", self, "TOPRIGHT", 0, 0)
+		else
+			self.resizebutton:SetPoint("BOTTOMRIGHT", self, "BOTTOMRIGHT", 0, 0)
+		end
+	end
+	
 	self:SortBars()
 end
 
@@ -888,23 +907,6 @@ function barListPrototype.NOOP() end
 do
 	local values = {}
 
-	-- MODIFIED (for reverse growth)
-	local function sortFuncReverse(a, b)
-		if a.isTimer ~= b.isTimer then
-			return a.isTimer
-		end
-
-		local apct, bpct = a.value / a.maxValue, b.value / b.maxValue
-		if apct == bpct then
-			if a.maxValue == b.maxValue then
-				return a.name < b.name
-			else
-				return a.maxValue < b.maxValue
-			end
-		else
-			return apct < bpct
-		end
-	end
 	local function sortFunc(a, b)
 		if a.isTimer ~= b.isTimer then
 			return a.isTimer
@@ -923,7 +925,7 @@ do
 	end	
 	
 	function barListPrototype:SortBars()
-		local lastBar = self.button:IsVisible() and self.button or self
+		local lastBar = self
 		local ct = 0
 		if not bars[self] then return end
 		for k, v in pairs(bars[self]) do
@@ -934,11 +936,7 @@ do
 			values[i] = nil
 		end
 		
-		if self.growup then
-			table_sort(values, self.sortFunc or sortFuncReverse)
-		else
-			table_sort(values, self.sortFunc or sortFunc)
-		end
+		table_sort(values, self.sortFunc or sortFunc)
 		
 		local orientation = self.orientation
 		local growup = self.growup
@@ -948,9 +946,17 @@ do
 		local thickness, showIcon = self.thickness, self.showIcon
 		local x1, y1, x2, y2 = 0, 0, 0, 0
 		if growup then
-			from = "BOTTOM"
-			to = "TOP"
-			y1, y2 = spacing, spacing
+			-- Calculate starting offset based on number of bars and how much room we have to play with.
+			local maxbars = math.floor(self:GetHeight() / thickness)
+			if #values < maxbars then
+				from = "TOP"
+				to = "BOTTOM"
+				y1, y2 = -spacing - ((maxbars - #values) * thickness), spacing + ((maxbars - #values) * thickness), -spacing - ((maxbars - #values) * thickness), spacing + ((maxbars - #values) * thickness)
+			else
+				from = "TOP"
+				to = "BOTTOM"
+				y1, y2 = -spacing, -spacing
+			end
 		else
 			from = "TOP"
 			to = "BOTTOM"
@@ -973,6 +979,7 @@ do
 				end
 			else
 				x1, x2 = 0, 0
+				y1, y2 = -spacing, -spacing
 			end
 			
 			v:ClearAllPoints()
