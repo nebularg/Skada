@@ -304,19 +304,15 @@ end
 ---[[ Bar Groups ]]---
 function barListPrototype:AddButton(title, normaltex, highlighttex, clickfunc)
 	-- Create button frame.
-	local btn = CreateFrame("Button", nil, list)
-	btn:SetFrameLevel(10)
+	local btn = CreateFrame("Button", nil, self.button)
+	btn.title = title
+	btn:SetFrameLevel(5)
 	btn:ClearAllPoints()
-	btn:SetHeight(10)
-	btn:SetWidth(10)
+	btn:SetHeight(12)
+	btn:SetWidth(12)
 	btn:SetNormalTexture(normaltex)
-	btn:SetHighlightTexture(highlighttex, 0.5)
-	btn:SetAlpha(0.3)
-	if #self.buttons == 0 then
-		btn:SetPoint("TOPRIGHT", self.button, "TOPRIGHT", -5, 0 - (math.max(self.button:GetHeight() - btn:GetHeight(), 0) / 2))
-	else
-		btn:SetPoint("TOPRIGHT", self.buttons[#self.buttons], "TOPLEFT", 0, 0)
-	end
+	btn:SetHighlightTexture(highlighttex, 1.0)
+	btn:SetAlpha(0.5)
 	btn:RegisterForClicks("LeftButtonUp", "RightButtonUp")
 	btn:SetScript("OnClick", clickfunc)
 	btn:SetScript("OnEnter", 
@@ -330,28 +326,39 @@ function barListPrototype:AddButton(title, normaltex, highlighttex, clickfunc)
 	
 	-- Add to our list of buttons.
 	table.insert(self.buttons, btn)
+	
+	self:AdjustButtons()
 end
 
 function barListPrototype:AdjustButtons()
-	if #self.buttons > 0 then
-		self.buttons[1]:SetPoint("TOPRIGHT", self.button, "TOPRIGHT", -5, 0 - (math.max(self.button:GetHeight() - self.buttons[1]:GetHeight(), 0) / 2))
-	end
-end
-
-function barListPrototype:ShowButton(title)
-	for i, b in ipairs(self.buttons) do
-		if b.title == title then
-			b:Show()
+	local nr = 0
+	local lastbtn = nil
+	for i, btn in ipairs(self.buttons) do
+		btn:ClearAllPoints()
+		
+		if btn:IsShown() then
+			if nr == 0 then
+				btn:SetPoint("TOPRIGHT", self.button, "TOPRIGHT", -5, 0 - (math.max(self.button:GetHeight() - btn:GetHeight(), 0) / 2))
+			else
+				btn:SetPoint("TOPRIGHT", lastbtn, "TOPLEFT", 0, 0)
+			end
+			lastbtn = btn
+			nr = nr + 1
 		end
 	end
 end
 
-function barListPrototype:HideButton(title)
+function barListPrototype:ShowButton(title, visible)
 	for i, b in ipairs(self.buttons) do
 		if b.title == title then
-			b:Hide()
+			if visible then 
+				b:Show() 
+			else 
+				b:Hide() 
+			end
 		end
 	end
+	self:AdjustButtons()
 end
 
 do
@@ -411,6 +418,7 @@ do
 		myfont:CopyFontObject(ChatFontSmall)
 
 		list.button = CreateFrame("Button", nil, list)
+		list.button:SetText(name)
 		list.button:SetBackdrop(frame_defaults)
 		list.button:SetNormalFontObject(myfont)
 
@@ -801,7 +809,7 @@ function barListPrototype:UpdateOrientationLayout()
 	self.button:SetWidth(length)
 	self.button:SetHeight(thickness)
 	
-	self.button:SetText(self.name)
+--	self.button:SetText(self.name)
 	self:ReverseGrowth(self.growup)
 	-- self.button:SetWidth(vertical and 15 or length)
 	-- self.button:SetHeight(vertical and length or 15)

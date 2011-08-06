@@ -339,3 +339,10 @@ L["Automatically switch to set 'Current' and this mode after a wipe."] = "Automa
 
 L["Merge pets"] = "Merge pets"
 L["Merges pets with their owners. Changing this only affects new data."] = "Merges pets with their owners. Changing this only affects new data."
+
+L["Show totals"] = "Show totals"
+L["Shows a extra row with a summary in certain modes."] = "Shows a extra row with a summary in certain modes."
+
+L["There is nothing to report."] = "There is nothing to report."
+
+L["Buttons"] = "Buttons"

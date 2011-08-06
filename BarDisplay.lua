@@ -33,11 +33,11 @@ function mod:Create(window)
 		window.bargroup = mod:NewBarGroup(window.db.name, nil, window.db.background.height, window.db.barwidth, window.db.barheight, "SkadaBarWindow"..window.db.name)
 		
 		-- Add window buttons.
-		window.bargroup:AddButton("Configure", "Interface\\Addons\\Skada\\images\\icon-config", "Interface\\Addons\\Skada\\icon-config", function() Skada:OpenMenu(window) end)
-		window.bargroup:AddButton("Reset", "Interface\\Addons\\Skada\\images\\icon-reset", "Interface\\Addons\\Skada\\icon-reset", function() StaticPopup_Show("ResetSkadaDialog") end)
-		window.bargroup:AddButton("Segment", "Interface\\Buttons\\UI-GuildButton-PublicNote-Up", "Interface\\Buttons\\UI-GuildButton-PublicNote-Up", function() Skada:SegmentMenu(window) end)
-		window.bargroup:AddButton("Mode", "Interface\\Buttons\\UI-GuildButton-PublicNote-Up", "Interface\\Buttons\\UI-GuildButton-PublicNote-Up", function() Skada:ModeMenu(window) end)
-		window.bargroup:AddButton("Report", "Interface\\Buttons\\UI-GuildButton-MOTD-Up", "Interface\\Buttons\\UI-GuildButton-MOTD-Up", function() Skada:OpenReportWindow(window) end)
+		window.bargroup:AddButton(L["Configure"], "Interface\\Addons\\Skada\\images\\icon-config", "Interface\\Addons\\Skada\\images\\icon-config", function() Skada:OpenMenu(window) end)
+		window.bargroup:AddButton(L["Reset"], "Interface\\Addons\\Skada\\images\\icon-reset", "Interface\\Addons\\Skada\\images\\icon-reset", function() StaticPopup_Show("ResetSkadaDialog") end)
+		window.bargroup:AddButton(L["Segment"], "Interface\\Buttons\\UI-GuildButton-PublicNote-Up", "Interface\\Buttons\\UI-GuildButton-PublicNote-Up", function() Skada:SegmentMenu(window) end)
+		window.bargroup:AddButton(L["Mode"], "Interface\\Buttons\\UI-GuildButton-PublicNote-Up", "Interface\\Buttons\\UI-GuildButton-PublicNote-Up", function() Skada:ModeMenu(window) end)
+		window.bargroup:AddButton(L["Report"], "Interface\\Buttons\\UI-GuildButton-MOTD-Up", "Interface\\Buttons\\UI-GuildButton-MOTD-Up", function() Skada:OpenReportWindow(window) end)
 	end
 	window.bargroup.win = window
 	window.bargroup.RegisterCallback(mod, "AnchorMoved")
@@ -190,9 +190,15 @@ local function bar_order_reverse_sort(a,b)
 	return a and b and a.order and b.order and a.order < b.order
 end
 
+-- Called by Skada windows when title of window should change.
+function mod:SetTitle(win, title)
+	-- Set title.
+	win.bargroup.button:SetText(title)
+end
+
 -- Called by Skada windows when the display should be updated to match the dataset.
 function mod:Update(win)
-	-- Set title.
+	-- Some modes may alter title continously.
 	win.bargroup.button:SetText(win.metadata.title)
 
 	-- Sort if we are showing spots with "showspots".
@@ -269,7 +275,7 @@ function mod:Update(win)
 				bar.order = i
 			end
 			
-			if win.metadata.showspots and Skada.db.profile.showranks then
+			if win.metadata.showspots and Skada.db.profile.showranks and not data.ignore then
 				bar:SetLabel(("%2u. %s"):format(nr, data.label))
 			else
 				bar:SetLabel(data.label)
@@ -303,7 +309,9 @@ function mod:Update(win)
 				bar.bgtexture:SetWidth(data.backgroundwidth * bar:GetLength())
 			end
 						
-			nr = nr + 1
+			if not data.ignore then
+				nr = nr + 1
+			end
 		end
 	end
 	
@@ -430,12 +438,12 @@ function mod:ApplySettings(win)
 	-- Adjust button positions
 	g:AdjustButtons()
 	
-	-- Menu button - default on.
-	if p.title.menubutton == nil or p.title.menubutton then
-		g:ShowButton("Configure")
-	else
-		g:HideButton("Configure")
-	end
+	-- Button visibility.
+	g:ShowButton(L["Configure"], p.buttons.menu)
+	g:ShowButton(L["Reset"], p.buttons.reset)
+	g:ShowButton(L["Mode"], p.buttons.mode)
+	g:ShowButton(L["Segment"], p.buttons.segment)
+	g:ShowButton(L["Report"], p.buttons.report)
 	
 	-- Window
 	local inset = p.background.margin
@@ -651,6 +659,7 @@ function mod:AddDisplayOptions(win, options)
 			        type="toggle",
 			        name=L["Enable"],
 			        desc=L["Enables the title bar."],
+					width="full",
 			        order=0,
 			        get=function() return db.enabletitle end,
 			        set=function() 
@@ -665,6 +674,7 @@ function mod:AddDisplayOptions(win, options)
 		         name = L["Bar font"],
 		         desc = L["The font used by all bars."],
 		         values = AceGUIWidgetLSMlists.font,
+				 order=2,
 		         get = function() return db.title.font end,
 		         set = function(win,key) 
 		         			db.title.font = key
@@ -677,6 +687,7 @@ function mod:AddDisplayOptions(win, options)
 				type="range",
 				name=L["Bar font size"],
 				desc=L["The font size of all bars."],
+				order=3,
 				min=7,
 				max=40,
 				step=1,
@@ -693,6 +704,7 @@ function mod:AddDisplayOptions(win, options)
 		         type = 'select',
 		         dialogControl = 'LSM30_Statusbar',
 		         name = L["Background texture"],
+				 order=4,
 		         desc = L["The texture used as the background of the title."],
 		         values = AceGUIWidgetLSMlists.statusbar,
 		         get = function() return db.title.texture end,
@@ -706,6 +718,7 @@ function mod:AddDisplayOptions(win, options)
 		    bordertexture = {
 		         type = 'select',
 		         dialogControl = 'LSM30_Border',
+				 order=5,
 		         name = L["Border texture"],
 		         desc = L["The texture used for the border of the title."],
 		         values = AceGUIWidgetLSMlists.border,
@@ -721,6 +734,7 @@ function mod:AddDisplayOptions(win, options)
 				type="range",
 				name=L["Border thickness"],
 				desc=L["The thickness of the borders."],
+				 order=6,
 				min=0,
 				max=50,
 				step=0.5,
@@ -736,6 +750,7 @@ function mod:AddDisplayOptions(win, options)
 				type="range",
 				name=L["Margin"],
 				desc=L["The margin between the outer edge and the background texture."],
+				 order=7,
 				min=0,
 				max=50,
 				step=0.5,
@@ -751,6 +766,7 @@ function mod:AddDisplayOptions(win, options)
 				type="color",
 				name=L["Background color"],
 				desc=L["The background color of the title."],
+				 order=8,
 				hasAlpha=true,
 				get=function(i) 
 						local c = db.title.color
@@ -763,18 +779,64 @@ function mod:AddDisplayOptions(win, options)
 				order=7,
 			},
 			
-			menubutton = {
-			        type="toggle",
-			        name=L["Show menu button"],
-			        desc=L["Shows a button for opening the menu in the window title bar."],
-			        order=8,
-			        get=function() return db.title.menubutton == nil or db.title.menubutton end,
-			        set=function()
-			        		db.title.menubutton = not db.title.menubutton
-		         			Skada:ApplySettings()
-			        	end,
-			},
-					
+			buttons = {
+				type = "group",
+				name = L["Buttons"],
+				order=20,
+				inline=true,
+				args = {
+						report = {
+								type="toggle",
+								name=L["Report"],
+								order=1,
+								get=function() return db.buttons.report == nil or db.buttons.report end,
+								set=function()
+										db.buttons.report = not db.buttons.report
+										Skada:ApplySettings()
+									end,
+						},
+						mode = {
+								type="toggle",
+								name=L["Mode"],
+								order=2,
+								get=function() return db.buttons.mode == nil or db.buttons.mode end,
+								set=function()
+										db.buttons.mode = not db.buttons.mode
+										Skada:ApplySettings()
+									end,
+						},
+						segment = {
+								type="toggle",
+								name=L["Segment"],
+								order=3,
+								get=function() return db.buttons.segment == nil or db.buttons.segment end,
+								set=function()
+										db.buttons.segment = not db.buttons.segment
+										Skada:ApplySettings()
+									end,
+						},
+						reset = {
+								type="toggle",
+								name=L["Reset"],
+								order=4,
+								get=function() return db.buttons.reset end,
+								set=function()
+										db.buttons.reset = not db.buttons.reset
+										Skada:ApplySettings()
+									end,
+						},
+						menu = {
+								type="toggle",
+								name=L["Configure"],
+								order=5,
+								get=function() return db.buttons.menu end,
+								set=function()
+										db.buttons.menu = not db.buttons.menu
+										Skada:ApplySettings()
+									end,
+						},
+				}
+			}
 		}
 	}
 

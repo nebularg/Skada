@@ -317,6 +317,7 @@ function Window:DisplayMode(mode)
 	self.db.mode = name
 	self.metadata.title = name
 	
+	self.display:SetTitle(self, self.metadata.title)
 	Skada:UpdateDisplay(true)
 end
 
@@ -367,6 +368,7 @@ function Window:DisplayModes(settime)
 	self.metadata.maxvalue = 1
 	self.metadata.sortfunc = function(a,b) return a.name < b.name end
 
+	self.display:SetTitle(self, self.metadata.title)
 	Skada:UpdateDisplay(true)
 end
 
@@ -554,6 +556,11 @@ function Skada:Report(channel, chantype, report_mode_name, report_set_name, max,
 		report_table = window
 		report_set = window:get_selected_set()
 		report_mode = window.selectedmode
+	end
+
+	if not report_set then
+		Skada:Print(L["There is nothing to report."])
+		return
 	end
 	
 	-- Sort our temporary table according to value unless ordersort is set.
@@ -808,7 +815,6 @@ function Skada:ToggleWindow()
 		end
 	end
 end
-
 
 local function createSet(setname)
 	local set = {players = {}, name = setname, starttime = time(), ["time"] = 0, last_action = time()}
@@ -1210,9 +1216,11 @@ end
 -- Returns a player from the current. Safe to use to simply view a player without creating an entry.
 function Skada:find_player(set, playerid)
 	local player = nil
-	for i, p in ipairs(set.players) do
-		if p.id == playerid then
-			return p
+	if set then
+		for i, p in ipairs(set.players) do
+			if p.id == playerid then
+				return p
+			end
 		end
 	end
 end
@@ -1476,6 +1484,8 @@ function dataobj:OnClick(button)
 	end
 end
 
+local totalbarcolor = {r = 0, g = 0, b = 1, a = 0.1}
+
 function Skada:UpdateDisplay(force)
 	-- Force an update by setting our "changed" flag to true.
 	if force then
@@ -1502,7 +1512,6 @@ function Skada:UpdateDisplay(force)
 	
 			local set = win:get_selected_set()
 			
-			-- If we have a set, go on.
 			if set then
 				-- Inform window that a data update will take place.
 				win:UpdateInProgress()
@@ -1512,6 +1521,13 @@ function Skada:UpdateDisplay(force)
 					win.selectedmode:Update(win, set)
 				else
 					self:Print("Mode "..win.selectedmode:GetName().." does not have an Update function!")
+				end
+				
+				-- Add a total bar using the mode summaries optionally.
+				-- Words can not express how hackish this is.
+				if self.db.profile.showtotals and win.selectedmode.GetSetSummary then
+					local summary = win.selectedmode:GetSetSummary(set)
+					table.insert(win.dataset, 1, {id = "total", label = "Total", value = 9999999999, valuetext = win.selectedmode:GetSetSummary(set), color = totalbarcolor, ignore = true})
 				end
 				
 				-- Let window display the data.

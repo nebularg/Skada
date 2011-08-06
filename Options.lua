@@ -21,7 +21,9 @@ Skada.windowdefaults = {
 	classcolorbars = true,
 	classcolortext = false,
 	
-	title = {menubutton = true, font="Accidental Presidency", fontsize=11,margin=0, texture="Aluminium", bordertexture="None", borderthickness=2, color = {r=0,g=0,b=0,a=0.6}},
+	buttons = {menu = true, reset = true, report = true, mode = true, segment = true},
+	
+	title = {font="Accidental Presidency", fontsize=11,margin=0, texture="Aluminium", bordertexture="None", borderthickness=2, color = {r=0,g=0,b=0,a=0.6}},
 	background = {margin=0, height=200, texture="Solid", bordertexture="None", borderthickness=0, color = {r=0,g=0,b=0.5,a=0.2}},
 
 	reversegrowth=false,
@@ -61,8 +63,7 @@ Skada.defaults = {
 		hidecombat=false,
 		mergepets=true,
 		feed = "",
-		sets = {},
-		total = nil,
+		showtotals = false,
 
 		modules = {},
 		columns = {},
@@ -279,11 +280,20 @@ Skada.options = {
 							        set=function() Skada.db.profile.mergepets = not Skada.db.profile.mergepets end,
 							},
 							
+							showtotals = {
+							        type="toggle",
+							        name=L["Show totals"],
+							        desc=L["Shows a extra row with a summary in certain modes."],
+							        order=3,
+							        get=function() return Skada.db.profile.showtotals end,
+							        set=function() Skada.db.profile.showtotals = not Skada.db.profile.showtotals end,
+							},
+							
 							onlykeepbosses = {
 							        type="toggle",
 							        name=L["Only keep boss fighs"],
 							        desc=L["Boss fights will be kept with this on, and non-boss fights are discarded."],
-							        order=3,
+							        order=4,
 							        get=function() return Skada.db.profile.onlykeepbosses end,
 							        set=function() Skada.db.profile.onlykeepbosses = not Skada.db.profile.onlykeepbosses end,
 							},
@@ -292,7 +302,7 @@ Skada.options = {
 							        type="toggle",
 							        name=L["Hide when solo"],
 							        desc=L["Hides Skada's window when not in a party or raid."],
-							        order=4,
+							        order=5,
 							        get=function() return Skada.db.profile.hidesolo end,
 							        set=function()
 							        			Skada.db.profile.hidesolo = not Skada.db.profile.hidesolo
@@ -304,7 +314,7 @@ Skada.options = {
 							        type="toggle",
 							        name=L["Hide in PvP"],
 							        desc=L["Hides Skada's window when in Battlegrounds/Arenas."],
-							        order=5,
+							        order=6,
 							        get=function() return Skada.db.profile.hidepvp end,
 							        set=function()
 							        			Skada.db.profile.hidepvp = not Skada.db.profile.hidepvp
@@ -316,7 +326,7 @@ Skada.options = {
 							        type="toggle",
 							        name=L["Hide in combat"],
 							        desc=L["Hides Skada's window when in combat."],
-							        order=6,
+							        order=7,
 							        get=function() return Skada.db.profile.hidecombat end,
 							        set=function()
 							        			Skada.db.profile.hidecombat = not Skada.db.profile.hidecombat
@@ -328,7 +338,7 @@ Skada.options = {
 							        type="toggle",
 							        name=L["Disable while hidden"],
 							        desc=L["Skada will not collect any data when automatically hidden."],
-							        order=7,
+							        order=8,
 							        get=function() return Skada.db.profile.hidedisables end,
 							        set=function()
 							        			Skada.db.profile.hidedisables = not Skada.db.profile.hidedisables
