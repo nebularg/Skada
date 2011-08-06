@@ -1780,6 +1780,23 @@ function Skada:FixPets(action)
 				petMobID=action.playerid:sub(7,10); -- Get Pet creature ID 
 				action.playerid = pet.id .. petMobID; -- just append it to the pets owner id
 			end
+		
+		else
+		
+			-- Fix for guardians; requires "playerflags" to be set from CL.
+			-- This only works for one self. Other player's guardians are all lumped into one.
+			if action.playerflags and bit.band(action.playerflags, COMBATLOG_OBJECT_TYPE_GUARDIAN) ~= 0 then
+				if bit.band(action.playerflags, COMBATLOG_OBJECT_AFFILIATION_MINE) ~=0 then
+					if action.spellname then
+						action.spellname = action.playername..": "..action.spellname
+					end
+					action.playername = UnitName("player")
+					action.playerid = UnitGUID("player")
+				else
+					-- Nothing decent in place here yet. Modify guid so that there will only be 1 similar entry at least.
+					action.playerid = action.playername
+				end
+			end
 			
 		end
 	end
