@@ -1485,7 +1485,7 @@ function dataobj:OnClick(button)
 	end
 end
 
-local totalbarcolor = {r = 0, g = 0, b = 1, a = 0.1}
+local totalbarcolor = {r = 0.2, g = 0.2, b = 0.5, a = 1}
 
 function Skada:UpdateDisplay(force)
 	-- Force an update by setting our "changed" flag to true.
@@ -1527,8 +1527,7 @@ function Skada:UpdateDisplay(force)
 				-- Add a total bar using the mode summaries optionally.
 				-- Words can not express how hackish this is.
 				if self.db.profile.showtotals and win.selectedmode.GetSetSummary then
-					local summary = win.selectedmode:GetSetSummary(set)
-					table.insert(win.dataset, 1, {id = "total", label = "Total", value = 9999999999, valuetext = win.selectedmode:GetSetSummary(set), color = totalbarcolor, ignore = true})
+					table.insert(win.dataset, 1, {id = "total", label = L["Total"], value = 9999999999, valuetext = win.selectedmode:GetSetSummary(set), ignore = true})
 				end
 				
 				-- Let window display the data.

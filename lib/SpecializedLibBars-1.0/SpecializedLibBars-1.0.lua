@@ -460,8 +460,6 @@ do
 		list.resizebutton = CreateFrame("Button", "BarGroupResizeButton", list)
 		list.resizebutton:Show()
 		list.resizebutton:SetFrameLevel(11)
-		list.resizebutton:SetNormalTexture("Interface\\AddOns\\Skada\\images\\ResizeGripRight")
-		list.resizebutton:SetHighlightTexture("Interface\\AddOns\\Skada\\images\\ResizeGripRight")
 		list.resizebutton:SetWidth(16)
 		list.resizebutton:SetHeight(16)
 		list.resizebutton:EnableMouse(true)
@@ -812,6 +810,14 @@ function barListPrototype:ReverseGrowth(reverse)
 	end
 	
 	if self.resizebutton then
+		if reverse then
+			self.resizebutton:SetNormalTexture("Interface\\AddOns\\Skada\\images\\ResizeGripRightTop")
+			self.resizebutton:SetHighlightTexture("Interface\\AddOns\\Skada\\images\\ResizeGripRightTop")
+		else
+			self.resizebutton:SetNormalTexture("Interface\\AddOns\\Skada\\images\\ResizeGripRight")
+			self.resizebutton:SetHighlightTexture("Interface\\AddOns\\Skada\\images\\ResizeGripRight")
+		end
+		
 		self.resizebutton:ClearAllPoints()
 		if reverse then
 			self.resizebutton:SetPoint("TOPRIGHT", self, "TOPRIGHT", 0, 0)
