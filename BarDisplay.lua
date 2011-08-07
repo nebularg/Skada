@@ -232,11 +232,18 @@ function mod:Update(win)
 				if data.icon then
 					bar:ShowIcon()
 				end
-				bar:EnableMouse()
 				bar.id = data.id
-				bar:SetScript("OnEnter", function(bar) BarEnter(win, barid, barlabel) end)
-				bar:SetScript("OnLeave", function(bar) BarLeave(win, barid, barlabel) end)
-				bar:SetScript("OnMouseDown", function(bar, button) BarClick(win, barid, barlabel, button) end)
+				
+				if not data.ignore then
+					bar:EnableMouse()
+					bar:SetScript("OnEnter", function(bar) BarEnter(win, barid, barlabel) end)
+					bar:SetScript("OnLeave", function(bar) BarLeave(win, barid, barlabel) end)
+					bar:SetScript("OnMouseDown", function(bar, button) BarClick(win, barid, barlabel, button) end)
+				else
+					bar:SetScript("OnEnter", nil)
+					bar:SetScript("OnLeave", nil)
+					bar:SetScript("OnMouseDown", nil)
+				end
 				
 				if data.color then
 					-- Explicit color from dataset.
