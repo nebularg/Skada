@@ -700,8 +700,8 @@ end
 -- Are we in a PVP zone?
 local pvp_zones = {}
 local function is_in_pvp()
-	local pvpinfo = GetZonePVPInfo()
-	return select(2,IsInInstance()) == "pvp" or select(2,IsInInstance()) == "arena" or pvpinfo.pvpType == "arena" or pvpinfo.pvpType == "combat" or pvpinfo.isFFA
+	local pvpType, isFFA = GetZonePVPInfo()
+	return select(2,IsInInstance()) == "pvp" or select(2,IsInInstance()) == "arena" or pvpType == "arena" or pvpType == "combat" or isFFA
 end
 
 -- Are we solo?
