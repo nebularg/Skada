@@ -434,6 +434,11 @@ function Skada:CreateWindow(name, db)
 		self:tcopy(db, Skada.windowdefaults)
 		table.insert(self.db.profile.windows, db)
 	end
+	
+	-- Migrate old settings.
+	if not db.buttons then
+		db.buttons = {menu = true, reset = true, report = true, mode = true, segment = true}
+	end
 
 	local window = Window:new()
 	window.db = db
@@ -693,8 +698,10 @@ local function ask_for_reset()
 end
 
 -- Are we in a PVP zone?
+local pvp_zones = {}
 local function is_in_pvp()
-	return select(2,IsInInstance()) == "pvp" or select(2,IsInInstance()) == "arena"
+	local pvpinfo = GetZonePVPInfo()
+	return select(2,IsInInstance()) == "pvp" or select(2,IsInInstance()) == "arena" or pvpinfo.pvpType == "arena" or pvpinfo.pvpType == "combat" or pvpinfo.isFFA
 end
 
 -- Are we solo?
