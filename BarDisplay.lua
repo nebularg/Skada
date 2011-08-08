@@ -47,7 +47,7 @@ function mod:Create(window)
 	window.bargroup.button:SetScript("OnClick", function(win, button) if IsShiftKeyDown() then Skada:OpenMenu(window) elseif button == "RightButton" then window:RightClick() end end)
 	window.bargroup:HideIcon()
 	
-	window.bargroup.button:GetFontString():SetPoint("LEFT", window.bargroup.button, "LEFT", 10, 1)
+	window.bargroup.button:GetFontString():SetPoint("LEFT", window.bargroup.button, "LEFT", 5, 1)
 	window.bargroup.button:GetFontString():SetJustifyH("LEFT")
 	
 	-- Register with LibWindow-1.0.
@@ -348,7 +348,7 @@ function mod:WindowResized(cbk, group)
 	
 	-- Also save size.
 	group.win.db.background.height = group:GetHeight()
-	group.win.db.barsize = group:GetWidth()
+	group.win.db.barwidth = group:GetWidth()
 end
 
 function mod:Show(win)

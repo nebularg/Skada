@@ -489,8 +489,8 @@ do
 					self:GetParent():StopMovingOrSizing()
 					
 					-- Snap to best fit height.
-					local maxbars = math.floor(self:GetParent():GetHeight() / thickness)
-					self:GetParent():SetHeight(maxbars * list.thickness)
+					local maxbars = math.floor(self:GetParent():GetHeight() / (self:GetParent():GetThickness() + self:GetParent():GetSpacing()))
+					self:GetParent():SetHeight(maxbars * self:GetParent():GetThickness())
 					
 					self:GetParent().callbacks:Fire("WindowResized", self:GetParent())
 					self:GetParent().isResizing = false
@@ -963,7 +963,7 @@ do
 			if #values < maxbars then
 				from = "TOP"
 				to = "BOTTOM"
-				y1, y2 = -spacing - ((maxbars - #values) * thickness), spacing + ((maxbars - #values) * thickness), -spacing - ((maxbars - #values) * thickness), spacing + ((maxbars - #values) * thickness)
+				y1, y2 = -spacing - ((maxbars - #values) * thickness), -spacing - ((maxbars - #values) * thickness)
 			else
 				from = "TOP"
 				to = "BOTTOM"
