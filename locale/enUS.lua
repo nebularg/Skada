@@ -346,3 +346,6 @@ L["Shows a extra row with a summary in certain modes."] = "Shows a extra row wit
 L["There is nothing to report."] = "There is nothing to report."
 
 L["Buttons"] = "Buttons"
+L["Buff uptimes"] = "Buff uptimes"
+L["Buff spell list"] = "Buff spell list"
+L["'s Buffs"] = "'s Buffs"
