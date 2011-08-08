@@ -16,9 +16,6 @@ BINDING_NAME_SKADA_TOGGLE = L["Toggle window"]
 BINDING_NAME_SKADA_RESET = L["Reset"]
 BINDING_NAME_SKADA_NEWSEGMENT = L["Start new segment"]
 
--- All saved sets
-local sets = {}
-
 -- The current set
 Skada.current = nil
 
@@ -351,7 +348,7 @@ function Window:DisplayModes(settime)
 	if settime == "current" or settime == "total" then
 		self.selectedset = settime
 	else
-		for i, set in ipairs(sets) do
+		for i, set in ipairs(Skada.char.sets) do
 			if tostring(set.starttime) == settime then
 				if set.name == L["Current"] then
 					self.selectedset = "current"
@@ -850,9 +847,9 @@ function Skada:Reset()
 	self.last = nil
 
 	-- Delete sets that are not marked as persistent.
-	for i=table.maxn(sets), 1, -1 do
-		if not sets[i].keep then
-			wipe(table.remove(sets, i))
+	for i=table.maxn(self.char.sets), 1, -1 do
+		if not self.char.sets[i].keep then
+			wipe(table.remove(self.char.sets, i))
 		end
 	end
 	
@@ -866,9 +863,9 @@ function Skada:DeleteSet(set)
 	if not set then return end
 
 
-	for i, s in ipairs(sets) do
+	for i, s in ipairs(self.char.sets) do
 		if s == set then
-			wipe(table.remove(sets, i))
+			wipe(table.remove(self.char.sets, i))
 		end
 	end
 	self:Wipe()
@@ -889,7 +886,6 @@ function Skada:ReloadSettings()
 	end
 
 	self.total = self.char.total
-	sets = self.char.sets or {}
 	
 	-- Minimap button.
 	if icon and not icon:IsRegistered("Skada") then
@@ -1023,7 +1019,7 @@ function Skada:EndSegment()
 			end
 			
 			-- Add set to sets.
-			table.insert(sets, 1, self.current)
+			table.insert(self.char.sets, 1, self.current)
 
 		end
 		
@@ -1049,12 +1045,12 @@ function Skada:EndSegment()
 	
 	-- Find out number of non-persistent sets.
 	local numsets = 0
-	for i, set in ipairs(sets) do if not set.keep then numsets = numsets + 1 end end
+	for i, set in ipairs(self.char.sets) do if not set.keep then numsets = numsets + 1 end end
 	
 	-- Trim segments; don't touch persistent sets.
-	for i=table.maxn(sets), 1, -1 do
-		if numsets > self.db.profile.setstokeep and not sets[i].keep then
-			table.remove(sets, i)
+	for i=table.maxn(self.char.sets), 1, -1 do
+		if numsets > self.db.profile.setstokeep and not self.char.sets[i].keep then
+			table.remove(self.char.sets, i)
 			numsets = numsets - 1
 		end
 	end
@@ -1178,7 +1174,7 @@ function Skada:RestoreView(win, theset, themode)
 	-- Set the... set. If no such set exists, set to current.
 	if theset and type(theset) == "string" and (theset == "current" or theset == "total" or theset == "last") then
 		win.selectedset = theset
-	elseif theset and type(theset) == "number" and theset <= table.maxn(sets) then
+	elseif theset and type(theset) == "number" and theset <= table.maxn(self.char.sets) then
 		win.selectedset = theset
 	else
 		win.selectedset = "current"
@@ -1211,12 +1207,12 @@ function Skada:find_set(s)
 		elseif Skada.last ~= nil then
 			return Skada.last
 		else
-			return sets[1]
+			return self.char.sets[1]
 		end
 	elseif s == "total" then
 		return Skada.total
 	else
-		return sets[s]
+		return self.char.sets[s]
 	end
 end
 
@@ -1459,7 +1455,7 @@ function dataobj:OnEnter()
     if Skada.current then
     	set = Skada.current
     else
-    	set = sets[1]
+    	set = self.char.sets[1]
     end
     if set then
 	    GameTooltip:AddLine(L["Skada summary"], 0, 1, 0)
@@ -1579,8 +1575,8 @@ function Skada:UpdateDisplay(force)
 			d.id = "current"
 			d.label = L["Current"]
 			d.value = 1
-	
-			for i, set in ipairs(sets) do
+			
+			for i, set in ipairs(self.char.sets) do
 				nr = nr + 1
 				local d = win.dataset[nr] or {}
 				win.dataset[nr] = d
@@ -1614,7 +1610,7 @@ Everything below this is OK to use in modes.
 --]]
 
 function Skada:GetSets()
-	return sets
+	return self.char.sets
 end
 
 function Skada:GetModes()
@@ -1671,7 +1667,7 @@ function Skada:AddMode(mode)
 	if self.current then
 		verify_set(mode, self.current)
 	end
-	for i, set in ipairs(sets) do
+	for i, set in ipairs(self.char.sets) do
 		verify_set(mode, set)
 	end
 
@@ -1956,6 +1952,7 @@ function Skada:OnInitialize()
 	self.db = LibStub("AceDB-3.0"):New("SkadaDB", self.defaults, "Default")
 	SkadaPerCharDB = SkadaPerCharDB or {}
 	self.char = SkadaPerCharDB
+	self.char.sets = self.char.sets or {}
 	LibStub("AceConfig-3.0"):RegisterOptionsTable("Skada", self.options)
 	self.optionsFrame = LibStub("AceConfigDialog-3.0"):AddToBlizOptions("Skada", "Skada")
 
@@ -2004,7 +2001,7 @@ function Skada:OnDisable()
 	-- Save some settings.
 	self.char.selectedset = selectedset
 	if selectedmode then
-		self.char.set = selectedmode.name
+		self.char.mode = selectedmode.name
 	else
 		self.char.mode = nil
 	end
