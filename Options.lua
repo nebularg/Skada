@@ -38,6 +38,8 @@ Skada.windowdefaults = {
 	mode = nil,
 	
 	display = "bar",
+	snapto = true,
+	scale = 1
 }
 
 local windefaultscopy = {}

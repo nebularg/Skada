@@ -465,6 +465,9 @@ function mod:ApplySettings(win)
 	-- Scale
 	g:SetScale(p.scale)
 	
+	-- Snap to
+	g:SetSnapTo(p.snapto)
+	
 	g:SortBars()
 end
 
@@ -918,6 +921,18 @@ function mod:AddDisplayOptions(win, options)
 		         			Skada:ApplySettings()
 						end,
 				order=3,
+			},
+
+			snapto = {
+			        type="toggle",
+			        name=L["Snap to best fit"],
+			        desc=L["Snaps the window size to best fit when resizing."],
+			        order=7,
+			        get=function() return db.snapto end,
+			        set=function() 
+			        		db.snapto = not db.snapto
+		         			Skada:ApplySettings()
+			        	end,
 			},
 			
 			color = {

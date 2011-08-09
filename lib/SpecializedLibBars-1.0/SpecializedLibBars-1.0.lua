@@ -454,6 +454,7 @@ do
 		
 		-- MODIFIED
 		list.offset = 0
+		list.snapto = true
 
 		list.resizebutton = CreateFrame("Button", "BarGroupResizeButton", list)
 		list.resizebutton:Show()
@@ -488,11 +489,14 @@ do
 				local top, left = p:GetTop(), p:GetLeft()
 				if p.isResizing == true then
 					p:StopMovingOrSizing()
-					-- Snap to best fit height.
-					local maxbars = math.floor(p:GetHeight() / (p:GetThickness() + p:GetSpacing()))
-					p:SetHeight(maxbars * p:GetThickness())
-					p:ClearAllPoints()
-					p:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", left, top)
+					
+					if p:IsSnapTo() then
+						-- Snap to best fit height.
+						local maxbars = math.floor(p:GetHeight() / (p:GetThickness() + p:GetSpacing()))
+						p:SetHeight(maxbars * p:GetThickness())
+						p:ClearAllPoints()
+						p:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", left, top)
+					end
 					
 					p.callbacks:Fire("WindowResized", self:GetParent())
 					p.isResizing = false
@@ -533,6 +537,14 @@ function barListPrototype:NewBarFromPrototype(prototype, ...)
 	
 	bar:EnableMouse(self.enablemouse)
 	return bar, isNew
+end
+
+function barListPrototype:SetSnapTo(snapto)
+	self.snapto = snapto
+end
+
+function barListPrototype:IsSnapTo()
+	return self.snapto
 end
 
 function barListPrototype:SetEnableMouse(enablemouse)

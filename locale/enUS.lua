@@ -355,3 +355,6 @@ L["Delete window"] = "Delete window"
 L["Window"] = "Window"
 L["Scale"] = "Scale"
 L["Sets the scale of the window."] = "Sets the scale of the window."
+
+L["Snaps the window size to best fit when resizing."] = "Snaps the window size to best fit when resizing."
+L["Snap to best fit"] = "Snap to best fit"

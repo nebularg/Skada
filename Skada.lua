@@ -448,6 +448,9 @@ function Skada:CreateWindow(name, db)
 	if not db.scale then
 		db.scale = 1
 	end
+	if db.snapto == nil then
+		db.snapto = true
+	end
 
 	local window = Window:new()
 	window.db = db
