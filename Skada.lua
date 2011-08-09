@@ -139,23 +139,32 @@ function Window:AddOptions()
 					set=function(i, display)
 							self:SetDisplay(display)
 						end,
-					order=21,
+					order=3,
 				},
 				
 				locked = {
 				       type="toggle",
 				       name=L["Lock window"],
 				       desc=L["Locks the bar window in place."],
-				       order=18,
+				       order=2,
 				       get=function() return db.barslocked end,
 				       set=function() 
 				       		db.barslocked = not db.barslocked
 				       			Skada:ApplySettings()
 				       	end,
-				}
+				},
 
-				
-	        }
+				delete = {
+					type="execute",
+					name=L["Delete window"],
+					desc=L["Deletes the chosen window."],
+					order=20,
+					width="full",
+					confirm=function() return "Are you sure you want to delete this window?" end,
+					func=function(self) Skada:DeleteWindow(db.name) end,
+				},
+
+			}
 	}
 	
 	options.args.switchoptions = {
@@ -435,6 +444,9 @@ function Skada:CreateWindow(name, db)
 	-- Migrate old settings.
 	if not db.buttons then
 		db.buttons = {menu = true, reset = true, report = true, mode = true, segment = true}
+	end
+	if not db.scale then
+		db.scale = 1
 	end
 
 	local window = Window:new()
@@ -1455,7 +1467,7 @@ function dataobj:OnEnter()
     if Skada.current then
     	set = Skada.current
     else
-    	set = self.char.sets[1]
+    	set = Skada.char.sets[1]
     end
     if set then
 	    GameTooltip:AddLine(L["Skada summary"], 0, 1, 0)

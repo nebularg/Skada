@@ -140,29 +140,6 @@ Skada.options = {
 								order=1,
 							},
 
-							delete = {
-								type="select",
-								name=L["Delete window"],
-								desc=L["Choose the window to be deleted."],
-								values=	function()
-											local windows = {}
-											for i, win in ipairs(Skada:GetWindows()) do
-												windows[win.db.name] = win.db.name
-											end
-											return windows
-										end,
-								get=function() return deletewindow end,
-								set=function(self, val) deletewindow = val end,
-								order=2,
-							},
-							deleteexecute = {
-								type="execute",
-								name=L["Delete window"],
-								desc=L["Deletes the chosen window."],
-								func=function(self) if deletewindow then Skada:DeleteWindow(deletewindow) end end,
-								order=3,
-							},
-																					
 						},
 	        		},
 	        		

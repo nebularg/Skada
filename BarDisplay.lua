@@ -60,7 +60,6 @@ end
 -- Called by Skada windows when the window is to be destroyed/cleared.
 function mod:Destroy(win)
 	win.bargroup:Hide()
-	win.bargroup.bgframe = nil
 	win.bargroup = nil
 end
 
@@ -344,7 +343,7 @@ function mod:AnchorMoved(cbk, group, x, y)
 end
 
 function mod:WindowResized(cbk, group)
-	libwindow.SavePosition(group)
+--	libwindow.SavePosition(group)
 	
 	-- Also save size.
 	group.win.db.background.height = group:GetHeight()
@@ -462,6 +461,9 @@ function mod:ApplySettings(win)
 
 	-- Clickthrough
 	g:SetEnableMouse(not p.clickthrough)
+	
+	-- Scale
+	g:SetScale(p.scale)
 	
 	g:SortBars()
 end
@@ -841,7 +843,7 @@ function mod:AddDisplayOptions(win, options)
 
 	options.windowoptions = {
 		type = "group",
-		name = L["Background"],
+		name = L["Window"],
 		order=2,
 		args = {
 
@@ -901,8 +903,23 @@ function mod:AddDisplayOptions(win, options)
 		         			Skada:ApplySettings()
 						end,
 				order=4,
-			},							
+			},
 
+			scale = {
+				type="range",
+				name=L["Scale"],
+				desc=L["Sets the scale of the window."],
+				min=0.1,
+				max=3,
+				step=0.01,
+				get=function() return db.scale end,
+				set=function(win, val)
+							db.scale = val
+		         			Skada:ApplySettings()
+						end,
+				order=3,
+			},
+			
 			color = {
 				type="color",
 				name=L["Background color"],

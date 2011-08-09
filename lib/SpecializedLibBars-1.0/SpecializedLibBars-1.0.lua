@@ -433,10 +433,14 @@ do
 		list.button:SetBackdropColor(0,0,0,1)
 		list.button:RegisterForClicks("LeftButtonUp", "RightButtonUp", "MiddleButtonUp", "Button4Up", "Button5Up")
 		
-		-- MODIFIED
 		list.buttons = {}
-		
-		list:SetPoint("TOPLEFT", UIParent, "CENTER")
+
+		list:SetPoint("TOPLEFT", UIParent, "CENTER", 0, 0)
+		list:SetHeight(height)
+		list:SetWidth(length)
+		list:SetResizable(true)
+		list:SetMinResize(60,40)
+		list:SetMaxResize(800,800)
 
 		list.showIcon = true
 		list.showLabel = true
@@ -451,12 +455,6 @@ do
 		-- MODIFIED
 		list.offset = 0
 
-		list:SetResizable(true)
-		list:SetMinResize(140,70)
-		list:SetMaxResize(800,800)
-		list:SetHeight(height)
-		list:SetWidth(length)
-
 		list.resizebutton = CreateFrame("Button", "BarGroupResizeButton", list)
 		list.resizebutton:Show()
 		list.resizebutton:SetFrameLevel(11)
@@ -465,36 +463,40 @@ do
 		list.resizebutton:EnableMouse(true)
 		list.resizebutton:SetScript("OnMouseDown", 
 			function(self,button) 
+				local p = self:GetParent()
 				if(button == "LeftButton") then 
-					self:GetParent().isResizing = true
-					if self:GetParent().growup then 
-						self:GetParent():StartSizing("TOPRIGHT")
+					p.isResizing = true
+					if p.growup then 
+						p:StartSizing("TOPRIGHT")
 					else 
-						self:GetParent():StartSizing("BOTTOMRIGHT")
+						p:StartSizing("BOTTOMRIGHT")
 					end
 					
-					self:GetParent():SetScript("OnUpdate", function()
-								if self:GetParent().isResizing then
+					p:SetScript("OnUpdate", function()
+								if p.isResizing then
 									-- Adjust bar sizes.
-									self:GetParent():SetLength(self:GetParent():GetWidth())
+									p:SetLength(p:GetWidth())
 								else
-									self:GetParent():SetScript("OnUpdate", nil)
+									p:SetScript("OnUpdate", nil)
 								end
 							end)
 				end 
 			end)
 		list.resizebutton:SetScript("OnMouseUp", 
 			function(self,button)
-				if self:GetParent().isResizing == true then
-					self:GetParent():StopMovingOrSizing()
-					
+				local p = self:GetParent()
+				local top, left = p:GetTop(), p:GetLeft()
+				if p.isResizing == true then
+					p:StopMovingOrSizing()
 					-- Snap to best fit height.
-					local maxbars = math.floor(self:GetParent():GetHeight() / (self:GetParent():GetThickness() + self:GetParent():GetSpacing()))
-					self:GetParent():SetHeight(maxbars * self:GetParent():GetThickness())
+					local maxbars = math.floor(p:GetHeight() / (p:GetThickness() + p:GetSpacing()))
+					p:SetHeight(maxbars * p:GetThickness())
+					p:ClearAllPoints()
+					p:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", left, top)
 					
-					self:GetParent().callbacks:Fire("WindowResized", self:GetParent())
-					self:GetParent().isResizing = false
-					self:GetParent():SortBars()
+					p.callbacks:Fire("WindowResized", self:GetParent())
+					p.isResizing = false
+					p:SortBars()
 				end
 			end)
 			
