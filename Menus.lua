@@ -188,7 +188,7 @@ function Skada:OpenMenu(window)
 
 		        wipe(info)
 	            info.text = L["Hide window"]
-	            info.func = function() window.db.hidden = true; window:Hide() end
+	            info.func = function() if window:IsShown() then window.db.hidden = true; window:Hide() else window.db.hidden = false; window:Show() end end
 	            info.checked = not window:IsShown()
 		        UIDropDownMenu_AddButton(info, level)
 				
