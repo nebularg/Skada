@@ -23,7 +23,7 @@ Skada.windowdefaults = {
 	
 	buttons = {menu = true, reset = true, report = true, mode = true, segment = true},
 	
-	title = {font="Accidental Presidency", fontsize=11,margin=0, texture="Aluminium", bordertexture="None", borderthickness=2, color = {r=0,g=0,b=0,a=0.6}},
+	title = {font="Accidental Presidency", fontsize=11,margin=0, texture="Aluminium", bordertexture="None", borderthickness=2, color = {r=0.1,g=0.1,b=0.3,a=0.8}},
 	background = {margin=0, height=200, texture="Solid", bordertexture="None", borderthickness=0, color = {r=0,g=0,b=0.5,a=0.2}},
 
 	reversegrowth=false,
@@ -116,7 +116,7 @@ function Skada:AddColumnOptions(mod)
 end
 
 local deletewindow = nil
- 
+local newdisplay = "bar"
 Skada.options = {
 	        type="group",
 			name="Skada",
@@ -131,15 +131,31 @@ Skada.options = {
 	        		windows = {
 	        			type = "group",
 	        			name = L["Windows"],
-	        			order=0,
+	        			order=1,
 						args = {
 
 							create = {
 								type="input",
 								name=L["Create window"],
 								desc=L["Enter the name for the new window."],
-								set=function(self, val) if val and val ~= "" then Skada:CreateWindow(val) end end,
+								set=function(self, val) if val and val ~= "" then Skada:CreateWindow(val, nil, newdisplay) end end,
 								order=1,
+							},
+							
+							display = {
+								type="select",
+								name=L["Display system"],
+								desc=L["Choose the system to be used for displaying data in this window."],
+								values=	function()
+											local list = {}
+											for name, display in pairs(Skada.displays) do
+												list[name] = display.name
+											end
+											return list
+										end,
+								get=function() return newdisplay end,
+								set=function(i, display) newdisplay = display end,
+								order=2,
 							},
 
 						},

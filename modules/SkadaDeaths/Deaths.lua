@@ -38,7 +38,7 @@ local function log_resurrect(set, playerid, playername, spellid, spellname, time
 	local player = Skada:get_player(set, playerid, playername)
 	
 	-- Add log entry to to previous death.
-	if player and player.deaths then
+	if player and player.deaths and player.deaths[1] then
 		table.insert(player.deaths[1].log, 1, {["spellid"] = spellid, ["spellname"] = spellname, ["amount"] = 0, ["ts"] = timestamp, hp = UnitHealth(playername)})
 	end
 end

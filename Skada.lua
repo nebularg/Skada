@@ -103,6 +103,9 @@ function Window:new()
 			-- Our mode traversing history.
 			history = {},
 			
+			-- Flag for window-specific changes.
+			changed = false,
+			
 	   	 }, mt)
 end
 
@@ -121,25 +124,6 @@ function Window:AddOptions()
 					get=function() return db.name end,
 					set=function(win, val) if val ~= db.name and val ~= "" then db.name = val end end,
 					order=1,
-				},
-				
-				display = {
-					type="select",
-					name=L["Display system"],
-					desc=L["Choose the system to be used for displaying data in this window."],
-					values=	function()
-								local list = {}
-								for name, display in pairs(Skada.displays) do
-									list[name] = display.name
-								end
-								return list
-							end,
-					get=function()
-						return db.display end,
-					set=function(i, display)
-							self:SetDisplay(display)
-						end,
-					order=3,
 				},
 				
 				locked = {
@@ -324,7 +308,8 @@ function Window:DisplayMode(mode)
 	self.metadata.title = name
 	
 	self.display:SetTitle(self, self.metadata.title)
-	Skada:UpdateDisplay(true)
+	self.changed = true
+	Skada:UpdateDisplay(false)
 end
 
 local function click_on_mode(win, id, label, button)
@@ -375,7 +360,8 @@ function Window:DisplayModes(settime)
 	self.metadata.sortfunc = function(a,b) return a.name < b.name end
 
 	self.display:SetTitle(self, self.metadata.title)
-	Skada:UpdateDisplay(true)
+	self.changed = true
+	Skada:UpdateDisplay(false)
 end
 
 local function click_on_set(win, id, label, button)
@@ -402,8 +388,8 @@ function Window:DisplaySets()
 	self.metadata.click = click_on_set
 	self.metadata.maxvalue = 1
 --	self.metadata.sortfunc = function(a,b) return a.name < b.name end
-	
-	Skada:UpdateDisplay(true)
+	self.changed = true
+	Skada:UpdateDisplay(false)
 end
 
 -- Default "right-click" behaviour in case no special click function is defined:
@@ -434,11 +420,14 @@ function Skada:tcopy(to, from)
   end
 end
 
-function Skada:CreateWindow(name, db)
+function Skada:CreateWindow(name, db, display)
 	if not db then
 		db = {}
 		self:tcopy(db, Skada.windowdefaults)
 		table.insert(self.db.profile.windows, db)
+	end
+	if display then
+		db.display = display
 	end
 	
 	-- Migrate old settings.
@@ -455,16 +444,23 @@ function Skada:CreateWindow(name, db)
 	local window = Window:new()
 	window.db = db
 	window.db.name = name
+
+	if self.displays[window.db.display] then
+		-- Set the window's display and call it's Create function.
+		window:SetDisplay(window.db.display or "bar")
 	
-	-- Set the window's display and call it's Create function.
-	window:SetDisplay(window.db.display or "bar")
-	
-	window.display:Create(window)
-	
-	table.insert(windows, window)
-	
-	-- Set initial view, set list.
-	window:DisplaySets()
+		window.display:Create(window)
+		
+		table.insert(windows, window)
+		
+		-- Set initial view, set list.
+		if not window.display.simple then
+			window:DisplaySets()
+		end
+	else
+		-- This window's display is missing.
+		self:Print("Window '"..name.."' was not loaded because its display module, '"..window.db.display.."' was not found.")
+	end
 
 	self:ApplySettings()
 end
@@ -497,7 +493,7 @@ function Skada:Command(param)
 	elseif param == "toggle" then
 		self:ToggleWindow()
 	elseif param == "config" then
-		InterfaceOptionsFrame_OpenToCategory("Skada")
+		InterfaceOptionsFrame_OpenToCategory(self.optionsFrame)
 	elseif param:sub(1,6) == "report" then
 		param = param:sub(7)
 		local chan = "say"
@@ -1071,8 +1067,8 @@ function Skada:EndSegment()
 	end
 	
 	for i, win in ipairs(windows) do
-		win:Wipe()
-		changed = true
+--		win:Wipe()
+--		changed = true
 	
 		-- Wipe mode - switch to current set and specific mode if no party/raid members are alive.
 		-- Restore mode is not changed.
@@ -1520,97 +1516,113 @@ function Skada:UpdateDisplay(force)
 		end
 	end
 	
-	-- Return if we have not changed anything, and we are not in combat.
-	if not changed and not self.current then
-		return
-	end
-
 	for i, win in ipairs(windows) do
-		if win.selectedmode then
-	
-			local set = win:get_selected_set()
-			
-			if set then
-				-- Inform window that a data update will take place.
-				win:UpdateInProgress()
-			
-				-- Let mode update data.
-				if win.selectedmode.Update then
-					win.selectedmode:Update(win, set)
-				else
-					self:Print("Mode "..win.selectedmode:GetName().." does not have an Update function!")
+		if changed or win.changed or self.current then
+			win.changed = false
+			if win.selectedmode then -- Force mode display for display systems which do not handle navigation.
+		
+				local set = win:get_selected_set()
+				
+				if set then
+					-- Inform window that a data update will take place.
+					win:UpdateInProgress()
+				
+					-- Let mode update data.
+					if win.selectedmode.Update then
+						win.selectedmode:Update(win, set)
+					else
+						self:Print("Mode "..win.selectedmode:GetName().." does not have an Update function!")
+					end
+					
+					-- Add a total bar using the mode summaries optionally.
+					-- Words can not express how hackish this is.
+					if self.db.profile.showtotals and win.selectedmode.GetSetSummary then
+						local total = 0
+						local existing = nil
+						for i, data in ipairs(win.dataset) do
+							if not data.ignore and data.value then
+								total = total + data.value
+							end
+							if data.ignore then
+								-- We have an entry already.
+								existing = data
+							end
+						end
+						if total == 0 then
+							total = 1 -- To make sure we end up at the top.
+						end
+						if existing then
+							existing.value = total
+						else
+							table.insert(win.dataset, 1, {id = "total", label = L["Total"], value = total, valuetext = win.selectedmode:GetSetSummary(set), ignore = true})
+						end
+					end
+					
+					-- Let window display the data.
+					win:UpdateDisplay()
 				end
 				
-				-- Add a total bar using the mode summaries optionally.
-				-- Words can not express how hackish this is.
-				if self.db.profile.showtotals and win.selectedmode.GetSetSummary then
-					table.insert(win.dataset, 1, {id = "total", label = L["Total"], value = 9999999999, valuetext = win.selectedmode:GetSetSummary(set), ignore = true})
+			elseif win.selectedset then
+				local set = win:get_selected_set()
+				
+				-- View available modes.
+				for i, mode in ipairs(modes) do
+					
+					local d = win.dataset[i] or {}
+					win.dataset[i] = d
+					
+					d.id = mode:GetName()
+					d.label = mode:GetName()
+					d.value = 1
+					if set and mode.GetSetSummary ~= nil then
+						d.valuetext = mode:GetSetSummary(set)
+					end
 				end
+
+				-- Tell window to sort by our data order. Our modes are in alphabetical order already.
+				win.metadata.ordersort = true
 				
 				-- Let window display the data.
 				win:UpdateDisplay()
-			end
-			
-		elseif win.selectedset then
-			local set = win:get_selected_set()
-			
-			-- View available modes.
-			for i, mode in ipairs(modes) do
+			else
+				-- View available sets.
+				local nr = 1
+				local d = win.dataset[nr] or {}
+				win.dataset[nr] = d
 				
-				local d = win.dataset[i] or {}
-				win.dataset[i] = d
-				
-				d.id = mode:GetName()
-				d.label = mode:GetName()
+				d.id = "total"
+				d.label = L["Total"]
 				d.value = 1
-				if set and mode.GetSetSummary ~= nil then
-					d.valuetext = mode:GetSetSummary(set)
-				end
-			end
-
-			-- Tell window to sort by our data order. Our modes are in alphabetical order already.
-			win.metadata.ordersort = true
-			
-			-- Let window display the data.
-			win:UpdateDisplay()
-		else
-			-- View available sets.
-			local nr = 1
-			local d = win.dataset[nr] or {}
-			win.dataset[nr] = d
-			
-			d.id = "total"
-			d.label = L["Total"]
-			d.value = 1
-			
-			nr = nr + 1
-			local d = win.dataset[nr] or {}
-			win.dataset[nr] = d
-			
-			d.id = "current"
-			d.label = L["Current"]
-			d.value = 1
-			
-			for i, set in ipairs(self.char.sets) do
+				
 				nr = nr + 1
 				local d = win.dataset[nr] or {}
 				win.dataset[nr] = d
 				
-				d.id = tostring(set.starttime)
-				d.label = set.name
-				d.valuetext = date("%H:%M",set.starttime).." - "..date("%H:%M",set.endtime)
+				d.id = "current"
+				d.label = L["Current"]
 				d.value = 1
-				if set.keep then
-					d.emphathize = true
+				
+				for i, set in ipairs(self.char.sets) do
+					nr = nr + 1
+					local d = win.dataset[nr] or {}
+					win.dataset[nr] = d
+					
+					d.id = tostring(set.starttime)
+					d.label = set.name
+					d.valuetext = date("%H:%M",set.starttime).." - "..date("%H:%M",set.endtime)
+					d.value = 1
+					if set.keep then
+						d.emphathize = true
+					end
 				end
+				
+				win.metadata.ordersort = true
+				
+				-- Let window display the data.
+				win:UpdateDisplay()
 			end
-			
-			win.metadata.ordersort = true
-			
-			-- Let window display the data.
-			win:UpdateDisplay()
-		end
 		
+		end
 	end
 	
 	-- Mark as unchanged.
@@ -1992,14 +2004,12 @@ function Skada:OnInitialize()
 		self.db.profile.sets = nil
 	end
 	
-	self:ReloadSettings()
-	
-	-- Instead of listening for callbacks on SharedMedia we simply wait a few seconds and then re-apply settings
-	-- to catch any missing media. Lame? Yes.
-	self:ScheduleTimer("ApplySettings", 2)
 end
 
 function Skada:OnEnable()
+	self:ReloadSettings()
+	
+	
 	self:RegisterEvent("PLAYER_ENTERING_WORLD")
 	self:RegisterEvent("PARTY_MEMBERS_CHANGED")
 	self:RegisterEvent("RAID_ROSTER_UPDATE")
@@ -2010,6 +2020,10 @@ function Skada:OnEnable()
 	if type(CUSTOM_CLASS_COLORS) == "table" then
 		Skada.classcolors = CUSTOM_CLASS_COLORS
 	end
+	
+	-- Instead of listening for callbacks on SharedMedia we simply wait a few seconds and then re-apply settings
+	-- to catch any missing media. Lame? Yes.
+	self:ScheduleTimer("ApplySettings", 2)
 end
 
 function Skada:OnDisable()

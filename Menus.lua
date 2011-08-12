@@ -185,7 +185,13 @@ function Skada:OpenMenu(window)
 	            			end
 	            info.checked = window.db.barslocked
 		        UIDropDownMenu_AddButton(info, level)
-			        	    	
+
+		        wipe(info)
+	            info.text = L["Hide window"]
+	            info.func = function() window.db.hidden = true; window:Hide() end
+	            info.checked = not window:IsShown()
+		        UIDropDownMenu_AddButton(info, level)
+				
 		    elseif UIDROPDOWNMENU_MENU_VALUE == "delete" then
 		        for i, set in ipairs(Skada:GetSets()) do
 			        wipe(info)
@@ -317,8 +323,8 @@ function Skada:SegmentMenu(window)
 		info.text = L["Total"]
 		info.func = function()
 						window.selectedset = "total"
-						Skada:Wipe()
-						Skada:UpdateDisplay(true)
+						window.changed = true
+						Skada:UpdateDisplay(false)
 					end
 		info.checked = (window.selectedset == "total")
 		UIDropDownMenu_AddButton(info, level)
@@ -327,8 +333,8 @@ function Skada:SegmentMenu(window)
 		info.text = L["Current"]
 		info.func = function()
 						window.selectedset = "current"
-						Skada:Wipe()
-						Skada:UpdateDisplay(true)
+						window.changed = true
+						Skada:UpdateDisplay(false)
 					end
 		info.checked = (window.selectedset == "current")
 		UIDropDownMenu_AddButton(info, level)
@@ -338,8 +344,8 @@ function Skada:SegmentMenu(window)
 			info.text = set.name..": "..date("%H:%M",set.starttime).." - "..date("%H:%M",set.endtime)
 			info.func = function() 
 							window.selectedset = i
-							Skada:Wipe()
-							Skada:UpdateDisplay(true)
+							window.changed = true
+							Skada:UpdateDisplay(false)
 						end
 			info.checked = (window.selectedset == i)
 			UIDropDownMenu_AddButton(info, level)
