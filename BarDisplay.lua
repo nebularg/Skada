@@ -397,8 +397,10 @@ function mod:ApplySettings(win)
 	g:SetOrientation(p.barorientation)
 	g:SetBarHeight(p.barheight)
 	g:SetHeight(p.background.height)
-	g:SetTexture(media:Fetch('statusbar', p.bartexture))
-	g:SetFont(media:Fetch('font', p.barfont), p.barfontsize)
+	g:SetWidth(p.barwidth)
+	g:SetLength(p.barwidth)
+	g:SetTexture(p.bartexturepath or media:Fetch('statusbar', p.bartexture))
+	g:SetFont(p.barfontpath or media:Fetch('font', p.barfont), p.barfontsize, p.barfontflags)
 	g:SetSpacing(p.barspacing)
 	g:UnsetAllColors()
 	g:SetColorAt(0,p.barcolor.r,p.barcolor.g,p.barcolor.b, p.barcolor.a)
@@ -410,7 +412,7 @@ function mod:ApplySettings(win)
 
 	-- Header
 	local fo = CreateFont("TitleFont"..win.db.name)
-	fo:SetFont(media:Fetch('font', p.title.font), p.title.fontsize)
+	fo:SetFont(p.title.fontpath or media:Fetch('font', p.title.font), p.title.fontsize, p.title.fontflags)
 	g.button:SetNormalFontObject(fo)
 	local inset = p.title.margin
 	titlebackdrop.bgFile = media:Fetch("statusbar", p.title.texture)
@@ -445,7 +447,7 @@ function mod:ApplySettings(win)
 	
 	-- Window
 	local inset = p.background.margin
-	windowbackdrop.bgFile = media:Fetch("background", p.background.texture)
+	windowbackdrop.bgFile = p.background.texturepath or media:Fetch("background", p.background.texture)
 	if p.background.borderthickness > 0 then
 		windowbackdrop.edgeFile = media:Fetch("border", p.background.bordertexture)
 	else
