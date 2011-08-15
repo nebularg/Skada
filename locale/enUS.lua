@@ -360,3 +360,4 @@ L["Snaps the window size to best fit when resizing."] = "Snaps the window size t
 L["Snap to best fit"] = "Snap to best fit"
 
 L["Hide window"] = "Hide window"
+L["Absorb spells"] = "Absorb spells"

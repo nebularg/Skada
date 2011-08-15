@@ -1071,7 +1071,11 @@ do
 			self:ShowIcon()
 		end
 		self.icon:SetTexCoord(0.07,0.93,0.07,0.93);
-	
+		
+		-- Lame frame solely used for handling mouse input on icon.
+		self.iconFrame = CreateFrame("Frame", nil, self)
+		self.iconFrame:SetAllPoints(self.icon)
+		
 		self.label = self.label or self:CreateFontString(nil, "OVERLAY", "ChatFontNormal")
 		self.label:SetText(text)
 		self.label:ClearAllPoints()

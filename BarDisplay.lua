@@ -230,6 +230,12 @@ function mod:Update(win)
 				bar = mod:CreateBar(win, barid, barlabel, data.value, win.metadata.maxvalue or 1, data.icon, false)
 				if data.icon then
 					bar:ShowIcon()
+					
+					if data.spellid then
+						bar.iconFrame:EnableMouse()
+						bar.iconFrame:SetScript("OnEnter", function(bar) Skada:SetTooltipPosition(GameTooltip, win.bargroup); GameTooltip:SetSpellByID(data.spellid); GameTooltip:Show() end)
+						bar.iconFrame:SetScript("OnLeave", function(bar) GameTooltip:Hide() end)
+					end
 				end
 				bar.id = data.id
 				

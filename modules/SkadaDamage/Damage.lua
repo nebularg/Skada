@@ -293,6 +293,7 @@ function playermod:Update(win, set)
 				d.label = spellname
 				d.id = spellname
 				d.icon = select(3, GetSpellInfo(spell.id))
+				d.spellid = spell.id
 				d.value = spell.damage
 				d.valuetext = Skada:FormatValueText(
 												Skada:FormatNumber(spell.damage), self.metadata.columns.Damage,

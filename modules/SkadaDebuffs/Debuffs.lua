@@ -170,6 +170,7 @@ local function detailupdatefunc(auratype, win, set, playerid)
 				d.value = uptime
 				d.label = spell.name
 				d.icon = select(3, GetSpellInfo(spell.id))
+				d.spellid = spell.id
 				d.valuetext = ("%02.1f%%"):format(uptime / maxtime * 100)
 				
 				nr = nr + 1

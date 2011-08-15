@@ -214,6 +214,7 @@ function spellsmod:Update(win, set)
 											string.format("%02.1f%%", spell.healing / player.healing * 100), self.metadata.columns.Percent
 										)
 			d.icon = select(3, GetSpellInfo(spell.id))
+			d.spellid = spell.id
 			
 			if spell.healing > max then
 				max = spell.healing

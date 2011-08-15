@@ -5,6 +5,7 @@ local L = LibStub("AceLocale-3.0"):GetLocale("Skada", false)
 local Skada = Skada
 local mod = Skada:NewModule(L["Absorbs"])
 local playermod = Skada:NewModule(L["Absorb details"])
+local playerspells = Skada:NewModule(L["Absorb spells"])
 local combined = Skada:NewModule(L["Absorbs and healing"])
 
 -- This bit shamelessly copied straight from RecountGuessedAbsorbs - thanks!
@@ -192,31 +193,33 @@ local function AuraRemoved(timestamp, eventtype, srcGUID, srcName, srcFlags, dst
 	end
 end
 
-local function log_absorb(set, srcName, dstName, absorbed)
+local function log_absorb(set, srcName, dstName, absorbed, spellid)
 	-- Get the player.
 	local player = Skada:get_player(set, UnitGUID(srcName), UnitName(srcName))
 	if player then
 		player.totalabsorbs = player.totalabsorbs + absorbed
 		player.absorbs[dstName] = (player.absorbs[dstName] or 0) + absorbed
+		player.absorbspells[spellid] = (player.absorbspells[spellid] or 0) + absorbed
 		set.absorbs = set.absorbs + absorbed
 	end
 end
 
 local function consider_absorb(absorbed, dstName, srcName, timestamp)
 	local mintime = nil
-	local found_shield_src
+	local found_shield_src, found_shield_id
 	for shield_id, spells in pairs(shields[dstName]) do
 		for shield_src, ts in pairs(spells) do
 			if ts - timestamp > 0 and (mintime == nil or ts - timestamp < mintime) then
 				found_shield_src = shield_src
+				found_shield_id = shield_id
 			end
 		end
 	end
 	
 	if found_shield_src then
 
-		log_absorb(Skada.current, found_shield_src, dstName, absorbed)
-		log_absorb(Skada.total, found_shield_src, dstName, absorbed)
+		log_absorb(Skada.current, found_shield_src, dstName, absorbed, found_shield_id)
+		log_absorb(Skada.total, found_shield_src, dstName, absorbed, found_shield_id)
 		
 	end
 end
@@ -321,6 +324,43 @@ function playermod:Update(win, set)
 	end
 end
 
+function playerspells:Enter(win, id, label)
+	playerspells.playerid = id
+	playerspells.title = label..L["'s "]..L["Absorb spells"]
+end
+
+function playerspells:Update(win, set)
+	local player = Skada:find_player(set, self.playerid)
+	
+	local nr = 1
+	local max = 0
+	
+	if player then
+	
+		for spellid, absorbed in pairs(player.absorbspells) do
+			local d = win.dataset[nr] or {}
+			win.dataset[nr] = d
+			
+			d.id = spellid
+			d.value = absorbed
+			d.label = select(1, GetSpellInfo(spellid))
+			d.icon = select(3, GetSpellInfo(spellid))
+			d.spellid = spellid
+			
+			d.valuetext = Skada:FormatNumber(absorbed)..(" (%02.1f%%)"):format(absorbed / player.totalabsorbs * 100)
+
+			if absorbed > max then
+				max = absorbed
+			end
+			
+			nr = nr + 1
+		end
+		
+		win.metadata.maxvalue = max
+		
+	end
+end
+
 function combined:Update(win, set)
 	local nr = 1
 	local max = 0
@@ -358,9 +398,10 @@ function combined:Update(win, set)
 end
 
 function mod:OnEnable()
-	combined.metadata 	= {showspots = 1, click1 = playermod, columns = {Healing = true, HPS = true, Percent = true}}
-	mod.metadata 		= {showspots = 1, click1 = playermod, columns = {Healing = true, HPS = true, Percent = true}}
+	combined.metadata 	= {showspots = 1, click1 = playermod, click2 = playerspells, columns = {Healing = true, HPS = true, Percent = true}}
+	mod.metadata 		= {showspots = 1, click1 = playermod, click2 = playerspells, columns = {Healing = true, HPS = true, Percent = true}}
 	playermod.metadata 	= {}
+	playerspells.metadata 	= {}
 
 	Skada:RegisterForCL(AuraApplied, 'SPELL_AURA_REFRESH', {src_is_interesting_nopets = true})
 	Skada:RegisterForCL(AuraApplied, 'SPELL_AURA_APPLIED', {src_is_interesting_nopets = true})
@@ -403,6 +444,10 @@ function mod:AddPlayerAttributes(player)
 		player.absorbs = {}
 		player.totalabsorbs = 0
 	end
+	if not player.absorbspells then
+		player.absorbspells = {}
+	end
+
 end
 
 -- Called by Skada when a new set is created.
