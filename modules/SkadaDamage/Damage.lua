@@ -511,7 +511,10 @@ function mod:AddToTooltip(set, tooltip)
 end
 
 function mod:GetSetSummary(set)
-	return Skada:FormatNumber(set.damage)
+	return Skada:FormatValueText(
+						Skada:FormatNumber(set.damage), self.metadata.columns.Damage, 
+						("%02.1f"):format(getRaidDPS(set)), self.metadata.columns.DPS
+					)
 end
 
 -- Called by Skada when a new player is added to a set.

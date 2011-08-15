@@ -405,132 +405,117 @@ function Skada:CreateReportWindow(window)
 	-- ASDF = window
 	self.ReportWindow = AceGUI:Create("Window")
 	local frame = self.ReportWindow
-	frame:EnableResize(nil)
+	frame:EnableResize(false)
 	frame:SetWidth(250)
 	frame:SetLayout("Flow")
-	frame:SetHeight(300)
+	if window then
+		frame:SetHeight(220)
+	else
+		frame:SetHeight(310)
+	end
 	frame:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
-	frame:SetTitle(L["Report"] .. (" - %s"):format(window.db.name))
-	frame:SetCallback("OnClose", function(widget, callback)
-		destroywindow()
-	end)
+	if window then
+		frame:SetTitle(L["Report"] .. (" - %s"):format(window.db.name))
+	else
+		frame:SetTitle(L["Report"])
+	end
+	frame:SetCallback("OnClose", function(widget, callback) destroywindow() end)
+	
+	if window then
+		Skada.db.profile.report.set = window.selectedset
+		Skada.db.profile.report.mode = window.db.mode
+	else
+		-- Mode, default last chosen or first available.
+		local modebox = AceGUI:Create("Dropdown")
+		modebox:SetLabel(L["Mode"])
+		modebox:SetList({})
+		for i, mode in ipairs(Skada:GetModes()) do
+			modebox:AddItem(mode:GetName(), mode:GetName())
+		end
+		modebox:SetCallback("OnValueChanged", function(f, e, value) Skada.db.profile.report.mode = value end)
+		modebox:SetValue(Skada.db.profile.report.mode or Skada:GetModes()[1])
+		frame:AddChild(modebox)
+		
+		-- Segment, default last chosen or last set.
+		local setbox = AceGUI:Create("Dropdown")
+		setbox:SetLabel(L["Segment"])
+		setbox:SetList({total = L["Total"], current = L["Current"]})
+		for i, set in ipairs(Skada:GetSets()) do
+			setbox:AddItem(i, set.name..": "..date("%H:%M",set.starttime).." - "..date("%H:%M",set.endtime))
+		end
+		setbox:SetCallback("OnValueChanged", function(f, e, value) Skada.db.profile.report.set = value end)
+		setbox:SetValue(Skada.db.profile.report.set or Skada:GetSets()[1])
+		frame:AddChild(setbox)
+	end
+
+	local channellist = {
+		whisper 	= { L["Whisper"], "whisper"},
+		target		= { "Whisper Target", "whisper"},
+		say			= { L["Say"], "preset"},
+		raid 		= { L["Raid"], "preset"},
+		party 		= { L["Party"], "preset"},
+		guild 		= { L["Guild"], "preset"},
+		officer 	= { L["Officer"], "preset"},
+		self 		= { L["Self"], "self"},
+	}
+	local list = {GetChannelList()}
+	for i=1,#list/2 do
+		local chan = list[i*2]
+		if chan ~= "Trade" and chan ~= "General" and chan ~= "LookingForGroup" then -- These should be localized.
+			channellist[chan] = {chan, "channel"}
+		end
+	end
+
+	-- Channel, default last chosen or Say.
+	local channelbox = AceGUI:Create("Dropdown")
+	channelbox:SetLabel(L["Channel"])
+	channelbox:SetList( {} )
+	for chan, kind in pairs(channellist) do
+		channelbox:AddItem(chan, kind[1])
+	end
+	channelbox:SetCallback("OnValueChanged", 
+			function(f, e, value) 
+				Skada.db.profile.report.channel = value
+				Skada.db.profile.report.chantype = channellist[value][2]
+			end
+		)
+	channelbox:SetValue(Skada.db.profile.report.channel or "say")
+	frame:AddChild(channelbox)
 	
 	local lines = AceGUI:Create("Slider")
 	lines:SetLabel(L["Lines"])
 	lines:SetValue(Skada.db.profile.report.number ~= nil and Skada.db.profile.report.number	 or 10)
 	lines:SetSliderValues(1, 25, 1)
-	lines:SetCallback("OnValueChanged", function(self,event, value) 
-		Skada.db.profile.report.number = value
-		-- Spew("value", value)
-	end)
+	lines:SetCallback("OnValueChanged", function(self, event, value) Skada.db.profile.report.number = value end)
 	lines:SetFullWidth(true)
-	
-	local channeltext = AceGUI:Create("Label")
-	channeltext:SetText(L["Channel"])
-	channeltext:SetFullWidth(true)
-	frame:AddChildren(lines, channeltext)
-	
-	
-	local channellist = {
-		{"Whisper", "whisper"},
-		{"Whisper Target", "whisper"},
-		{"Say", "preset"},
-		{"Raid", "preset"},
-		{"Party", "preset"},
-		{"Guild", "preset"},
-		{"Officer", "preset"},
-		{"Self", "self"},
-	}
-	local list = {GetChannelList()}
-	for i=2, #list, 2 do
-		if list[i] ~= "Trade" and list[i] ~= "General" and list[i] ~= "LookingForGroup" then
-			channellist[#channellist+1] = {list[i], "channel"}
-		end
-	end
-	for i=1,#channellist do
-		--print(channellist[i][1], channellist[i][2])
-		local checkbox = AceGUI:Create("CheckBox")
-		_G["SkadaReportCheck" .. i] = checkbox
-		checkbox:SetType("radio")
-		checkbox:SetRelativeWidth(0.5)
-		-- checkbox:SetValue(false)
-		if Skada.db.profile.report.chantype == "channel" then
-			if channellist[i][1] == Skada.db.profile.report.channel then
-				frame.channel = channellist[i][1]
-				frame.chantype = channellist[i][2]
-				checkbox:SetValue(true)
-			end
-		elseif Skada.db.profile.report.chantype == "whisper" then
-			if channellist[i][1] == "Whisper" then
-				-- frame.channel = channellist[i][1]
-				frame.chantype = channellist[i][2]
-				checkbox:SetValue(true)
-			end
-		elseif Skada.db.profile.report.chantype == "preset" then
-			-- print("pass")
-			if rawget(L, channellist[i][1]) and L[channellist[i][1]] == Skada.db.profile.report.channel then
-				frame.channel = channellist[i][1]
-				frame.chantype = channellist[i][2]
-				checkbox:SetValue(true)
-			end
-		elseif Skada.db.profile.report.chantype == "self" then
-			if channellist[i][2] == "self" then
-				frame.channel = channellist[i][1]
-				frame.chantype = channellist[i][2]
-				checkbox:SetValue(true)
-			end
-		end
-		if i == 2 or i >= 9 then
-			checkbox:SetLabel(channellist[i][1])
-		else
-			checkbox:SetLabel(L[channellist[i][1]])
-		end
-		checkbox:SetCallback("OnValueChanged", function(value)
-			
-			for i=1, #channellist do
-				local c = getglobal("SkadaReportCheck"..i)
-				if c ~= nil and c ~= checkbox then
-					c:SetValue(false)
-				end
-				if c == checkbox then
-					frame.channel = channellist[i][1]
-					frame.chantype = channellist[i][2]
-				end
-			end 
-		end)
-		frame:AddChild(checkbox)
-	end
+	frame:AddChild(lines)
 	
 	local whisperbox = AceGUI:Create("EditBox")
 	whisperbox:SetLabel("Whisper Target")
-	if Skada.db.profile.report.chantype == "whisper" and Skada.db.profile.report.channel ~= L["Whisper"] then
-		whisperbox:SetText(Skada.db.profile.report.channel)
-		frame.target = Skada.db.profile.report.channel
-	end
-	whisperbox:SetCallback("OnEnterPressed", function(box, event, text) frame.target = text frame.button.frame:Click() end)
-	whisperbox:SetCallback("OnTextChanged", function(box, event, text) frame.target = text end)
+	whisperbox:SetText(Skada.db.profile.report.target)
+	whisperbox:SetCallback("OnEnterPressed", function(box, event, text) Skada.db.profile.report.target = text; frame.button.frame:Click() end)
+	whisperbox:SetCallback("OnTextChanged", function(box, event, text) Skada.db.profile.report.target = text end)
 	whisperbox:SetFullWidth(true)
 	
 	local report = AceGUI:Create("Button")
 	frame.button = report
 	report:SetText(L["Report"])
 	report:SetCallback("OnClick", function()
-		if frame.channel == "Whisper" then
-			frame.channel = frame.target
-		end
-		if frame.channel == "Whisper Target" then
+		local mode, set, channel, chantype, number = Skada.db.profile.report.mode, Skada.db.profile.report.set, Skada.db.profile.report.channel, Skada.db.profile.report.chantype, Skada.db.profile.report.number
+		
+		if channel == "whisper" then
+			channel = Skada.db.profile.report.target
+		elseif channel == "target" then
 			if UnitExists("target") then
-				frame.channel = UnitName("target")
+				channel = UnitName("target")
 			else
-				frame.channel = nil
+				channel = nil
 			end
 		end
 		-- print(tostring(frame.channel), tostring(frame.chantype), tostring(window.db.mode))
-		if frame.channel and frame.chantype and window.db.mode then
-			Skada.db.profile.report.channel = frame.channel
-			Skada.db.profile.report.chantype = frame.chantype
-			
-			Skada:Report(frame.channel, frame.chantype, window.db.mode, Skada.db.profile.report.set, Skada.db.profile.report.number, window)
+		
+		if channel and chantype and mode and set and number then
+			Skada:Report(channel, chantype, mode, set, number, window)
 			frame:Hide()
 		else
 			Skada:Print("Error: No options selected")
@@ -539,5 +524,4 @@ function Skada:CreateReportWindow(window)
 	end)
 	report:SetFullWidth(true)
 	frame:AddChildren(whisperbox, report)
-	frame:SetHeight(180 + 27* math.ceil(#channellist/2))
 end

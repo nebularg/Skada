@@ -454,9 +454,7 @@ function Skada:CreateWindow(name, db, display)
 		table.insert(windows, window)
 		
 		-- Set initial view, set list.
-		if not window.display.simple then
-			window:DisplaySets()
-		end
+		window:DisplaySets()
 	else
 		-- This window's display is missing.
 		self:Print("Window '"..name.."' was not loaded because its display module, '"..window.db.display.."' was not found.")
@@ -1517,7 +1515,7 @@ function Skada:UpdateDisplay(force)
 	end
 	
 	for i, win in ipairs(windows) do
-		if changed or win.changed or self.current then
+		if (changed or win.changed or self.current) then
 			win.changed = false
 			if win.selectedmode then -- Force mode display for display systems which do not handle navigation.
 		
