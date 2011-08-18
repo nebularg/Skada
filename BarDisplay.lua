@@ -228,19 +228,26 @@ function mod:Update(win)
 			else
 				-- Initialization of bars.
 				bar = mod:CreateBar(win, barid, barlabel, data.value, win.metadata.maxvalue or 1, data.icon, false)
-				if data.icon then
-					bar:ShowIcon()
-					
-					if data.spellid then
-						bar.iconFrame:EnableMouse()
-						bar.iconFrame:SetScript("OnEnter", function(bar) Skada:SetTooltipPosition(GameTooltip, win.bargroup); GameTooltip:SetSpellByID(data.spellid); GameTooltip:Show() end)
-						bar.iconFrame:SetScript("OnLeave", function(bar) GameTooltip:Hide() end)
-					end
-				end
 				bar.id = data.id
-				
 				if not data.ignore then
-					bar:EnableMouse()
+
+					if data.icon then
+						bar:ShowIcon()
+						
+						if data.spellid then
+							local spell = data.spellid
+							bar.iconFrame:EnableMouse(true)
+							bar.iconFrame:SetScript("OnEnter", function(bar) Skada:SetTooltipPosition(GameTooltip, win.bargroup); GameTooltip:SetSpellByID(spell); GameTooltip:Show() end)
+							bar.iconFrame:SetScript("OnLeave", function(bar) GameTooltip:Hide() end)
+						elseif data.hyperlink then
+							local link = data.hyperlink
+							bar.iconFrame:EnableMouse(true)
+							bar.iconFrame:SetScript("OnEnter", function(bar) Skada:SetTooltipPosition(GameTooltip, win.bargroup); GameTooltip:SetHyperlink(link); GameTooltip:Show(); end)
+							bar.iconFrame:SetScript("OnLeave", function(bar) GameTooltip:Hide() end)
+						end
+					end
+				
+					bar:EnableMouse(true)
 					bar:SetScript("OnEnter", function(bar) BarEnter(win, barid, barlabel) end)
 					bar:SetScript("OnLeave", function(bar) BarLeave(win, barid, barlabel) end)
 					bar:SetScript("OnMouseDown", function(bar, button) BarClick(win, barid, barlabel, button) end)
@@ -389,6 +396,9 @@ function mod:CreateBar(win, name, label, value, maxvalue, icon, o)
 	local bar = win.bargroup:NewCounterBar(name, label, value, maxvalue, icon, o)
 	bar:EnableMouseWheel(true)
 	bar:SetScript("OnMouseWheel", function(f, d) mod:OnMouseWheel(win, f, d) end)
+	bar.iconFrame:SetScript("OnEnter", nil)
+	bar.iconFrame:SetScript("OnLeave", nil)
+	bar.iconFrame:EnableMouse(false)
 	return bar
 end
 
@@ -472,9 +482,6 @@ function mod:ApplySettings(win)
 	
 	-- Scale
 	g:SetScale(p.scale)
-	
-	-- Snap to
-	g:SetSnapTo(p.snapto)
 	
 	g:SortBars()
 end
@@ -931,18 +938,6 @@ function mod:AddDisplayOptions(win, options)
 				order=3,
 			},
 
-			snapto = {
-			        type="toggle",
-			        name=L["Snap to best fit"],
-			        desc=L["Snaps the window size to best fit when resizing."],
-			        order=7,
-			        get=function() return db.snapto end,
-			        set=function() 
-			        		db.snapto = not db.snapto
-		         			Skada:ApplySettings()
-			        	end,
-			},
-			
 			color = {
 				type="color",
 				name=L["Background color"],

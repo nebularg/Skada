@@ -452,9 +452,7 @@ do
 		list.texture = DEFAULT_TEXTURE
 		list.spacing = 0
 		
-		-- MODIFIED
 		list.offset = 0
-		list.snapto = true
 
 		list.resizebutton = CreateFrame("Button", "BarGroupResizeButton", list)
 		list.resizebutton:Show()
@@ -489,15 +487,6 @@ do
 				local top, left = p:GetTop(), p:GetLeft()
 				if p.isResizing == true then
 					p:StopMovingOrSizing()
-					
-					if p:IsSnapTo() then
-						-- Snap to best fit height.
-						local maxbars = math.floor(p:GetHeight() / (p:GetThickness() + p:GetSpacing()))
-						p:SetHeight(maxbars * p:GetThickness())
-						p:ClearAllPoints()
-						p:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", left, top)
-					end
-					
 					p.callbacks:Fire("WindowResized", self:GetParent())
 					p.isResizing = false
 					p:SortBars()
@@ -537,14 +526,6 @@ function barListPrototype:NewBarFromPrototype(prototype, ...)
 	
 	bar:EnableMouse(self.enablemouse)
 	return bar, isNew
-end
-
-function barListPrototype:SetSnapTo(snapto)
-	self.snapto = snapto
-end
-
-function barListPrototype:IsSnapTo()
-	return self.snapto
 end
 
 function barListPrototype:SetEnableMouse(enablemouse)
@@ -989,7 +970,6 @@ do
 			y1, y2 = -spacing, -spacing
 		end
 		
-		local totalHeight = 0
 		local shown = 0
 		for i = 1, #values do
 			local origTo = to
@@ -1003,25 +983,24 @@ do
 				else
 					x1, x2 = 0, (v.showIcon and -thickness or 0)
 				end
+				y1, y2 = 0, 0
 			else
 				x1, x2 = 0, 0
 				y1, y2 = -spacing, -spacing
 			end
 			
 			v:ClearAllPoints()
-			
-			if (totalHeight + v:GetHeight() > self:GetHeight()) or (i < self:GetBarOffset() + 1) then
+			v:SetPoint(from.."LEFT", lastBar, to.."LEFT", x1, y1)
+			v:SetPoint(from.."RIGHT", lastBar, to.."RIGHT", x2, y2)
+			if (not growup and v:GetBottom() < self:GetBottom()) or (growup and v:GetBottom() > self:GetTop()) or (i < self:GetBarOffset() + 1) then
 				--Skada:Print("totalHeight "..totalHeight..", bar height "..v:GetHeight()..", win height "..self:GetHeight())
 				v:Hide()
 			else
 				v:Show()
 				shown = shown + 1
-				totalHeight = totalHeight + v:GetHeight() + y1
-				v:SetPoint(from.."LEFT", lastBar, to.."LEFT", x1, y1)
-				v:SetPoint(from.."RIGHT", lastBar, to.."RIGHT", x2, y2)
-				
 				lastBar = v
 			end
+			
 			to = origTo
 		end
 		self.lastBar = lastBar
@@ -1073,7 +1052,7 @@ do
 		self.icon:SetTexCoord(0.07,0.93,0.07,0.93);
 		
 		-- Lame frame solely used for handling mouse input on icon.
-		self.iconFrame = CreateFrame("Frame", nil, self)
+		self.iconFrame = self.iconFrame or CreateFrame("Frame", nil, self)
 		self.iconFrame:SetAllPoints(self.icon)
 		
 		self.label = self.label or self:CreateFontString(nil, "OVERLAY", "ChatFontNormal")
