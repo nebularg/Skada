@@ -256,6 +256,7 @@ function mod:Update(win)
 					bar:SetScript("OnLeave", nil)
 					bar:SetScript("OnMouseDown", nil)
 				end
+				bar:SetValue(data.value)
 				
 				if data.color then
 					-- Explicit color from dataset.
@@ -384,7 +385,7 @@ local function getNumberOfBars(win)
 end
 
 function mod:OnMouseWheel(win, frame, direction)
-	local maxbars = win.db.background.height / win.db.barheight
+	local maxbars = win.db.background.height / (win.db.barheight + win.db.barspacing)
 	if direction == 1 and win.bargroup:GetBarOffset() > 0 then
 		win.bargroup:SetBarOffset(win.bargroup:GetBarOffset() - 1)
 	elseif direction == -1 and ((getNumberOfBars(win) - maxbars - win.bargroup:GetBarOffset()) > 0) then

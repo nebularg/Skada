@@ -938,10 +938,12 @@ do
 		for k, v in pairs(bars[self]) do
 			ct = ct + 1
 			values[ct] = v
+			v:Hide()
 		end
 		for i = ct + 1, #values do
 			values[i] = nil
 		end
+		if #values == 0 then return end
 		
 		table_sort(values, self.sortFunc or sortFunc)
 		
@@ -951,33 +953,31 @@ do
 
 		local from, to
 		local thickness, showIcon = self.thickness, self.showIcon
+		local offset = self.offset
 		local x1, y1, x2, y2 = 0, 0, 0, 0
+		local maxbars = math.min(#values, math.floor(self:GetHeight() / (thickness + spacing)))
+
+		local start, stop, step
 		if growup then
-			-- Calculate starting offset based on number of bars and how much room we have to play with.
-			local maxbars = math.floor(self:GetHeight() / thickness)
-			if #values < maxbars then
-				from = "TOP"
-				to = "BOTTOM"
-				y1, y2 = -spacing - ((maxbars - #values) * thickness), -spacing - ((maxbars - #values) * thickness)
-			else
-				from = "TOP"
-				to = "BOTTOM"
-				y1, y2 = -spacing, -spacing
-			end
+			from = "BOTTOM"
+			to = "TOP"
+			start = math.min(#values, maxbars + offset)
+			stop = math.min(#values, 1 + offset)
+			step = -1
 		else
 			from = "TOP"
 			to = "BOTTOM"
-			y1, y2 = -spacing, -spacing
+			start = math.min(1 + offset, #values)
+			stop = math.min(maxbars + offset, #values)
+			step = 1
 		end
 		
 		local shown = 0
-		for i = 1, #values do
+		for i = start, stop, step do
 			local origTo = to
 			local v = values[i]
-			if lastBar == self or lastBar == self.button then
-				if lastBar == self then
-					to = from
-				end
+			if lastBar == self then
+				to = from
 				if orientation == 1 then
 					x1, x2 = (v.showIcon and thickness or 0), 0
 				else
@@ -986,16 +986,18 @@ do
 				y1, y2 = 0, 0
 			else
 				x1, x2 = 0, 0
-				y1, y2 = -spacing, -spacing
+				if growup then
+					y1, y2 = spacing, spacing
+				else
+					y1, y2 = -spacing, -spacing
+				end
 			end
 			
-			v:ClearAllPoints()
-			v:SetPoint(from.."LEFT", lastBar, to.."LEFT", x1, y1)
-			v:SetPoint(from.."RIGHT", lastBar, to.."RIGHT", x2, y2)
-			if (not growup and v:GetBottom() < self:GetBottom()) or (growup and v:GetBottom() > self:GetTop()) or (i < self:GetBarOffset() + 1) then
-				--Skada:Print("totalHeight "..totalHeight..", bar height "..v:GetHeight()..", win height "..self:GetHeight())
-				v:Hide()
-			else
+			if shown <= maxbars then
+				v:ClearAllPoints()
+				v:SetPoint(from.."LEFT", lastBar, to.."LEFT", x1, y1)
+				v:SetPoint(from.."RIGHT", lastBar, to.."RIGHT", x2, y2)
+				
 				v:Show()
 				shown = shown + 1
 				lastBar = v
@@ -1003,6 +1005,7 @@ do
 			
 			to = origTo
 		end
+
 		self.lastBar = lastBar
 	end
 end
