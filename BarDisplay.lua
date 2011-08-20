@@ -417,6 +417,8 @@ function mod:ApplySettings(win)
 	g:SetWidth(p.barwidth)
 	g:SetLength(p.barwidth)
 	g:SetTexture(p.bartexturepath or media:Fetch('statusbar', p.bartexture))
+	
+	g:SetBarBackgroundColor(p.barbgcolor.r, p.barbgcolor.g, p.barbgcolor.b, p.barbgcolor.a or 0.6)
 	g:SetFont(p.barfontpath or media:Fetch('font', p.barfont), p.barfontsize, p.barfontflags)
 	g:SetSpacing(p.barspacing)
 	g:UnsetAllColors()
@@ -614,19 +616,13 @@ function mod:AddDisplayOptions(win, options)
 				order=21,
 			},
 
-			altcolor = {
+			bgcolor = {
 				type="color",
-				name=L["Alternate color"],
-				desc=L["Choose the alternate color of the bars."],
+				name=L["Background color"],
+				desc=L["Choose the background color of the bars."],
 				hasAlpha=true,
-				get=function(i) 
-						local c = db.baraltcolor
-						return c.r, c.g, c.b, c.a
-					end,
-				set=function(i, r,g,b,a) 
-						db.baraltcolor = {["r"] = r, ["g"] = g, ["b"] = b, ["a"] = a}
-						Skada:ApplySettings()
-					end,
+				get=function(i) return db.barbgcolor.r, db.barbgcolor.g, db.barbgcolor.b, db.barbgcolor.a end,
+				set=function(i, r,g,b,a) db.barbgcolor = {["r"] = r, ["g"] = g, ["b"] = b, ["a"] = a}; Skada:ApplySettings() end,
 				order=22,
 			},
 

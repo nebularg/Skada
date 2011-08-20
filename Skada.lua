@@ -431,14 +431,14 @@ function Skada:CreateWindow(name, db, display)
 	end
 	
 	-- Migrate old settings.
+	if not db.barbgcolor then
+		db.barbgcolor = {r = 0.3, g = 0.3, b = 0.3, a = 0.6}
+	end
 	if not db.buttons then
 		db.buttons = {menu = true, reset = true, report = true, mode = true, segment = true}
 	end
 	if not db.scale then
 		db.scale = 1
-	end
-	if db.snapto == nil then
-		db.snapto = true
 	end
 
 	local window = Window:new()

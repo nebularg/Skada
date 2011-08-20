@@ -14,7 +14,7 @@ Skada.windowdefaults = {
 	barwidth=240,
 	barorientation=1,
 	barcolor = {r = 0.3, g = 0.3, b = 0.8, a=1},
-	baraltcolor = {r = 0.45, g = 0.45, b = 0.8, a = 1},
+	barbgcolor = {r = 0.3, g = 0.3, b = 0.3, a = 0.6},
 	barslocked=false,
 	clickthrough=false,
 

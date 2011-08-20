@@ -361,3 +361,5 @@ L["Snap to best fit"] = "Snap to best fit"
 
 L["Hide window"] = "Hide window"
 L["Absorb spells"] = "Absorb spells"
+
+L["Choose the background color of the bars."] = "Choose the background color of the bars."

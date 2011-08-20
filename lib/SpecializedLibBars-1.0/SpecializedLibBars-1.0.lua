@@ -348,6 +348,13 @@ function barListPrototype:AdjustButtons()
 	end
 end
 
+function barListPrototype:SetBarBackgroundColor(r, g, b, a)
+	self.barbackgroundcolor = {r,g,b,a}
+	for i, bar in pairs(self:GetBars()) do
+		bar.bgtexture:SetVertexColor(unpack(self.barbackgroundcolor))
+	end
+end
+
 function barListPrototype:ShowButton(title, visible)
 	for i, b in ipairs(self.buttons) do
 		if b.title == title then
@@ -434,6 +441,8 @@ do
 		list.button:RegisterForClicks("LeftButtonUp", "RightButtonUp", "MiddleButtonUp", "Button4Up", "Button5Up")
 		
 		list.buttons = {}
+
+		list.barbackgroundcolor = {0.3, 0.3, 0.3, 0.6},
 
 		list:SetPoint("TOPLEFT", UIParent, "CENTER", 0, 0)
 		list:SetHeight(height)
@@ -545,7 +554,12 @@ function barListPrototype:SetBarHeight(height)
 end
 
 function barListPrototype:NewCounterBar(name, text, value, maxVal, icon, isTimer)
-	return self:NewBarFromPrototype(barPrototype, name, text, value, maxVal, icon, self.orientation, self.length, self.thickness, isTimer)
+	local bar = self:NewBarFromPrototype(barPrototype, name, text, value, maxVal, icon, self.orientation, self.length, self.thickness, isTimer)
+	
+	-- Apply barlist settings.
+	bar.bgtexture:SetVertexColor(unpack(self.barbackgroundcolor))
+	
+	return bar
 end
 
 local function startFlashing(bar, time)
