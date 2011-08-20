@@ -254,7 +254,7 @@ function mod:Update(win)
 				else
 					bar:SetScript("OnEnter", nil)
 					bar:SetScript("OnLeave", nil)
-					bar:SetScript("OnMouseDown", nil)
+					bar:SetScript("OnMouseDown", function(bar, button) if button == "RightButton" then win:RightClick() end end)
 				end
 				bar:SetValue(data.value)
 				

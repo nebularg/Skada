@@ -1533,26 +1533,27 @@ function Skada:UpdateDisplay(force)
 					end
 					
 					-- Add a total bar using the mode summaries optionally.
-					-- Words can not express how hackish this is.
 					if self.db.profile.showtotals and win.selectedmode.GetSetSummary then
 						local total = 0
 						local existing = nil
 						for i, data in ipairs(win.dataset) do
-							if not data.ignore and data.value then
+							if data.id then
 								total = total + data.value
 							end
-							if data.ignore then
-								-- We have an entry already.
+							if not existing and not data.id then
 								existing = data
 							end
 						end
-						if total == 0 then
-							total = 1 -- To make sure we end up at the top.
-						end
-						if existing then
-							existing.value = total
-						else
-							table.insert(win.dataset, 1, {id = "total", label = L["Total"], value = total, valuetext = win.selectedmode:GetSetSummary(set), ignore = true})
+						total = total + 1
+
+						local d = existing or {}
+						d.valuetext = win.selectedmode:GetSetSummary(set)
+						d.value = total
+						d.label = L["Total"]
+						d.id = "total"
+						d.ignore = true
+						if not existing then
+							table.insert(win.dataset, 1, d)
 						end
 					end
 					
