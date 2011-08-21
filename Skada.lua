@@ -250,6 +250,7 @@ end
 function Window:UpdateInProgress()
 	for i, data in ipairs(self.dataset) do
 		data.id = nil
+		data.ignore = nil
 	end
 end
 
