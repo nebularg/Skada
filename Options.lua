@@ -9,6 +9,7 @@ Skada.windowdefaults = {
 	barspacing=0,
 	bartexture="BantoBar",
 	barfont="Accidental Presidency",
+	barfontflags="",
 	barfontsize=11,
 	barheight=15,
 	barwidth=240,
@@ -23,7 +24,7 @@ Skada.windowdefaults = {
 	
 	buttons = {menu = true, reset = true, report = true, mode = true, segment = true},
 	
-	title = {font="Accidental Presidency", fontsize=11,margin=0, texture="Aluminium", bordertexture="None", borderthickness=2, color = {r=0.1,g=0.1,b=0.3,a=0.8}},
+	title = {font="Accidental Presidency", fontsize=11,margin=0, texture="Aluminium", bordertexture="None", borderthickness=2, color = {r=0.1,g=0.1,b=0.3,a=0.8}, fontflags = ""},
 	background = {margin=0, height=200, texture="Solid", bordertexture="None", borderthickness=0, color = {r=0,g=0,b=0.5,a=0.2}},
 
 	reversegrowth=false,

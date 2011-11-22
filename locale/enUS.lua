@@ -363,3 +363,11 @@ L["Hide window"] = "Hide window"
 L["Absorb spells"] = "Absorb spells"
 
 L["Choose the background color of the bars."] = "Choose the background color of the bars."
+
+L["Font flags"] = "Font flags"
+L["Sets the font flags."] = "Sets the font flags."
+L["None"] = "None"
+L["Outline"] = "Outline"
+L["Thick outline"] = "Thick outline"
+L["Monochrome"] = "Monochrome"
+L["Outlined monochrome"] = "Outlined monochrome"
