@@ -176,7 +176,12 @@ do
 				break
 			end
 		end
-		local pct = (point - lowerBoundIndex) / (upperBoundIndex - lowerBoundIndex)
+		--local pct = (point - lowerBoundIndex) / (upperBoundIndex - lowerBoundIndex)
+		local diff = (upperBoundIndex - lowerBoundIndex)
+		local pct = 1
+		if diff ~= 0 then
+			pct = (point - lowerBoundIndex) / diff
+		end		
 		local r = lowerBound[2] + ((upperBound[2] - lowerBound[2]) * pct)
 		local g = lowerBound[3] + ((upperBound[3] - lowerBound[3]) * pct)
 		local b = lowerBound[4] + ((upperBound[4] - lowerBound[4]) * pct)
@@ -1520,7 +1525,7 @@ function barPrototype:SetValue(val)
 	else
 		displayMax = self.maxValue
 	end
-	local amt = min(1, val / displayMax)
+	local amt = min(1, val / max(displayMax, 0.000001))
 	local dist = (ownerGroup and ownerGroup:GetLength()) or self.length
 	self:SetTextureValue(max(amt, 0.000001), dist)
 	self:UpdateColor()
@@ -1606,7 +1611,7 @@ function barPrototype:SetFill(fill)
 end
 
 function barPrototype:UpdateColor()
-	local amt = floor(self.value / self.maxValue * 200) * 4
+	local amt = floor(self.value / max(self.maxValue,0.000001) * 200) * 4
 	local map
 	if self.gradMap and #self.gradMap > 0 then
 		map = self.gradMap

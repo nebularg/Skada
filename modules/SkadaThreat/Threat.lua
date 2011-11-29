@@ -284,7 +284,7 @@ function mod:Update(win, set)
 			
 				if data.threat and data.threat > 0 then
 					-- Warn if this is ourselves and we are over the treshold.
-					local percent = data.value / maxthreat * 100
+					local percent = data.value / math.max(0.000001, maxthreat) * 100
 					if data.label == UnitName("player") then
 						if Skada.db.profile.modules.threattreshold and Skada.db.profile.modules.threattreshold < percent and (not data.isTanking or not Skada.db.profile.modules.notankwarnings) then
 							we_should_warn = true

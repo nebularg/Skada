@@ -242,7 +242,7 @@ end
 
 local function SpellMissed(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
 	local spellId, spellName, spellSchool, misstype, amount = ...
-	if misstype == "ABSORB" and amount > 0 and dstName and shields[dstName] and srcName then
+	if misstype == "ABSORB" and amount and amount > 0 and dstName and shields[dstName] and srcName then
 		--Skada:Print(dstName.." absorbed "..absorbed.." from "..srcName.." (MISS)")
 		consider_absorb(amount, dstName, srcName, timestamp)
 	end
