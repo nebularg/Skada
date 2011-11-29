@@ -300,6 +300,8 @@ function lib:ReleaseBar(name)
 	end
 
 	if bar then
+		bar:SetScript("OnEnter", nil)
+		bar:SetScript("OnLeave", nil)
 		bar:OnBarReleased()
 		bars[self][bar.name] = nil
 		tinsert(recycledBars, bar)

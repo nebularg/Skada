@@ -248,9 +248,9 @@ function mod:Update(win)
 					end
 				
 					bar:EnableMouse(true)
-					bar:SetScript("OnEnter", function(bar) if bar.id then BarEnter(win, barid, barlabel) end end)
-					bar:SetScript("OnLeave", function(bar) if bar.id then BarLeave(win, barid, barlabel) end end)
-					bar:SetScript("OnMouseDown", function(bar, button) if bar.id then BarClick(win, barid, barlabel, button) end end)
+					bar:SetScript("OnEnter", function(bar) BarEnter(win, barid, barlabel) end)
+					bar:SetScript("OnLeave", function(bar) BarLeave(win, barid, barlabel) end)
+					bar:SetScript("OnMouseDown", function(bar, button) BarClick(win, barid, barlabel, button) end)
 				else
 					bar:SetScript("OnEnter", nil)
 					bar:SetScript("OnLeave", nil)
