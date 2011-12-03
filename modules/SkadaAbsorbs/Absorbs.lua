@@ -173,7 +173,7 @@ local shields = {}
 local function AuraApplied(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
 	local spellId, spellName, spellSchool, auraType = ...
 	if AbsorbSpellDuration[spellId] then
-	
+
 		shields[dstName] = shields[dstName] or {}
 		shields[dstName][spellId] = shields[dstName][spellId] or {}
 		shields[dstName][spellId][srcName] = timestamp + AbsorbSpellDuration[spellId]
@@ -204,7 +204,7 @@ local function log_absorb(set, srcName, dstName, absorbed, spellid)
 	end
 end
 
-local function consider_absorb(absorbed, dstName, srcName, timestamp)
+local function consider_absorb(absorbed, dstName, timestamp)
 	local mintime = nil
 	local found_shield_src, found_shield_id
 	for shield_id, spells in pairs(shields[dstName]) do
@@ -217,10 +217,8 @@ local function consider_absorb(absorbed, dstName, srcName, timestamp)
 	end
 	
 	if found_shield_src then
-
 		log_absorb(Skada.current, found_shield_src, dstName, absorbed, found_shield_id)
 		log_absorb(Skada.total, found_shield_src, dstName, absorbed, found_shield_id)
-		
 	end
 end
 
@@ -228,7 +226,7 @@ local function SwingDamage(timestamp, eventtype, srcGUID, srcName, srcFlags, dst
 	local samount, soverkill, sschool, sresisted, sblocked, absorbed, scritical, sglancing, scrushing = ...
 	if absorbed and absorbed > 0 and dstName and shields[dstName] and srcName then
 		--Skada:Print(dstName.." absorbed "..absorbed.." from "..srcName)
-		consider_absorb(absorbed, dstName, srcName, timestamp)
+		consider_absorb(absorbed, dstName, timestamp)
 	end
 end
 
@@ -236,20 +234,23 @@ local function SpellDamage(timestamp, eventtype, srcGUID, srcName, srcFlags, dst
 	local spellId, spellName, spellSchool, samount, soverkill, sschool, sresisted, sblocked, absorbed, scritical, sglancing, scrushing = ...
 	if absorbed and absorbed > 0 and dstName and shields[dstName] and srcName then
 		--Skada:Print(dstName.." absorbed "..absorbed.." from "..srcName)
-		consider_absorb(absorbed, dstName, srcName, timestamp)
+		consider_absorb(absorbed, dstName, timestamp)
 	end
 end
 
 local function SpellMissed(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
-	local spellId, spellName, spellSchool, misstype, amount = ...
+	local spellId, spellName, spellSchool, misstype, _, amount = ...
 	if misstype == "ABSORB" and amount and amount > 0 and dstName and shields[dstName] and srcName then
 		--Skada:Print(dstName.." absorbed "..absorbed.." from "..srcName.." (MISS)")
-		consider_absorb(amount, dstName, srcName, timestamp)
+		consider_absorb(amount, dstName, timestamp)
 	end
 end
 
 local function SwingMissed(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
-	SpellMissed(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, nil, nil, nil, ...)
+	local misstype, _, amount = ...
+	if misstype == "ABSORB" and amount and amount > 0 and dstName and shields[dstName] and srcName then
+		consider_absorb(amount, dstName, timestamp)
+	end
 end
 
 function mod:Update(win, set)
