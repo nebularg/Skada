@@ -48,7 +48,6 @@ externals:
         tag: latest
     lib/LibBossIDs-1.0:
         url: svn://svn.wowace.com/wow/libbossids-1-0/mainline/trunk
-        tag: latest
 		
 move-folders:
     Skada/modules/SkadaThreat: SkadaThreat

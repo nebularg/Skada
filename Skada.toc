@@ -29,6 +29,7 @@ locale\zhCN.lua
 locale\zhTW.lua
 locale\frFR.lua
 locale\deDE.lua
+locale\ptBR.lua
 
 Skada.lua
 Menus.lua
