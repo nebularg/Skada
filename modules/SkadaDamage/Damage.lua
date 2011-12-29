@@ -313,7 +313,7 @@ end
 function damagedmod:Enter(win, id, label)
 	local player = Skada:find_player(win:get_selected_set(), id)
 	damagedmod.playerid = id
-	damagedmod.title = player.name..L["'s "]..L["Damaged mobs"]
+	damagedmod.title = (player and player.name or "Unknown")..L["'s "]..L["Damaged mobs"]
 end
 
 -- Player view showing damaged mobs.
