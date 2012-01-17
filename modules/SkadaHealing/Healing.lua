@@ -13,6 +13,8 @@ local function log_heal(set, heal)
 	if player then
 		-- Subtract overhealing
 		local amount = math.max(0, heal.amount - heal.overhealing)
+		-- Add absorbed
+		amount = amount + heal.absorbed
 
 		-- Add to player total.
 		player.healing = player.healing + amount
@@ -69,6 +71,7 @@ local function SpellHeal(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGU
 	heal.amount = samount
 	heal.overhealing = soverhealing
 	heal.critical = scritical
+	heal.absorbed = absorbed
 	
 	Skada:FixPets(heal)
 	log_heal(Skada.current, heal)
