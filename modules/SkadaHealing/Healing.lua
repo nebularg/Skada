@@ -19,10 +19,12 @@ local function log_heal(set, heal)
 		-- Add to player total.
 		player.healing = player.healing + amount
 		player.overhealing = player.overhealing + heal.overhealing
+		player.healingabsorbed = player.healingabsorbed + heal.absorbed
 		
 		-- Also add to set total damage.
 		set.healing = set.healing + amount
 		set.overhealing = set.overhealing + heal.overhealing
+		set.healingabsorbed = set.healingabsorbed + heal.absorbed
 		
 		-- Create recipient if it does not exist.
 		if not player.healed[heal.dstName] then
@@ -34,7 +36,7 @@ local function log_heal(set, heal)
 		
 		-- Create spell if it does not exist.
 		if not player.healingspells[heal.spellname] then
-			player.healingspells[heal.spellname] = {id = heal.spellid, name = heal.spellname, hits = 0, healing = 0, overhealing = 0, critical = 0, min = 0, max = 0}
+			player.healingspells[heal.spellname] = {id = heal.spellid, name = heal.spellname, hits = 0, healing = 0, overhealing = 0, absorbed = 0, critical = 0, min = 0, max = 0}
 		end
 		
 		-- Get the spell from player.
@@ -45,6 +47,7 @@ local function log_heal(set, heal)
 			spell.critical = spell.critical + 1
 		end
 		spell.overhealing = spell.overhealing + heal.overhealing
+		spell.absorbed = spell.absorbed + heal.absorbed
 		
 		spell.hits = (spell.hits or 0) + 1
 		
@@ -185,6 +188,9 @@ local function spell_tooltip(win, id, label, tooltip)
 			if spell.hits then
 				tooltip:AddDoubleLine(L["Overhealing"]..":", ("%02.1f%%"):format(spell.overhealing / (spell.overhealing + spell.healing) * 100), 255,255,255,255,255,255)
 			end
+			if spell.hits and spell.absorbed then
+				tooltip:AddDoubleLine(L["Absorbed"]..":", ("%02.1f%%"):format(spell.absorbed / (spell.overhealing + spell.healing) * 100), 255,255,255,255,255,255)
+			end
 		end
 	end
 end
@@ -308,6 +314,7 @@ function mod:AddPlayerAttributes(player)
 		player.healing = 0			-- Total healing
 		player.healingspells = {}	-- Healing spells
 		player.overhealing = 0		-- Overheal total
+		player.healingabsorbed = 0	-- Absorbed total
 	end
 end
 
@@ -316,5 +323,6 @@ function mod:AddSetAttributes(set)
 	if not set.healing then
 		set.healing = 0
 		set.overhealing = 0
+		set.healingabsorbed = 0
 	end
 end
