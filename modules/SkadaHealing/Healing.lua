@@ -24,7 +24,7 @@ local function log_heal(set, heal)
 		-- Also add to set total damage.
 		set.healing = set.healing + amount
 		set.overhealing = set.overhealing + heal.overhealing
-		set.healingabsorbed = set.healingabsorbed + heal.absorbed
+		set.healingabsorbed = (set.healingabsorbed or 0) + heal.absorbed
 		
 		-- Create recipient if it does not exist.
 		if not player.healed[heal.dstName] then
