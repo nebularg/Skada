@@ -266,6 +266,19 @@ local function player_tooltip(win, id, label, tooltip)
 	end
 end
 
+-- Tooltip for a specific player.
+-- This is a post-tooltip
+local function damage_tooltip(win, id, label, tooltip)
+	local set = win:get_selected_set()
+	local player = Skada:find_player(set, id)
+	--ChatFrame4:AddMessage(("Set: %s, id: %s"):format(set, id))
+	if player then
+		local activetime = Skada:PlayerActiveTime(set, player)
+		local totaltime = Skada:GetSetTime(set)
+		tooltip:AddDoubleLine(L["Activity"], ("%02.1f%%"):format(activetime/totaltime*100), 255,255,255,255,255,255)
+	end
+end
+
 function playermod:Enter(win, id, label)
 	local player = Skada:find_player(win:get_selected_set(), id)
 	if player then
@@ -458,7 +471,7 @@ end
 function mod:OnEnable()
 	dpsmod.metadata = 		{showspots = true, tooltip = dps_tooltip}
 	playermod.metadata = 	{tooltip = player_tooltip, click1 = spellmod, columns = {Damage = true, Percent = true}}
-	mod.metadata = 			{showspots = true, click1 = playermod, click2 = damagedmod, columns = {Damage = true, DPS = true, Percent = true}}
+	mod.metadata = 			{post_tooltip = damage_tooltip, showspots = true, click1 = playermod, click2 = damagedmod, columns = {Damage = true, DPS = true, Percent = true}}
 	damagedmod.metadata = 	{columns = {Damage = true, Percent = true}}
 	spellmod.metadata =		{columns = {Damage = true, Percent = true}}
 	

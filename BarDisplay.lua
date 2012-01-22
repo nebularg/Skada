@@ -148,6 +148,12 @@ local function BarEnter(win, id, label)
 				Skada:AddSubviewToTooltip(t, win, win.metadata.click3, id, label)
 			end
 		end
+
+		-- Current mode's own post-tooltips.
+		if win.metadata.post_tooltip then
+			win.metadata.post_tooltip(win, id, label, t)
+			t:AddLine(" ")
+		end
 		
 		-- Click directions.
 		if win.metadata.click1 then
