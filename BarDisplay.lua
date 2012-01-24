@@ -152,7 +152,11 @@ local function BarEnter(win, id, label)
 		-- Current mode's own post-tooltips.
 		if win.metadata.post_tooltip then
 			win.metadata.post_tooltip(win, id, label, t)
-			t:AddLine(" ")
+
+			-- Spacer
+			if win.metadata.click1 or win.metadata.click2 or win.metadata.click3 then
+				t:AddLine(" ")
+			end
 		end
 		
 		-- Click directions.
