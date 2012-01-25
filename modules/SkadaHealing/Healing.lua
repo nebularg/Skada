@@ -312,6 +312,11 @@ function mod:AddPlayerAttributes(player)
 	player.healingspells = player.healingspells or {}		-- Healing spells
 	player.overhealing = player.overhealing or 0			-- Overheal total
 	player.healingabsorbed = player.healingabsorbed or 0	-- Absorbed total
+
+	-- update any pre-existing healingspells for new properties
+	for _, heal in pairs(player.healingspells) do
+		heal.absorbed = heal.absorbed or 0
+	end
 end
 
 -- Called by Skada when a new set is created.
