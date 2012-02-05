@@ -125,13 +125,16 @@ local function BarEnter(win, id, label)
 		ttactive = true
 		Skada:SetTooltipPosition(t, win.bargroup)
 	    t:ClearLines()
+
+		local hasClick = win.metadata.click1 or win.metadata.click2 or win.metadata.click3
 	    
 	    -- Current mode's own tooltips.
 		if win.metadata.tooltip then
+			local numLines = t:NumLines()
 			win.metadata.tooltip(win, id, label, t)
 			
 			-- Spacer
-			if win.metadata.click1 or win.metadata.click2 or win.metadata.click3 then
+			if t:NumLines() ~= numLines and hasClick then
 				t:AddLine(" ")
 			end
 		end
@@ -151,10 +154,11 @@ local function BarEnter(win, id, label)
 
 		-- Current mode's own post-tooltips.
 		if win.metadata.post_tooltip then
+			local numLines = t:NumLines()
 			win.metadata.post_tooltip(win, id, label, t)
 
 			-- Spacer
-			if win.metadata.click1 or win.metadata.click2 or win.metadata.click3 then
+			if t:NumLines() ~= numLines and hasClick then
 				t:AddLine(" ")
 			end
 		end
