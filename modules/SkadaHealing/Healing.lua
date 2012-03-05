@@ -7,7 +7,7 @@ local spellsmod = Skada:NewModule(L["Healing spell list"])
 local healedmod = Skada:NewModule(L["Healed players"])
 local healingtaken = Skada:NewModule(L["Healing taken"])
 
-local function log_heal(set, heal)
+local function log_heal(set, heal, is_absorb)
 	-- Get the player from set.
 	local player = Skada:get_player(set, heal.playerid, heal.playername)
 	if player then
@@ -20,42 +20,62 @@ local function log_heal(set, heal)
 		player.healing = player.healing + amount
 		player.overhealing = player.overhealing + heal.overhealing
 		player.healingabsorbed = player.healingabsorbed + heal.absorbed
+		if is_absorb then
+			player.shielding = player.shielding + amount
+		end
 		
 		-- Also add to set total damage.
 		set.healing = set.healing + amount
 		set.overhealing = set.overhealing + heal.overhealing
 		set.healingabsorbed = set.healingabsorbed + heal.absorbed
-		
-		-- Create recipient if it does not exist.
-		if not player.healed[heal.dstName] then
-			player.healed[heal.dstName] = {class = select(2, UnitClass(heal.dstName)), amount = 0}
+		if is_absorb then
+			set.shielding = set.shielding + amount
 		end
 		
 		-- Add to recipient healing.
-		player.healed[heal.dstName].amount = player.healed[heal.dstName].amount + amount
+		do
+			local healed = player.healed[heal.dstName]
+
+			-- Create recipient if it does not exist.
+			if not healed then
+				healed = {class = select(2, UnitClass(heal.dstName)), amount = 0, shielding = 0}
+				player.healed[heal.dstName] = healed
+			end
 		
-		-- Create spell if it does not exist.
-		if not player.healingspells[heal.spellname] then
-			player.healingspells[heal.spellname] = {id = heal.spellid, name = heal.spellname, hits = 0, healing = 0, overhealing = 0, absorbed = 0, critical = 0, min = 0, max = 0}
+			healed.amount = healed.amount + amount
+			if is_absorb then
+				healed.shielding = healed.shielding + amount
+			end
 		end
 		
-		-- Get the spell from player.
-		local spell = player.healingspells[heal.spellname]
-		
-		spell.healing = spell.healing + amount
-		if heal.critical then
-			spell.critical = spell.critical + 1
-		end
-		spell.overhealing = spell.overhealing + heal.overhealing
-		spell.absorbed = spell.absorbed + heal.absorbed
-		
-		spell.hits = (spell.hits or 0) + 1
-		
-		if not spell.min or amount < spell.min then
-			spell.min = amount
-		end
-		if not spell.max or amount > spell.max then
-			spell.max = amount
+		-- Add to spell healing
+		do
+			local spell = player.healingspells[heal.spellname]
+
+			-- Create spell if it does not exist.
+			if not spell then
+				spell = {id = heal.spellid, name = heal.spellname, hits = 0, healing = 0, overhealing = 0, absorbed = 0, shielding = 0, critical = 0, min = 0, max = 0}
+				player.healingspells[heal.spellname] = spell
+			end
+			
+			spell.healing = spell.healing + amount
+			if heal.critical then
+				spell.critical = spell.critical + 1
+			end
+			spell.overhealing = spell.overhealing + heal.overhealing
+			spell.absorbed = spell.absorbed + heal.absorbed
+			if is_absorb then
+				spell.shielding = spell.shielding + amount
+			end
+			
+			spell.hits = (spell.hits or 0) + 1
+			
+			if not spell.min or amount < spell.min then
+				spell.min = amount
+			end
+			if not spell.max or amount > spell.max then
+				spell.max = amount
+			end
 		end
 	end
 end
@@ -223,8 +243,8 @@ local function AuraRefresh(timestamp, eventtype, srcGUID, srcName, srcFlags, dst
 				heal.absorbed = 0
 				
 				Skada:FixPets(heal)
-				log_heal(Skada.current, heal)
-				log_heal(Skada.total, heal)
+				log_heal(Skada.current, heal, true)
+				log_heal(Skada.total, heal, true)
 			end
 			shields[dstName][spellId][srcName] = amount
 		end
@@ -251,8 +271,8 @@ local function AuraRemoved(timestamp, eventtype, srcGUID, srcName, srcFlags, dst
 				heal.absorbed = 0
 				
 				Skada:FixPets(heal)
-				log_heal(Skada.current, heal)
-				log_heal(Skada.total, heal)
+				log_heal(Skada.current, heal, true)
+				log_heal(Skada.total, heal, true)
 			end
 			shields[dstName][spellId][srcName] = 0
 		end
@@ -498,19 +518,27 @@ end
 function mod:AddPlayerAttributes(player)
 	player.healed = player.healed or {}						-- Stored healing per recipient
 	player.healing = player.healing or 0					-- Total healing
+	player.shielding = player.shielding or 0				-- Total shields
 	player.healingspells = player.healingspells or {}		-- Healing spells
 	player.overhealing = player.overhealing or 0			-- Overheal total
 	player.healingabsorbed = player.healingabsorbed or 0	-- Absorbed total
 
 	-- update any pre-existing healingspells for new properties
 	for _, heal in pairs(player.healingspells) do
-		heal.absorbed = heal.absorbed or 0
+		heal.absorbed = heal.absorbed or 0 		-- Amount of healing that was absorbed
+		heal.shielding = heal.shielding or 0	-- Amount of healing that was due to shields
+	end
+
+	-- update any pre-existing healed players for new properties
+	for _, healed in pairs(player.healed) do
+		healed.shielding = healed.shielding or 0	-- Amount of healing that was due to shields
 	end
 end
 
 -- Called by Skada when a new set is created.
 function mod:AddSetAttributes(set)
 	set.healing = set.healing or 0
+	set.shielding = set.shielding or 0
 	set.overhealing = set.overhealing or 0
 	set.healingabsorbed = set.healingabsorbed or 0
 	wipe(shields)
