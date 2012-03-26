@@ -693,6 +693,7 @@ local wasinpvp
 
 local function ask_for_reset()
 	StaticPopupDialogs["ResetSkadaDialog"] = {
+						preferredIndex = 3,
 						text = L["Do you want to reset Skada?"], 
 						button1 = ACCEPT, 
 						button2 = CANCEL,
