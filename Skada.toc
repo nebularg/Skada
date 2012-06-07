@@ -30,6 +30,8 @@ locale\zhTW.lua
 locale\frFR.lua
 locale\deDE.lua
 locale\ptBR.lua
+locale\itIT.lua
+locale\esES.lua
 
 Skada.lua
 Menus.lua
