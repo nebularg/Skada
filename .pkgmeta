@@ -3,31 +3,22 @@ package-as: Skada
 externals:
     lib/AceAddon-3.0:
         url: svn://svn.wowace.com/wow/ace3/mainline/trunk/AceAddon-3.0
-        tag: latest
     lib/AceConfig-3.0:
         url: svn://svn.wowace.com/wow/ace3/mainline/trunk/AceConfig-3.0
-        tag: latest
     lib/AceConsole-3.0:
         url: svn://svn.wowace.com/wow/ace3/mainline/trunk/AceConsole-3.0
-        tag: latest
     lib/AceDB-3.0:
         url: svn://svn.wowace.com/wow/ace3/mainline/trunk/AceDB-3.0
-        tag: latest
     lib/AceDBOptions-3.0:
         url: svn://svn.wowace.com/wow/ace3/mainline/trunk/AceDBOptions-3.0
-        tag: latest
     lib/AceEvent-3.0:
         url: svn://svn.wowace.com/wow/ace3/mainline/trunk/AceEvent-3.0
-        tag: latest
     lib/AceGUI-3.0:
         url: svn://svn.wowace.com/wow/ace3/mainline/trunk/AceGUI-3.0
-        tag: latest
     lib/AceLocale-3.0:
         url: svn://svn.wowace.com/wow/ace3/mainline/trunk/AceLocale-3.0
-        tag: latest
     lib/AceTimer-3.0:
         url: svn://svn.wowace.com/wow/ace3/mainline/trunk/AceTimer-3.0
-        tag: latest
     lib/CallbackHandler-1.0:
         url: svn://svn.wowace.com/wow/ace3/mainline/trunk/CallbackHandler-1.0
         tag: latest

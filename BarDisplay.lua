@@ -49,7 +49,7 @@ function mod:Create(window)
 	
 	window.bargroup.button:GetFontString():SetPoint("LEFT", window.bargroup.button, "LEFT", 5, 1)
 	window.bargroup.button:GetFontString():SetJustifyH("LEFT")
-	window.bargroup.button:SetHeight(window.db.title.height)
+	window.bargroup.button:SetHeight(window.db.title.height or 15)
 	
 	-- Register with LibWindow-1.0.
 	libwindow.RegisterConfig(window.bargroup, window.db)
