@@ -456,7 +456,7 @@ function mod:ApplySettings(win)
 	
 	local inset = p.title.margin
 	titlebackdrop.bgFile = media:Fetch("statusbar", p.title.texture)
-	if p.title.borderthickness > 0 then
+	if p.title.borderthickness > 0 and p.title.bordertexture ~= "None" then
 		titlebackdrop.edgeFile = media:Fetch("border", p.title.bordertexture)
 	else
 		titlebackdrop.edgeFile = nil
@@ -490,7 +490,7 @@ function mod:ApplySettings(win)
 	-- Window
 	local inset = p.background.margin
 	windowbackdrop.bgFile = p.background.texturepath or media:Fetch("background", p.background.texture)
-	if p.background.borderthickness > 0 then
+	if p.background.borderthickness > 0 and p.background.bordertexture ~= "None" then
 		windowbackdrop.edgeFile = media:Fetch("border", p.background.bordertexture)
 	else
 		windowbackdrop.edgeFile = nil
