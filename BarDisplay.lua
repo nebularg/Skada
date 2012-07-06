@@ -468,8 +468,7 @@ function mod:ApplySettings(win)
 	g.button:SetBackdrop(titlebackdrop)
 	local color = p.title.color
 	g.button:SetBackdropColor(color.r, color.g, color.b, color.a or 1)
-	g.button:SetHeight(p.title.height)
-	
+	g.button:SetHeight(p.title.height or 15)
 	
 	if p.enabletitle then
 		g:ShowAnchor()
