@@ -1,4 +1,4 @@
-## Interface: 40300
+## Interface: 50001
 ## Title: Skada |r[|caaedc99fDeaths|r]
 ## Notes: Adds a Deaths mode and data collection to Skada.
 ## Author: Zarnivoop
