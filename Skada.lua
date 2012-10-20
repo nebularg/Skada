@@ -240,6 +240,11 @@ function Window:AddOptions()
 	Skada.options.args.windows.args[self.db.name] = options
 end
 
+-- Sets a slave window for this window. This window will also be updated on view updates.
+function Window:SetChild(window)
+	self.child = window
+end
+
 function Window:destroy()
 	self.dataset = nil
 	
@@ -311,6 +316,10 @@ function Window:Wipe()
 	
 	-- Clear display.
 	self.display:Wipe(self)
+	
+	if self.child then
+		self.child:Wipe()
+	end
 end
 
 -- If selectedset is "current", returns current set if we are in combat, otherwise returns the last set.
@@ -343,6 +352,11 @@ function Window:DisplayMode(mode)
 	
 	self.display:SetTitle(self, self.metadata.title)
 	self.changed = true
+	
+	if self.child then
+		self.child:DisplayMode(mode)
+	end
+	
 	Skada:UpdateDisplay(false)
 end
 
@@ -395,6 +409,11 @@ function Window:DisplayModes(settime)
 
 	self.display:SetTitle(self, self.metadata.title)
 	self.changed = true
+	
+	if self.child then
+		self.child:DisplayModes(settime)
+	end
+	
 	Skada:UpdateDisplay(false)
 end
 
@@ -423,6 +442,11 @@ function Window:DisplaySets()
 	self.metadata.maxvalue = 1
 --	self.metadata.sortfunc = function(a,b) return a.name < b.name end
 	self.changed = true
+	
+	if self.child then
+		self.child:DisplaySets()
+	end
+	
 	Skada:UpdateDisplay(false)
 end
 
@@ -487,14 +511,21 @@ function Skada:CreateWindow(name, db, display)
 		
 		table.insert(windows, window)
 		
-		-- Set initial view, set list.
-		window:DisplaySets()
+		if window.db.set or window.db.mode then
+			-- Restore view.
+			window:DisplaySets()
+			self:RestoreView(window, window.db.set, window.db.mode)
+		else
+			-- Set initial view, set list.
+			window:DisplaySets()
+		end
 	else
 		-- This window's display is missing.
 		self:Print("Window '"..name.."' was not loaded because its display module, '"..window.db.display.."' was not found.")
 	end
 
 	self:ApplySettings()
+	return window
 end
 
 -- Deleted named window from our windows table, and also from db.
