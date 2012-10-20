@@ -96,7 +96,7 @@ local function SpellHeal(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGU
 	srcGUID, srcName_modified = Skada:FixMyPets(srcGUID, srcName)
 	dstGUID, dstName = Skada:FixMyPets(dstGUID, dstName)
 	if srcName then
-		log_deathlog(Skada.current, dstGUID, dstName, spellId, (srcName_modified or srcName)..L["'s "]..spellName, samount, timestamp)
+		log_deathlog(Skada.current, dstGUID, dstName, spellId, (srcName_modified or srcName)..L["'s "]..(spellName or L["Attack"]), samount, timestamp)
 		log_deathlog(Skada.total, dstGUID, dstName, spellId, srcName..L["'s "]..spellName, samount, timestamp)
 	else
 		log_deathlog(Skada.current, dstGUID, dstName, spellId, spellName, samount, timestamp)

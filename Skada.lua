@@ -1700,7 +1700,7 @@ function Skada:FormatNumber(number)
 				return 	("%02.1fK"):format(number / 1000)
 			end
 		else
-			return number
+			return math.floor(number)
 		end
 	end
 end
@@ -1838,7 +1838,7 @@ end
 -- Expects to find "playerid", "playername", and optionally "spellname" in the object.
 -- Playerid and playername are exchanged for the pet owner's, and spellname is modified to include pet name.
 function Skada:FixPets(action)
-	if action and not UnitIsPlayer(action.playername) then
+	if action and action.playername and not UnitIsPlayer(action.playername) then
 		local pet = pets[action.playerid]
 		if pet then
 		
