@@ -429,13 +429,13 @@ function mod:AddPlayerAttributes(player)
 	player.healingabsorbed = player.healingabsorbed or 0	-- Absorbed total
 
 	-- update any pre-existing healingspells for new properties
-	for local _, heal in pairs(player.healingspells) do
+	for _, heal in pairs(player.healingspells) do
 		heal.absorbed = heal.absorbed or 0 		-- Amount of healing that was absorbed
 		heal.shielding = heal.shielding or 0	-- Amount of healing that was due to shields
 	end
 
 	-- update any pre-existing healed players for new properties
-	for local _, healed in pairs(player.healed) do
+	for _, healed in pairs(player.healed) do
 		healed.shielding = healed.shielding or 0	-- Amount of healing that was due to shields
 	end
 end
