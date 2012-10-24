@@ -91,6 +91,7 @@ end
 local function SpellHeal(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
 	-- Healing
 	local spellId, spellName, spellSchool, samount, soverhealing, absorbed, scritical = ...
+	local srcName_modified
 	samount = max(0, samount - soverhealing)
 	
 	srcGUID, srcName_modified = Skada:FixMyPets(srcGUID, srcName)
