@@ -16,7 +16,7 @@ local function log_damage_taken(set, dmg)
 
 		-- Add spell to player if it does not exist.
 		if not player.damagetakenspells[dmg.spellname] then
-			player.damagetakenspells[dmg.spellname] = {id = dmg.spellid, name = dmg.spellname, damage = 0}
+			player.damagetakenspells[dmg.spellname] = {id = dmg.spellid, name = dmg.spellname, damage = 0, totalhits = 0, min = nil, max = nil}
 		end
 
 		-- Add to player total damage.
@@ -26,6 +26,16 @@ local function log_damage_taken(set, dmg)
 		local spell = player.damagetakenspells[dmg.spellname]
 		spell.id = dmg.spellid
 		spell.damage = spell.damage + dmg.amount
+
+		if spell.max == nil or dmg.amount > spell.max then
+			spell.max = dmg.amount
+		end
+
+		if (spell.min == nil or dmg.amount < spell.min) then
+			spell.min = dmg.amount
+		end
+		spell.totalhits = (spell.totalhits or 0) + 1
+
 	end
 end
 
@@ -191,8 +201,25 @@ function playermod:Update(win, set)
 	end
 end
 
+-- Tooltip for a specific spell.
+local function playerspell_tooltip(win, id, label, tooltip)
+	local player = Skada:find_player(win:get_selected_set(), playermod.playerid)
+	if player then
+		local spell = player.damagetakenspells[label]
+		if spell then
+			tooltip:AddLine(player.name.." - "..label)
+			if spell.max and spell.min then
+				tooltip:AddDoubleLine(L["Minimum hit:"], Skada:FormatNumber(spell.min), 255,255,255,255,255,255)
+				tooltip:AddDoubleLine(L["Maximum hit:"], Skada:FormatNumber(spell.max), 255,255,255,255,255,255)
+			end
+			tooltip:AddDoubleLine(L["Average hit:"], Skada:FormatNumber(spell.damage / spell.totalhits), 255,255,255,255,255,255)
+		end
+	end
+end
+
+
 function mod:OnEnable()
-	playermod.metadata 		= {}
+	playermod.metadata 		= {tooltip = playerspell_tooltip}
 	mod.metadata 			= {click1 = playermod, showspots = true, columns = {Damage = true, DTPS = true, Percent = true}}
 	spelloverview.metadata	= {click1 = spellplayers, showspots = true}
 
