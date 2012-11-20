@@ -244,6 +244,7 @@ function healingtaken:Update(win, set)
 		end
 
 	end
+
 	win.metadata.maxvalue = max
 end
 
@@ -341,6 +342,7 @@ function spellsmod:Update(win, set)
 		end
 	end
 
+	win.metadata.hasicon = true
 	win.metadata.maxvalue = max
 end
 
@@ -379,6 +381,7 @@ function healedmod:Update(win, set)
 		end
 	end
 
+	win.metadata.hasicon = true
 	win.metadata.maxvalue = max
 end
 
