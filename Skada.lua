@@ -751,16 +751,18 @@ local wasininstance
 local wasinpvp
 
 local function ask_for_reset()
-	StaticPopupDialogs["ResetSkadaDialog"] = {
-						preferredIndex = 3,
-						text = L["Do you want to reset Skada?"],
-						button1 = ACCEPT,
-						button2 = CANCEL,
-						timeout = 30,
-						whileDead = 0,
-						hideOnEscape = 1,
-						OnAccept = function() Skada:Reset() end,
-					}
+	if not StaticPopupDialogs["ResetSkadaDialog"] then
+		StaticPopupDialogs["ResetSkadaDialog"] = {
+			preferredIndex = 4,
+			text = L["Do you want to reset Skada?"],
+			button1 = ACCEPT,
+			button2 = CANCEL,
+			timeout = 30,
+			whileDead = 0,
+			hideOnEscape = 1,
+			OnAccept = function() Skada:Reset() end,
+		}
+	end
 	StaticPopup_Show("ResetSkadaDialog")
 end
 
