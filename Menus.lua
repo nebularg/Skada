@@ -1,19 +1,6 @@
 local L = LibStub("AceLocale-3.0"):GetLocale("Skada", false)
 local AceGUI = LibStub("AceGUI-3.0")
 
-if not StaticPopupDialogs["ResetSkadaDialog"] then
-	StaticPopupDialogs["ResetSkadaDialog"] = {
-		preferredIndex = 4,
-		text = L["Do you want to reset Skada?"],
-		button1 = ACCEPT,
-		button2 = CANCEL,
-		timeout = 30,
-		whileDead = 0,
-		hideOnEscape = 1,
-		OnAccept = function() Skada:Reset() end,
-	}
-end
-
 -- Configuration menu.
 function Skada:OpenMenu(window)
 	if not self.skadamenu then

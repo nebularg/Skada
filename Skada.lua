@@ -4,6 +4,7 @@ local ldb = LibStub:GetLibrary("LibDataBroker-1.1")
 local icon = LibStub("LibDBIcon-1.0", true)
 local media = LibStub("LibSharedMedia-3.0")
 local boss = LibStub("LibBossIDs-1.0")
+local Skada = Skada
 
 local dataobj = ldb:NewDataObject("Skada", {label = "Skada", type = "data source", icon = "Interface\\Icons\\Spell_Lightning_LightningBolt01", text = "n/a"})
 
@@ -41,6 +42,22 @@ function Skada:GetGroupTypeAndCount()
 	end
 
 	return type, count
+end
+
+function Skada:ShowPopup()
+	if not StaticPopupDialogs["ResetSkadaDialog"] then
+		StaticPopupDialogs["ResetSkadaDialog"] = {
+			preferredIndex = 4,
+			text = L["Do you want to reset Skada?"],
+			button1 = ACCEPT,
+			button2 = CANCEL,
+			timeout = 30,
+			whileDead = 0,
+			hideOnEscape = 1,
+			OnAccept = function() Skada:Reset() end,
+		}
+	end
+	StaticPopup_Show("ResetSkadaDialog")
 end
 
 -- Keybindings
@@ -750,22 +767,6 @@ end
 local wasininstance
 local wasinpvp
 
-local function ask_for_reset()
-	if not StaticPopupDialogs["ResetSkadaDialog"] then
-		StaticPopupDialogs["ResetSkadaDialog"] = {
-			preferredIndex = 4,
-			text = L["Do you want to reset Skada?"],
-			button1 = ACCEPT,
-			button2 = CANCEL,
-			timeout = 30,
-			whileDead = 0,
-			hideOnEscape = 1,
-			OnAccept = function() Skada:Reset() end,
-		}
-	end
-	StaticPopup_Show("ResetSkadaDialog")
-end
-
 -- Are we in a PVP zone?
 local pvp_zones = {}
 local function is_in_pvp()
@@ -783,7 +784,7 @@ function Skada:PLAYER_ENTERING_WORLD()
 	-- If we are entering an instance, and we were not previously in an instance, and we got this event before... and we have some data...
 	if isininstance and wasininstance ~= nil and not wasininstance and self.db.profile.reset.instance ~= 1 and total ~= nil then
 		if self.db.profile.reset.instance == 3 then
-			ask_for_reset()
+			Skada:ShowPopup()
 		else
 			self:Reset()
 		end
@@ -825,7 +826,7 @@ local function check_for_join_and_leave()
 		-- We left a party.
 
 		if Skada.db.profile.reset.leave == 3 then
-			ask_for_reset()
+			Skada:ShowPopup()
 		elseif Skada.db.profile.reset.leave == 2 then
 			Skada:Reset()
 		end
@@ -840,7 +841,7 @@ local function check_for_join_and_leave()
 		-- We joined a raid.
 
 		if Skada.db.profile.reset.join == 3 then
-			ask_for_reset()
+			Skada:ShowPopup()
 		elseif Skada.db.profile.reset.join == 2 then
 			Skada:Reset()
 		end
