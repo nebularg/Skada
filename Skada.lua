@@ -44,20 +44,39 @@ function Skada:GetGroupTypeAndCount()
 	return type, count
 end
 
-function Skada:ShowPopup()
-	if not StaticPopupDialogs["ResetSkadaDialog"] then
-		StaticPopupDialogs["ResetSkadaDialog"] = {
-			preferredIndex = 4,
-			text = L["Do you want to reset Skada?"],
-			button1 = ACCEPT,
-			button2 = CANCEL,
-			timeout = 30,
-			whileDead = 0,
-			hideOnEscape = 1,
-			OnAccept = function() Skada:Reset() end,
-		}
+do
+	local popup = CreateFrame("Frame", nil, UIParent)
+	popup:SetBackdrop({bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background-Dark",
+		edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
+		tile = true, tileSize = 16, edgeSize = 16,
+		insets = {left = 1, right = 1, top = 1, bottom = 1}}
+	)
+	popup:SetSize(250, 70)
+	popup:SetPoint("CENTER", UIParent, "CENTER")
+	popup:SetFrameStrata("DIALOG")
+	popup:Hide()
+
+	local text = popup:CreateFontString()
+	text:SetFontObject(ChatFontNormal)
+	text:SetPoint("TOP", popup, "TOP", 0, -10)
+	text:SetText(L["Do you want to reset Skada?"])
+
+	local accept = CreateFrame("Button", nil, popup)
+	accept:SetNormalTexture("Interface\\Buttons\\UI-CheckBox-Check")
+	accept:SetHighlightTexture("Interface\\Buttons\\UI-CheckBox-Highlight", "ADD")
+	accept:SetSize(50, 50)
+	accept:SetPoint("BOTTOM", popup, "BOTTOM", -50, 0)
+	accept:SetScript("OnClick", function(f) Skada:Reset() f:GetParent():Hide() end)
+
+	local close = CreateFrame("Button", nil, popup)
+	close:SetNormalTexture("Interface\\Buttons\\UI-Panel-MinimizeButton-Up")
+	close:SetHighlightTexture("Interface\\Buttons\\UI-Panel-MinimizeButton-Highlight", "ADD")
+	close:SetSize(50, 50)
+	close:SetPoint("BOTTOM", popup, "BOTTOM", 50, 0)
+	close:SetScript("OnClick", function(f) f:GetParent():Hide() end)
+	function Skada:ShowPopup()
+		popup:Show()
 	end
-	StaticPopup_Show("ResetSkadaDialog")
 end
 
 -- Keybindings
