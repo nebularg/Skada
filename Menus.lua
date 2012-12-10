@@ -259,6 +259,11 @@ function Skada:OpenMenu(window)
 	            info.func = function() Skada.db.profile.report.channel = "Party"; Skada.db.profile.report.chantype = "preset" end
 	            UIDropDownMenu_AddButton(info, level)
 
+	            info.text = L["Instance"]
+	            info.checked = (Skada.db.profile.report.channel == "INSTANCE_CHAT")
+	            info.func = function() Skada.db.profile.report.channel = "INSTANCE_CHAT"; Skada.db.profile.report.chantype = "preset" end
+	            UIDropDownMenu_AddButton(info, level)
+
 	            info.text = L["Guild"]
 	            info.checked = (Skada.db.profile.report.channel == "Guild")
 	            info.func = function() Skada.db.profile.report.channel = "Guild"; Skada.db.profile.report.chantype = "preset" end
@@ -447,6 +452,7 @@ function Skada:CreateReportWindow(window)
 		say			= { L["Say"], "preset"},
 		raid 		= { L["Raid"], "preset"},
 		party 		= { L["Party"], "preset"},
+		instance_chat 		= { L["Instance"], "preset"},
 		guild 		= { L["Guild"], "preset"},
 		officer 	= { L["Officer"], "preset"},
 		self 		= { L["Self"], "self"},

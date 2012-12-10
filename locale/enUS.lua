@@ -379,3 +379,4 @@ L["Use class icons where applicable."] = "Use class icons where applicable."
 L["Class icons"] = "Class icons"
 
 L["RealID"] = "RealID"
+L["Instance"] = "Instance"

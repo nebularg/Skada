@@ -5,7 +5,7 @@ local icon = LibStub("LibDBIcon-1.0", true)
 local media = LibStub("LibSharedMedia-3.0")
 local boss = LibStub("LibBossIDs-1.0")
 local Skada = Skada
-
+local lds = LibStub:GetLibrary("LibDualSpec-1.0", 1)
 local dataobj = ldb:NewDataObject("Skada", {label = "Skada", type = "data source", icon = "Interface\\Icons\\Spell_Lightning_LightningBolt01", text = "n/a"})
 
 -- Client version number
@@ -2056,6 +2056,12 @@ function Skada:OnInitialize()
 	-- Profiles
 	LibStub("AceConfig-3.0"):RegisterOptionsTable("Skada-Profiles", LibStub("AceDBOptions-3.0"):GetOptionsTable(self.db))
 	self.profilesFrame = LibStub("AceConfigDialog-3.0"):AddToBlizOptions("Skada-Profiles", "Profiles", "Skada")
+	
+	-- Dual spec profiles
+	if lds then
+		lds:EnhanceDatabase(self.db, "SkadaDB")
+		lds:EnhanceOptions(LibStub("AceDBOptions-3.0"):GetOptionsTable(self.db), self.db)
+	end
 
 	self:RegisterChatCommand("skada", "Command")
 	self.db.RegisterCallback(self, "OnProfileChanged", "ReloadSettings")
