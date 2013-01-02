@@ -34,17 +34,20 @@ local function log_heal(set, heal, is_absorb)
 
 		-- Add to recipient healing.
 		do
-			local healed = player.healed[heal.dstName]
+			if heal.dstName then
+				local healed = player.healed[heal.dstName]
 
-			-- Create recipient if it does not exist.
-			if not healed then
-				healed = {class = select(2, UnitClass(heal.dstName)), amount = 0, shielding = 0}
-				player.healed[heal.dstName] = healed
-			end
+				-- Create recipient if it does not exist.
+				if not healed then
+					local _, className = UnitClass(heal.dstName)
+					healed = {class = className, amount = 0, shielding = 0}
+					player.healed[heal.dstName] = healed
+				end
 
-			healed.amount = healed.amount + amount
-			if is_absorb then
-				healed.shielding = healed.shielding + amount
+				healed.amount = healed.amount + amount
+				if is_absorb then
+					healed.shielding = healed.shielding + amount
+				end
 			end
 		end
 
