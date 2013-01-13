@@ -39,3 +39,4 @@ Options.lua
 BarDisplay.lua
 
 modules.xml
+

@@ -1,10 +1,10 @@
-Skada = LibStub("AceAddon-3.0"):NewAddon("Skada", "AceConsole-3.0", "AceEvent-3.0", "AceTimer-3.0")
+local Skada = LibStub("AceAddon-3.0"):NewAddon("Skada", "AceConsole-3.0", "AceEvent-3.0", "AceTimer-3.0")
+_G.Skada = Skada
 local L = LibStub("AceLocale-3.0"):GetLocale("Skada", false)
 local ldb = LibStub:GetLibrary("LibDataBroker-1.1")
 local icon = LibStub("LibDBIcon-1.0", true)
 local media = LibStub("LibSharedMedia-3.0")
 local boss = LibStub("LibBossIDs-1.0")
-local Skada = Skada
 local lds = LibStub:GetLibrary("LibDualSpec-1.0", 1)
 local dataobj = ldb:NewDataObject("Skada", {label = "Skada", type = "data source", icon = "Interface\\Icons\\Spell_Lightning_LightningBolt01", text = "n/a"})
 
