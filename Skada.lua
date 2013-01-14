@@ -2056,7 +2056,7 @@ function Skada:OnInitialize()
 	-- Profiles
 	LibStub("AceConfig-3.0"):RegisterOptionsTable("Skada-Profiles", LibStub("AceDBOptions-3.0"):GetOptionsTable(self.db))
 	self.profilesFrame = LibStub("AceConfigDialog-3.0"):AddToBlizOptions("Skada-Profiles", "Profiles", "Skada")
-	
+
 	-- Dual spec profiles
 	if lds then
 		lds:EnhanceDatabase(self.db, "SkadaDB")
