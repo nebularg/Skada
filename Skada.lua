@@ -1,5 +1,7 @@
+
 local Skada = LibStub("AceAddon-3.0"):NewAddon("Skada", "AceConsole-3.0", "AceEvent-3.0", "AceTimer-3.0")
 _G.Skada = Skada
+
 local L = LibStub("AceLocale-3.0"):GetLocale("Skada", false)
 local ldb = LibStub:GetLibrary("LibDataBroker-1.1")
 local icon = LibStub("LibDBIcon-1.0", true)
@@ -8,37 +10,18 @@ local boss = LibStub("LibBossIDs-1.0")
 local lds = LibStub:GetLibrary("LibDualSpec-1.0", 1)
 local dataobj = ldb:NewDataObject("Skada", {label = "Skada", type = "data source", icon = "Interface\\Icons\\Spell_Lightning_LightningBolt01", text = "n/a"})
 
--- Client version number
-local CLIENT_VERSION = tonumber((select(4, GetBuildInfo())))
-
-local WoW5 = CLIENT_VERSION > 50000
-local IsInRaid = IsInRaid or function() return GetNumRaidMembers() > 0 end
-local IsInGroup = IsInGroup or function()
-	return GetNumRaidMembers() > 0 or GetNumPartyMembers() > 0
-end
-
 -- Returns the group type (i.e., "party" or "raid") and the size of the group.
 function Skada:GetGroupTypeAndCount()
-	local type, count = "", 0
-	if WoW5 then
-		count = GetNumGroupMembers()
-		if IsInRaid() then
-			type = "raid"
-		elseif IsInGroup() then
-			type = "party"
-			-- To make the counts similar between 4.3 and 5.0, we need
-			-- to subtract one because GetNumPartyMembers() does not
-			-- include the player while GetNumGroupMembers() does.
-			count = count - 1
-		end
-	else
-		if GetNumRaidMembers() > 0 then
-			type = "raid"
-			count = GetNumRaidMembers()
-		elseif GetNumPartyMembers() > 0 then
-			type = "party"
-			count = GetNumPartyMembers()
-		end
+	local type
+	local count = GetNumGroupMembers()
+	if IsInRaid() then
+		type = "raid"
+	elseif IsInGroup() then
+		type = "party"
+		-- To make the counts similar between 4.3 and 5.0, we need
+		-- to subtract one because GetNumPartyMembers() does not
+		-- include the player while GetNumGroupMembers() does.
+		count = count - 1
 	end
 
 	return type, count
@@ -876,20 +859,6 @@ local function check_for_join_and_leave()
 end
 
 function Skada:GROUP_ROSTER_UPDATE()
-	check_for_join_and_leave()
-
-	-- Check for new pets.
-	self:CheckPets()
-end
-
-function Skada:PARTY_MEMBERS_CHANGED()
-	check_for_join_and_leave()
-
-	-- Check for new pets.
-	self:CheckPets()
-end
-
-function Skada:RAID_ROSTER_UPDATE()
 	check_for_join_and_leave()
 
 	-- Check for new pets.
@@ -2087,12 +2056,7 @@ function Skada:OnEnable()
 
 
 	self:RegisterEvent("PLAYER_ENTERING_WORLD")
-	if WoW5 then
-		self:RegisterEvent("GROUP_ROSTER_UPDATE")
-	else
-		self:RegisterEvent("PARTY_MEMBERS_CHANGED")
-		self:RegisterEvent("RAID_ROSTER_UPDATE")
-	end
+	self:RegisterEvent("GROUP_ROSTER_UPDATE")
 	self:RegisterEvent("UNIT_PET")
 	self:RegisterEvent("PLAYER_REGEN_DISABLED")
 	self:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED", COMBAT_LOG_EVENT_UNFILTERED)
