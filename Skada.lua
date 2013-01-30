@@ -662,7 +662,7 @@ function Skada:Report(channel, chantype, report_mode_name, report_set_name, max,
 
 	-- Sort our temporary table according to value unless ordersort is set.
 	if not report_table.metadata.ordersort then
-		table.sort(report_table.dataset, function(a,b) return a and b and a.id and b.id and a.value > b.value end)
+		table.sort(report_table.dataset, Skada.valueid_sort)
 	end
 
 	-- Title
@@ -1923,6 +1923,16 @@ local function value_sort(a,b)
 	if not a or a.value == nil then
 		return false
 	elseif not b or b.value == nil then
+		return true
+	else
+		return a.value > b.value
+	end
+end
+
+function Skada.valueid_sort(a,b)
+	if not a or a.value == nil or a.id == nil then
+		return false
+	elseif not b or b.value == nil or b.id == nil then
 		return true
 	else
 		return a.value > b.value
