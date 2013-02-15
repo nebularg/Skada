@@ -57,7 +57,7 @@ local function log_heal(set, heal, is_absorb)
 
 			-- Create spell if it does not exist.
 			if not spell then
-				spell = {id = heal.spellid, name = heal.spellname, hits = 0, healing = 0, overhealing = 0, absorbed = 0, shielding = 0, critical = 0, min = 0, max = 0}
+				spell = {id = heal.spellid, name = heal.spellname, hits = 0, healing = 0, overhealing = 0, absorbed = 0, shielding = 0, critical = 0, min = nil, max = 0}
 				player.healingspells[heal.spellname] = spell
 			end
 
