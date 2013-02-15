@@ -392,6 +392,8 @@ function done:AddSetAttributes(set)
 		set.mobs = {}
 		set.mobdone = 0
 		set.mobtaken = 0
+	end
+	if not set.mobhdone then
 		set.mobhdone = 0
 	end
 end
