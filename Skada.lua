@@ -1267,10 +1267,15 @@ end
 
 -- Returns a player from the current. Safe to use to simply view a player without creating an entry.
 function Skada:find_player(set, playerid)
-	local player = nil
 	if set then
+		-- use a private index here for more efficient lookup
+		-- may eventually want to re-key .players by id but that would break external mods
+		set._playeridx = set._playeridx or {}
+		local player = set._playeridx[playerid]
+		if player then return player end
 		for i, p in ipairs(set.players) do
 			if p.id == playerid then
+				set._playeridx[playerid] = p
 				return p
 			end
 		end
@@ -1280,12 +1285,7 @@ end
 -- Returns or creates a player in the current.
 function Skada:get_player(set, playerid, playername)
 	-- Add player to set if it does not exist.
-	local player = nil
-	for i, p in ipairs(set.players) do
-		if p.id == playerid then
-			player = p
-		end
-	end
+	local player = Skada:find_player(set, playerid)
 
 	if not player then
 		-- If we do not supply a playername (often the case in submodes), we can not create an entry.
