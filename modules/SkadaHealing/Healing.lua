@@ -111,7 +111,7 @@ local function AuraApplied(timestamp, eventtype, srcGUID, srcName, srcFlags, dst
 	-- Auras
 	local spellId, spellName, spellSchool, auraType, amount = ...
 
-	if amount ~= nil then
+	if amount ~= nil and dstName and srcName then
 		-- see if the source and destination are both part valid
 		-- controlled by player:
 		local valid = (bit.band(srcFlags, dstFlags, COMBATLOG_OBJECT_CONTROL_PLAYER) ~= 0)
