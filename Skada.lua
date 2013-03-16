@@ -1459,7 +1459,7 @@ local function COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventtype, hideCast
 	if Skada.current and src_is_interesting and not Skada.current.gotboss then
 		-- Store mob name for set name. For now, just save first unfriendly name available, or first boss available.
 		if bit.band(dstFlags, COMBATLOG_OBJECT_REACTION_HOSTILE) ~=0 then
-			if not Skada.current.gotboss and boss.BossIDs[tonumber(dstGUID:sub(7, 10), 16)] then
+			if not Skada.current.gotboss and boss.BossIDs[tonumber(dstGUID:sub(6, 10), 16)] then
 				Skada.current.mobname = dstName
 				Skada.current.gotboss = true
 			elseif not Skada.current.mobname then
