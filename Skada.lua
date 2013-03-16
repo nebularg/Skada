@@ -1844,7 +1844,7 @@ function Skada:FixPets(action)
 			else
 				action.playername = pet.name..": "..action.playername
 				-- create a unique ID for each player for each type of pet
-				local petMobID=action.playerid:sub(7,10); -- Get Pet creature ID
+				local petMobID=action.playerid:sub(6,10); -- Get Pet creature ID
 				action.playerid = pet.id .. petMobID; -- just append it to the pets owner id
 			end
 
