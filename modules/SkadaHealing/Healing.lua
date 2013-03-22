@@ -89,19 +89,26 @@ local function SpellHeal(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGU
 	-- Healing
 	local spellId, spellName, spellSchool, samount, soverhealing, absorbed, scritical = ...
 
-	heal.dstName = dstName
-	heal.playerid = srcGUID
-	heal.playername = srcName
-	heal.spellid = spellId
-	heal.spellname = spellName
-	heal.amount = samount
-	heal.overhealing = soverhealing
-	heal.critical = scritical
-	heal.absorbed = absorbed
+	-- We want to avoid "heals" that are really drains from mobs
+	-- So check if a) the source is player-controlled
+	-- and b) the source and dest have the same reaction
+	-- (since we can't test directly if they're friendly to each other).
+	
+	if bit.band(srcFlags, COMBATLOG_OBJECT_CONTROL_PLAYER) ~= 0 and bit.band(srcFlags, dstFlags, COMBATLOG_OBJECT_REACTION_MASK) ~= 0 then
+		heal.dstName = dstName
+		heal.playerid = srcGUID
+		heal.playername = srcName
+		heal.spellid = spellId
+		heal.spellname = spellName
+		heal.amount = samount
+		heal.overhealing = soverhealing
+		heal.critical = scritical
+		heal.absorbed = absorbed
 
-	Skada:FixPets(heal)
-	log_heal(Skada.current, heal)
-	log_heal(Skada.total, heal)
+		Skada:FixPets(heal)
+		log_heal(Skada.current, heal)
+		log_heal(Skada.total, heal)
+	end
 end
 
 
