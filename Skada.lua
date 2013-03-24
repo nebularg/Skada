@@ -1310,6 +1310,13 @@ function Skada:get_player(set, playerid, playername)
 		table.insert(set.players, player)
 	end
 
+        if player.name == UNKNOWN and playername ~= UNKNOWN then -- fixup players created before we had their info
+                local player_name, realm = string.split("-", playername, 2)
+                player.name = player_name or playername
+                player.class = select(2, UnitClass(playername))
+        end
+
+
 	-- The total set clears out first and last timestamps.
 	if not player.first then
 		player.first = time()
