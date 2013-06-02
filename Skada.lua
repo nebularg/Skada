@@ -880,7 +880,7 @@ function Skada:PET_BATTLE_OPENING_START()
 	end
 end
 
-function Skada:PET_BATTLE_OVER()
+function Skada:PET_BATTLE_CLOSE()
 	-- Restore after pet battles
 	for i, win in ipairs(windows) do
 		if not win.db.hidden and not win:IsShown() then
@@ -2098,7 +2098,7 @@ function Skada:OnEnable()
 	self:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED", COMBAT_LOG_EVENT_UNFILTERED)
 
 	self:RegisterEvent("PET_BATTLE_OPENING_START")
-	self:RegisterEvent("PET_BATTLE_OVER")
+	self:RegisterEvent("PET_BATTLE_CLOSE")
 
 	if type(CUSTOM_CLASS_COLORS) == "table" then
 		Skada.classcolors = CUSTOM_CLASS_COLORS
