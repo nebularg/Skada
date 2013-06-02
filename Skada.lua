@@ -871,6 +871,24 @@ function Skada:UNIT_PET()
 	self:CheckPets()
 end
 
+function Skada:PET_BATTLE_OPENING_START()
+	-- Hide during pet battles
+	for i, win in ipairs(windows) do
+		if win:IsShown() then
+			win:Hide()
+		end
+	end
+end
+
+function Skada:PET_BATTLE_OVER()
+	-- Restore after pet battles
+	for i, win in ipairs(windows) do
+		if not win.db.hidden and not win:IsShown() then
+			win:Show()
+		end
+	end
+end
+
 -- Toggles all windows.
 function Skada:ToggleWindow()
 	for i, win in ipairs(windows) do
@@ -2078,6 +2096,9 @@ function Skada:OnEnable()
 	self:RegisterEvent("UNIT_PET")
 	self:RegisterEvent("PLAYER_REGEN_DISABLED")
 	self:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED", COMBAT_LOG_EVENT_UNFILTERED)
+
+	self:RegisterEvent("PET_BATTLE_OPENING_START")
+	self:RegisterEvent("PET_BATTLE_OVER")
 
 	if type(CUSTOM_CLASS_COLORS) == "table" then
 		Skada.classcolors = CUSTOM_CLASS_COLORS
