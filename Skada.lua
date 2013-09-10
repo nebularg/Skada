@@ -969,6 +969,8 @@ function Skada:ReloadSettings()
 
 	self.total = self.char.total
 
+	Skada:ClearAllIndexes()
+
 	-- Minimap button.
 	if icon and not icon:IsRegistered("Skada") then
 		icon:Register("Skada", dataobj, self.db.profile.icon)
@@ -1282,6 +1284,21 @@ function Skada:find_set(s)
 	else
 		return self.char.sets[s]
 	end
+end
+
+function Skada:ClearIndexes(set)
+  if set then
+     set._playeridx = nil
+  end
+end
+function Skada:ClearAllIndexes()
+  -- clear indexes used for accelerating set lookups
+  -- this is done on login/logout to prevent the in-memory aliasing from becoming redundant tables on reload
+  Skada:ClearIndexes(self.current)
+  Skada:ClearIndexes(self.char.total)
+  for _,set in pairs(self.char.sets) do
+    Skada:ClearIndexes(set)
+  end
 end
 
 -- Returns a player from the current. Safe to use to simply view a player without creating an entry.
@@ -2072,6 +2089,7 @@ function Skada:OnInitialize()
 	self.db.RegisterCallback(self, "OnProfileChanged", "ReloadSettings")
 	self.db.RegisterCallback(self, "OnProfileCopied", "ReloadSettings")
 	self.db.RegisterCallback(self, "OnProfileReset", "ReloadSettings")
+	self.db.RegisterCallback(self, "OnDatabaseShutdown", "ClearAllIndexes")
 
 	-- Migrate old settings.
 	if self.db.profile.barmax then
