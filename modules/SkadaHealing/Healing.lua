@@ -93,7 +93,7 @@ local function SpellHeal(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGU
 	-- So check if a) the source is player-controlled
 	-- and b) the source and dest have the same reaction
 	-- (since we can't test directly if they're friendly to each other).
-	
+
 	if bit.band(srcFlags, COMBATLOG_OBJECT_CONTROL_PLAYER) ~= 0 and bit.band(srcFlags, dstFlags, COMBATLOG_OBJECT_REACTION_MASK) ~= 0 then
 		heal.dstName = dstName
 		heal.playerid = srcGUID
@@ -250,7 +250,7 @@ function healingtaken:Update(win, set)
 
 			d.valuetext = Skada:FormatValueText(
 											Skada:FormatNumber(totalhealing), self.metadata.columns.Healing,
-											string.format("%02.1f", getHPSByValue(set, player, totalhealing)), self.metadata.columns.HPS,
+											Skada:FormatNumber(getHPSByValue(set, player, totalhealing)), self.metadata.columns.HPS,
 											string.format("%02.1f%%", totalhealing / set.healing * 100), self.metadata.columns.Percent
 										)
 			d.class = player.class
@@ -283,7 +283,7 @@ function mod:Update(win, set)
 
 			d.valuetext = Skada:FormatValueText(
 											Skada:FormatNumber(player.healing), self.metadata.columns.Healing,
-											string.format("%02.1f", getHPS(set, player)), self.metadata.columns.HPS,
+											Skada:FormatNumber(getHPS(set, player)), self.metadata.columns.HPS,
 											string.format("%02.1f%%", player.healing / set.healing * 100), self.metadata.columns.Percent
 										)
 			d.class = player.class
