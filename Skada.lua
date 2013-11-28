@@ -39,8 +39,7 @@ do
 	popup:SetFrameStrata("DIALOG")
 	popup:Hide()
 
-	local text = popup:CreateFontString()
-	text:SetFontObject(ChatFontNormal)
+	local text = popup:CreateFontString(nil, "ARTWORK", "ChatFontNormal")
 	text:SetPoint("TOP", popup, "TOP", 0, -10)
 	text:SetText(L["Do you want to reset Skada?"])
 
