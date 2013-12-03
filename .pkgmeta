@@ -11,8 +11,6 @@ externals:
         url: svn://svn.wowace.com/wow/ace3/mainline/trunk/AceDB-3.0
     lib/AceDBOptions-3.0:
         url: svn://svn.wowace.com/wow/ace3/mainline/trunk/AceDBOptions-3.0
-    lib/AceEvent-3.0:
-        url: svn://svn.wowace.com/wow/ace3/mainline/trunk/AceEvent-3.0
     lib/AceGUI-3.0:
         url: svn://svn.wowace.com/wow/ace3/mainline/trunk/AceGUI-3.0
     lib/AceLocale-3.0:
