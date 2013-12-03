@@ -1536,6 +1536,15 @@ function Skada:AssignPet(ownerguid, ownername, petguid)
 	pets[petguid] = {id = ownerguid, name = ownername}
 end
 
+function Skada:ENCOUNTER_START()
+	--Skada.current.mobname = dstName
+	--Skada.current.gotboss = true
+end
+
+function Skada:ENCOUNTER_END()
+	
+end
+
 --
 -- Data broker
 --
@@ -2119,6 +2128,9 @@ function Skada:OnEnable()
 
 	popup:RegisterEvent("PET_BATTLE_OPENING_START")
 	popup:RegisterEvent("PET_BATTLE_CLOSE")
+
+	popup:RegisterEvent("ENCOUNTER_START")
+	popup:RegisterEvent("ENCOUNTER_END")
 
 	if type(CUSTOM_CLASS_COLORS) == "table" then
 		Skada.classcolors = CUSTOM_CLASS_COLORS
