@@ -777,9 +777,10 @@ local wasinpvp
 
 -- Are we in a PVP zone?
 local pvp_zones = {}
-local function is_in_pvp()
+local function IsInPVP()
 	local pvpType, isFFA = GetZonePVPInfo()
-	return select(2,IsInInstance()) == "pvp" or select(2,IsInInstance()) == "arena" or pvpType == "arena" or pvpType == "combat" or isFFA
+	local _, instanceType = IsInInstance()
+	return instanceType == "pvp" or instanceType == "arena" or pvpType == "arena" or pvpType == "combat" or isFFA
 end
 
 -- Fired on entering a zone.
@@ -787,7 +788,7 @@ function Skada:PLAYER_ENTERING_WORLD()
 	-- Check if we are entering an instance.
 	local inInstance, instanceType = IsInInstance()
 	local isininstance = inInstance and (instanceType == "party" or instanceType == "raid")
-	local isinpvp = is_in_pvp()
+	local isinpvp = IsInPVP()
 
 	-- If we are entering an instance, and we were not previously in an instance, and we got this event before... and we have some data...
 	if isininstance and wasininstance ~= nil and not wasininstance and self.db.profile.reset.instance ~= 1 and total ~= nil then
@@ -800,7 +801,7 @@ function Skada:PLAYER_ENTERING_WORLD()
 
 	-- Hide in PvP. Hide if entering a PvP instance, show if we are leaving one.
 	if self.db.profile.hidepvp then
-		if is_in_pvp() then
+		if IsInPVP() then
 			Skada:SetActive(false)
 		elseif wasinpvp then
 			Skada:SetActive(true)
@@ -856,7 +857,7 @@ local function check_for_join_and_leave()
 
 		-- Show window if we have enabled the "Hide when solo" option.
 		-- But only when NOT in pvp if it's set to hide in pvp.
-		if Skada.db.profile.hidesolo and not (Skada.db.profile.hidepvp and is_in_pvp()) then
+		if Skada.db.profile.hidesolo and not (Skada.db.profile.hidepvp and IsInPVP()) then
 			Skada:SetActive(true)
 		end
 	end
@@ -995,7 +996,7 @@ function Skada:ApplySettings()
 
 	-- Don't show window if we are solo, option.
 	-- Don't show window in a PvP instance, option.
-	if (self.db.profile.hidesolo and not IsInGroup()) or (self.db.profile.hidepvp and is_in_pvp())then
+	if (self.db.profile.hidesolo and not IsInGroup()) or (self.db.profile.hidepvp and IsInPVP())then
 		self:SetActive(false)
 	else
 		self:SetActive(true)
@@ -1335,7 +1336,8 @@ function Skada:get_player(set, playerid, playername)
 			return
 		end
 
-		player = {id = playerid, class = select(2, UnitClass(playername)), name = playername, first = time(), ["time"] = 0}
+		local _, playerClass = UnitClass(playername)
+		player = {id = playerid, class = playerClass, name = playername, first = time(), ["time"] = 0}
 
 		-- Tell each mode to apply its needed attributes.
 		for i, mode in ipairs(modes) do
@@ -1352,11 +1354,12 @@ function Skada:get_player(set, playerid, playername)
 		table.insert(set.players, player)
 	end
 
-        if player.name == UNKNOWN and playername ~= UNKNOWN then -- fixup players created before we had their info
-                local player_name, realm = string.split("-", playername, 2)
-                player.name = player_name or playername
-                player.class = select(2, UnitClass(playername))
-        end
+	if player.name == UNKNOWN and playername ~= UNKNOWN then -- fixup players created before we had their info
+		local player_name, realm = string.split("-", playername, 2)
+		player.name = player_name or playername
+		local _, playerClass = UnitClass(playername)
+		player.class = playerClass
+	end
 
 
 	-- The total set clears out first and last timestamps.
@@ -1470,7 +1473,7 @@ cleuFrame:SetScript("OnEvent", function(frame, event, timestamp, eventtype, hide
 				end
 			end
 			if not fail and mod.flags.dst_is_interesting or mod.flags.dst_is_not_interesting then
-				if dst_is_interesting_ == nil then
+				if dst_is_interesting == nil then
 					dst_is_interesting = band(dstFlags, RAID_FLAGS) ~= 0 or (band(dstFlags, PET_FLAGS) ~= 0 and pets[dstGUID])
 				end
 				if mod.flags.dst_is_interesting and not dst_is_interesting then
@@ -1542,7 +1545,7 @@ function Skada:ENCOUNTER_START()
 end
 
 function Skada:ENCOUNTER_END()
-	
+
 end
 
 --
@@ -2144,13 +2147,6 @@ end
 function Skada:OnDisable()
 	cleuFrame:UnregisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
 	popup:UnregisterAllEvents()
-	-- Save some settings.
-	self.char.selectedset = selectedset
-	if selectedmode then
-		self.char.mode = selectedmode.name
-	else
-		self.char.mode = nil
-	end
 end
 
 -- A minimal mode showing test data. Used by the config.

@@ -252,7 +252,7 @@ function mod:Update(win)
 
 			local bar = win.bargroup:GetBar(barid)
 
-			if bar and bar.missingclass and data.class and not data.ignore then 
+			if bar and bar.missingclass and data.class and not data.ignore then
 			        -- fixup bar that was generated before class info was available
 				bar:Hide()
 				win.bargroup:RemoveBar(bar)
@@ -296,7 +296,7 @@ function mod:Update(win)
 				end
 				bar:SetValue(data.value)
 
-				if not data.class and 
+				if not data.class and
 				   (win.db.classicons or win.db.classcolorbars or win.db.classcolortext) then
 					bar.missingclass = true
 				else

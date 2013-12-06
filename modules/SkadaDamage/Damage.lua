@@ -94,11 +94,9 @@ end
 
 local dmg = {}
 
-local function SpellDamage(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
+local function SpellDamage(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, spellId, spellName, spellSchool, samount, soverkill, sschool, sresisted, sblocked, sabsorbed, scritical, sglancing, scrushing)
 	-- Spell damage.
 	if srcGUID ~= dstGUID then
-		local spellId, spellName, spellSchool, samount, soverkill, sschool, sresisted, sblocked, sabsorbed, scritical, sglancing, scrushing = ...
-
 		dmg.playerid = srcGUID
 		dmg.playerflags = srcFlags
 		dmg.dstname = dstName
@@ -121,11 +119,9 @@ local function SpellDamage(timestamp, eventtype, srcGUID, srcName, srcFlags, dst
 	end
 end
 
-local function SwingDamage(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
+local function SwingDamage(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, samount, soverkill, sschool, sresisted, sblocked, sabsorbed, scritical, sglancing, scrushing)
 	-- White melee.
 	if srcGUID ~= dstGUID then
-		local samount, soverkill, sschool, sresisted, sblocked, sabsorbed, scritical, sglancing, scrushing = ...
-
 		dmg.playerid = srcGUID
 		dmg.playername = srcName
 		dmg.playerflags = srcFlags
@@ -148,7 +144,7 @@ local function SwingDamage(timestamp, eventtype, srcGUID, srcName, srcFlags, dst
 	end
 end
 
-local function SwingMissed(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
+local function SwingMissed(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, missed)
 	if srcGUID ~= dstGUID then
 		-- Melee misses
 
@@ -166,7 +162,7 @@ local function SwingMissed(timestamp, eventtype, srcGUID, srcName, srcFlags, dst
 		dmg.critical = nil
 		dmg.glancing = nil
 		dmg.crushing = nil
-		dmg.missed = select(1, ...)
+		dmg.missed = missed
 
 		Skada:FixPets(dmg)
 		log_damage(Skada.current, dmg)
@@ -174,10 +170,9 @@ local function SwingMissed(timestamp, eventtype, srcGUID, srcName, srcFlags, dst
 	end
 end
 
-local function SpellMissed(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
+local function SpellMissed(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, spellId, spellName, spellSchool, missType)
 	-- Misses
 	if srcGUID ~= dstGUID then
-		local spellId, spellName, spellSchool, missType, samount = ...
 		dmg.playerid = srcGUID
 		dmg.playername = srcName
 		dmg.playerflags = srcFlags
@@ -305,7 +300,8 @@ function playermod:Update(win, set)
 				win.dataset[nr] = d
 				d.label = spellname
 				d.id = spellname
-				d.icon = select(3, GetSpellInfo(spell.id))
+				local _, _, icon = GetSpellInfo(spell.id)
+				d.icon = icon
 				d.spellid = spell.id
 				d.value = spell.damage
 				d.valuetext = Skada:FormatValueText(

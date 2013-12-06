@@ -150,7 +150,8 @@ local function add_to_threattable(win, name, target)
 				local d = win.dataset[nr] or {}
 				win.dataset[nr] = d
 				d.label = name
-				d.class = select(2, UnitClass(name))
+				local _, class = UnitClass(name)
+				d.class = class
 				d.id = name
 				d.threat = threatvalue
 				d.isTanking = isTanking
@@ -168,11 +169,11 @@ local function add_to_threattable(win, name, target)
 			end
 		else
 			if threatpct then
-
 				local d = win.dataset[nr] or {}
 				win.dataset[nr] = d
 				d.label = name
-				d.class = select(2, UnitClass(name))
+				local _, class = UnitClass(name)
+				d.class = class
 				d.id = name
 				d.value = threatpct
 				d.isTanking = isTanking
@@ -233,12 +234,13 @@ function mod:Update(win, set)
 		local type, count = Skada:GetGroupTypeAndCount()
 		if count > 0 then
 			for i = 1, count, 1 do
-				local name = (UnitName(type..tostring(i)))
+				local name = UnitName(("%s%d"):format(type, i))
 				if name then
 					add_to_threattable(win, name, target)
 
-					if UnitExists(type..i.."pet") then
-						add_to_threattable(win, select(1, UnitName(type..i.."pet")), target)
+					local unit = ("%s%dpet"):format(type, i)
+					if UnitExists(unit) then
+						add_to_threattable(win, UnitName(unit), target)
 					end
 				end
 			end

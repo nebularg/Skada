@@ -337,9 +337,7 @@ function spellsmod:Update(win, set)
 	local max = 0
 
 	if player then
-
 		for spellname, spell in pairs(player.healingspells) do
-
 			local d = win.dataset[nr] or {}
 			win.dataset[nr] = d
 
@@ -350,7 +348,8 @@ function spellsmod:Update(win, set)
 											Skada:FormatNumber(spell.healing), self.metadata.columns.Healing,
 											string.format("%02.1f%%", spell.healing / player.healing * 100), self.metadata.columns.Percent
 										)
-			d.icon = select(3, GetSpellInfo(spell.id))
+			local _, _, icon = GetSpellInfo(spell.id)
+			d.icon = icon
 			d.spellid = spell.id
 
 			if spell.healing > max then

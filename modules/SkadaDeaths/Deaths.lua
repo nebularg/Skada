@@ -202,7 +202,8 @@ function deathlog:Update(win, set)
 					end
 					d.ts = log.ts
 					d.value = log.hp or 0
-					d.icon = select(3, GetSpellInfo(spellid))
+					local _, _, icon = GetSpellInfo(spellid)
+					d.icon = icon
 					d.spellid = spellid
 
 					local change = Skada:FormatNumber(math.abs(log.amount))

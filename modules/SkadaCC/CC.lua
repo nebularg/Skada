@@ -85,7 +85,8 @@ local function SpellAuraBroken(timestamp, eventtype, srcGUID, srcName, srcFlags,
 
 			-- Go ahead and announce it.
 			if extraSpellName then
-				SendChatMessage(string.format(L["%s on %s removed by %s's %s"], spellName, dstName, srcName, select(1,GetSpellLink(extraSpellId))), "RAID")
+				local spellLink = GetSpellLink(extraSpellId)
+				SendChatMessage(string.format(L["%s on %s removed by %s's %s"], spellName, dstName, srcName, spellLink), "RAID")
 			else
 				SendChatMessage(string.format(L["%s on %s removed by %s"], spellName, dstName, srcName), "RAID")
 			end

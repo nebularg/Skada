@@ -223,7 +223,7 @@ function Skada:OpenMenu(window)
 	            info.checked = (Skada.db.profile.report.set == "current")
 	            UIDropDownMenu_AddButton(info, level)
 
-		        for i, set in ipairs(sets) do
+		        for i, set in ipairs(Skada:GetSets()) do
 		            info.text = set.name..": "..date("%H:%M",set.starttime).." - "..date("%H:%M",set.endtime)
 		            info.func = function() Skada.db.profile.report.set = i end
 		            info.checked = (Skada.db.profile.report.set == i)

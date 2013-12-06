@@ -94,7 +94,8 @@ function spelloverview:Update(win,set)
 		d.value = spell.damage
 		d.valuetext = Skada:FormatNumber(spell.damage)..(" (%02.1f%%)"):format(spell.damage / set.damagetaken * 100)
 		d.id = name
-		d.icon = select(3, GetSpellInfo(spell.id))
+		local _, _, icon = GetSpellInfo(spell.id)
+		d.icon = icon
 		d.spellid = spell.id
 
 		if spell.damage > max then
@@ -188,7 +189,8 @@ function playermod:Update(win, set)
 
 			d.label = spellname
 			d.value = spell.damage
-			d.icon = select(3, GetSpellInfo(spell.id))
+			local _, _, icon = GetSpellInfo(spell.id)
+			d.icon = icon
 			d.id = spellname
 			d.spellid = spell.id
 			d.valuetext = Skada:FormatNumber(spell.damage)..(" (%02.1f%%)"):format(spell.damage / player.damagetaken * 100)

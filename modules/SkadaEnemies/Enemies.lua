@@ -15,7 +15,8 @@ local takenplayers = Skada:NewModule(L["Damage taken per player"])
 local function find_player(mob, name)
  	local player = mob.players[name]
 	if player then return player end
-	player = {done = 0, taken = 0, class = select(2, UnitClass(name))}
+	local _, playerClass = UnitClass(name)
+	player = {done = 0, taken = 0, class = playerClass}
 	mob.players[name] = player
 	return player
 end
@@ -93,48 +94,48 @@ local function Healing(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID
 	end
 end
 
-local function SpellDamageTaken(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
+local function SpellDamageTaken(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, spellId, spellName, spellSchool, amount)
 	if srcName and dstName then
 		srcGUID, srcName = Skada:FixMyPets(srcGUID, srcName)
 
 		dmg.dstName = dstName
 		dmg.srcName = srcName
-		dmg.amount = select(4, ...)
+		dmg.amount = amount
 
 		log_damage_taken(Skada.current, dmg)
 		log_damage_taken(Skada.total, dmg)
 	end
 end
 
-local function SpellDamageDone(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
+local function SpellDamageDone(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, spellId, spellName, spellSchool, amount)
 	if srcName and dstName then
 		dmg.dstName = dstName
 		dmg.srcName = srcName
-		dmg.amount = select(4, ...)
+		dmg.amount = amount
 
 		log_damage_done(Skada.current, dmg)
 		log_damage_done(Skada.total, dmg)
 	end
 end
 
-local function SwingDamageTaken(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
+local function SwingDamageTaken(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, amount)
 	if srcName and dstName then
 		srcGUID, srcName = Skada:FixMyPets(srcGUID, srcName)
 
 		dmg.dstName = dstName
 		dmg.srcName = srcName
-		dmg.amount = select(1,...)
+		dmg.amount = amount
 
 		log_damage_taken(Skada.current, dmg)
 		log_damage_taken(Skada.total, dmg)
 	end
 end
 
-local function SwingDamageDone(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
+local function SwingDamageDone(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, amount)
 	if srcName and dstName then
 		dmg.dstName = dstName
 		dmg.srcName = srcName
-		dmg.amount = select(1,...)
+		dmg.amount = amount
 
 		log_damage_done(Skada.current, dmg)
 		log_damage_done(Skada.total, dmg)
@@ -260,7 +261,7 @@ function htakenspells:Enter(win, id, label)
 	ttentry = "htakenspell"
 end
 
-function SpellUpdate(entry)
+local function SpellUpdate(entry)
   return function (self, win, set)
 	local mob = self.mob and set.mobs[self.mob]
 	if mob then
