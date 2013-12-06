@@ -85,7 +85,7 @@ Skada.last = nil
 local modes = {}
 
 -- Pets; an array of pets and their owners.
-local pets = {}
+local pets, players = {}, {}
 
 -- Flag marking if we need an update.
 local changed = true
@@ -703,7 +703,7 @@ function Skada:RefreshMMButton()
 end
 
 function Skada:PetDebug()
-	self:CheckPets()
+	self:CheckGroup()
 	self:Print("pets:")
 	for pet, owner in pairs(pets) do
 		self:Print("pet "..pet.." belongs to ".. owner.id..", "..owner.name)
@@ -728,35 +728,34 @@ function Skada:SetActive(enable)
 	end
 end
 
-local function CheckPet(unit, pet)
---	DEFAULT_CHAT_FRAME:AddMessage("checking out "..pet)
-
-	local petGUID = UnitGUID(pet)
-	local unitGUID = UnitGUID(unit)
-	local unitName = UnitName(unit)
-
-	-- Add to pets if it does not already exist.
-	-- TODO: We have a problem here with stale data. We could remove
-	-- any existing pet when we add one, but this would not work with Mirror Image
-	-- and other effects with multiple pets per player.
-	if petGUID and unitGUID and unitName and not pets[petGUID] then
-		pets[petGUID] = {id = unitGUID, name = unitName}
-	end
-end
-
-function Skada:CheckPets()
+function Skada:CheckGroup()
 	local type, count = self:GetGroupTypeAndCount()
 	if count > 0 then
-		for i = 1, count, 1 do
-			if UnitExists(type..i.."pet") then
-				CheckPet(type..i, type..i.."pet")
+		for i = 1, count do
+			local unit = ("%s%d"):format(type, i)
+			local playerGUID = UnitGUID(unit)
+			if playerGUID then
+				players[playerGUID] = true
+				local unitPet = unit.."pet"
+				local petGUID = UnitGUID(unitPet)
+				if petGUID and not pets[petGUID] then
+					local name, server = UnitName(unit)
+					if server and server ~= "" then name = name.."-"..server end
+					pets[petGUID] = {id = unitGUID, name = name}
+				end
 			end
 		end
 	end
 
 	-- Solo. Always check.
-	if UnitExists("pet") then
-		CheckPet("player", "pet")
+	local playerGUID = UnitGUID("player")
+	if playerGUID then
+		players[playerGUID] = true
+		local petGUID = UnitGUID("playerpet")
+		if petGUID and not pets[petGUID] then
+			local name = UnitName("player")
+			pets[petGUID] = {id = playerGUID, name = name}
+		end
 	end
 end
 
@@ -826,7 +825,7 @@ function Skada:PLAYER_ENTERING_WORLD()
 	wasinparty = IsInGroup()
 
 	-- Check for pets.
-	self:CheckPets()
+	self:CheckGroup()
 end
 
 -- Check if we join a party/raid.
@@ -870,7 +869,7 @@ function Skada:GROUP_ROSTER_UPDATE()
 	check_for_join_and_leave()
 
 	-- Check for new pets.
-	self:CheckPets()
+	self:CheckGroup()
 end
 
 function Skada:UNIT_PET()
@@ -921,8 +920,8 @@ end
 function Skada:Reset()
 	self:Wipe()
 
-	pets = {}
-	self:CheckPets()
+	pets, players = {}, {}
+	self:CheckGroup()
 
 	if self.current ~= nil then
 		wipe(self.current)
@@ -1382,9 +1381,8 @@ function Skada:RegisterForCL(func, event, flags)
 end
 
 local band = bit.band
-local PET_FLAGS = COMBATLOG_OBJECT_TYPE_PET + COMBATLOG_OBJECT_TYPE_GUARDIAN
-local RAID_FLAGS = COMBATLOG_OBJECT_AFFILIATION_MINE + COMBATLOG_OBJECT_AFFILIATION_PARTY + COMBATLOG_OBJECT_AFFILIATION_RAID
-
+local PET_FLAGS = bit.bor(COMBATLOG_OBJECT_TYPE_PET, COMBATLOG_OBJECT_TYPE_GUARDIAN)
+local RAID_FLAGS = bit.bor(COMBATLOG_OBJECT_AFFILIATION_MINE, COMBATLOG_OBJECT_AFFILIATION_PARTY, COMBATLOG_OBJECT_AFFILIATION_RAID)
 -- The basic idea for CL processing:
 -- Modules register for interest in a certain event, along with the function to call and the flags determining if the particular event is interesting.
 -- On a new event, loop through the interested parties.
@@ -1394,18 +1392,16 @@ cleuFrame = CreateFrame("Frame") -- Dedicated event handler for a small performa
 cleuFrame:SetScript("OnEvent", function(frame, event, timestamp, eventtype, hideCaster, srcGUID, srcName, srcFlags, srcRaidFlags, dstGUID, dstName, dstFlags, dstRaidFlags, ...)
 	local src_is_interesting = nil
 	local dst_is_interesting = nil
-	local src_is_interesting_nopets = nil
-	local dst_is_interesting_nopets = nil
 
 	-- Optional tentative combat detection.
 	-- Instead of simply checking when we enter combat, combat start is also detected based on needing a certain
 	-- amount of interesting (as defined by our modules) CL events.
 	if not Skada.current and Skada.db.profile.tentativecombatstart and srcName and dstName and srcGUID ~= dstGUID and (eventtype == 'SPELL_DAMAGE' or eventtype == 'SPELL_BUILDING_DAMAGE' or eventtype == 'RANGE_DAMAGE' or eventtype == 'SWING_DAMAGE' or eventtype == 'SPELL_PERIODIC_DAMAGE') then
-		src_is_interesting = band(srcFlags, RAID_FLAGS) ~= 0 or (band(srcFlags, PET_FLAGS) ~= 0 and pets[srcGUID])
+		src_is_interesting = band(srcFlags, RAID_FLAGS) ~= 0 or (band(srcFlags, PET_FLAGS) ~= 0 and pets[srcGUID]) or players[srcGUID]
 		-- AWS: To avoid incoming periodic damage (e.g. from a debuff) triggering combat, we simply do not initialize
 		--      dst_is_interesting for periodic damage...
 		if eventtype ~= 'SPELL_PERIODIC_DAMAGE' then
-			dst_is_interesting = band(dstFlags, RAID_FLAGS) ~= 0 or (band(dstFlags, PET_FLAGS) ~= 0 and pets[dstGUID])
+			dst_is_interesting = band(dstFlags, RAID_FLAGS) ~= 0 or (band(dstFlags, PET_FLAGS) ~= 0 and pets[dstGUID]) or players[dstGUID]
 		end
 		if src_is_interesting or dst_is_interesting then
 			-- Create a current set and set our "tentative" flag to true.
@@ -1413,20 +1409,20 @@ cleuFrame:SetScript("OnEvent", function(frame, event, timestamp, eventtype, hide
 
 			-- Also create total set if needed.
 			if not Skada.total then
-			Skada.total = createSet(L["Total"])
-		end
+				Skada.total = createSet(L["Total"])
+			end
 
-		-- Schedule an end to this tentative combat situation in 3 seconds.
-		tentativehandle = Skada:ScheduleTimer(
-							function()
-								tentative = nil
-								tentativehandle = nil
-								Skada.current = nil
-								--self:Print("tentative combat start FAILED!")
-							end, 1)
+			-- Schedule an end to this tentative combat situation in 3 seconds.
+			tentativehandle = Skada:ScheduleTimer(
+								function()
+									tentative = nil
+									tentativehandle = nil
+									Skada.current = nil
+									--self:Print("tentative combat start FAILED!")
+								end, 1)
 
-					tentative = 0
-		--self:Print("tentative combat start INIT!")
+			tentative = 0
+			--self:Print("tentative combat start INIT!")
 		end
 	end
 
@@ -1434,35 +1430,27 @@ cleuFrame:SetScript("OnEvent", function(frame, event, timestamp, eventtype, hide
 		for i, mod in ipairs(combatlogevents[eventtype]) do
 			local fail = false
 
-			-- Lua can not use assignments as expressions... grmbl.
-			if not fail and mod.flags.src_is_interesting_nopets then
-				if src_is_interesting_nopets == nil then
-					src_is_interesting_nopets = band(srcFlags, RAID_FLAGS) ~= 0 and band(srcFlags, PET_FLAGS) == 0
-					if src_is_interesting_nopets then
-						src_is_interesting = true
-					end
-				end
-				-- Lua does not have a "continue"... grmbl.
-				if not src_is_interesting_nopets then
-				--self:Print("fail on src_is_interesting_nopets")
+			if mod.flags.src_is_interesting_nopets then
+				local src_is_interesting_nopets = (band(srcFlags, RAID_FLAGS) ~= 0 and band(srcFlags, PET_FLAGS) == 0) or players[srcGUID]
+				if src_is_interesting_nopets then
+					src_is_interesting = true
+				else
+					--self:Print("fail on src_is_interesting_nopets")
 					fail = true
 				end
 			end
 			if not fail and mod.flags.dst_is_interesting_nopets then
-				if dst_is_interesting_nopets == nil then
-					dst_is_interesting_nopets = band(dstFlags, RAID_FLAGS) ~= 0 and band(dstFlags, PET_FLAGS) == 0
-					if dst_is_interesting_nopets then
-						dst_is_interesting = true
-					end
-				end
-				if not dst_is_interesting_nopets then
+				local dst_is_interesting_nopets = (band(dstFlags, RAID_FLAGS) ~= 0 and band(dstFlags, PET_FLAGS) == 0) or players[dstGUID]
+				if dst_is_interesting_nopets then
+					dst_is_interesting = true
+				else
 				--self:Print("fail on dst_is_interesting_nopets")
 					fail = true
 				end
 			end
 			if not fail and mod.flags.src_is_interesting or mod.flags.src_is_not_interesting then
-				if src_is_interesting == nil then
-					src_is_interesting = band(srcFlags, RAID_FLAGS) ~= 0 or (band(srcFlags, PET_FLAGS) ~= 0 and pets[srcGUID])
+				if not src_is_interesting then
+					src_is_interesting = band(srcFlags, RAID_FLAGS) ~= 0 or (band(srcFlags, PET_FLAGS) ~= 0 and pets[srcGUID]) or players[srcGUID]
 				end
 				if mod.flags.src_is_interesting and not src_is_interesting then
 				--self:Print("fail on src_is_interesting")
@@ -1473,8 +1461,8 @@ cleuFrame:SetScript("OnEvent", function(frame, event, timestamp, eventtype, hide
 				end
 			end
 			if not fail and mod.flags.dst_is_interesting or mod.flags.dst_is_not_interesting then
-				if dst_is_interesting == nil then
-					dst_is_interesting = band(dstFlags, RAID_FLAGS) ~= 0 or (band(dstFlags, PET_FLAGS) ~= 0 and pets[dstGUID])
+				if not dst_is_interesting then
+					dst_is_interesting = band(dstFlags, RAID_FLAGS) ~= 0 or (band(dstFlags, PET_FLAGS) ~= 0 and pets[dstGUID]) or players[dstGUID]
 				end
 				if mod.flags.dst_is_interesting and not dst_is_interesting then
 				--self:Print("fail on dst_is_interesting")
