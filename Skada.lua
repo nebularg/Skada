@@ -741,7 +741,7 @@ function Skada:CheckGroup()
 				if petGUID and not pets[petGUID] then
 					local name, server = UnitName(unit)
 					if server and server ~= "" then name = name.."-"..server end
-					pets[petGUID] = {id = unitGUID, name = name}
+					pets[petGUID] = {id = playerGUID, name = name}
 				end
 			end
 		end
@@ -790,7 +790,7 @@ function Skada:PLAYER_ENTERING_WORLD()
 	local isinpvp = IsInPVP()
 
 	-- If we are entering an instance, and we were not previously in an instance, and we got this event before... and we have some data...
-	if isininstance and wasininstance ~= nil and not wasininstance and self.db.profile.reset.instance ~= 1 and total ~= nil then
+	if isininstance and wasininstance ~= nil and not wasininstance and self.db.profile.reset.instance ~= 1 and self.total ~= nil then
 		if self.db.profile.reset.instance == 3 then
 			Skada:ShowPopup()
 		else
