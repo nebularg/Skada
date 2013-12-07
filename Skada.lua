@@ -874,7 +874,7 @@ end
 
 function Skada:UNIT_PET()
 	-- Check for new pets.
-	self:CheckPets()
+	self:CheckGroup()
 end
 
 function Skada:PET_BATTLE_OPENING_START()
