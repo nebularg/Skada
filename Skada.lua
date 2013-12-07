@@ -135,8 +135,8 @@ local Window = {}
 local mt = {__index = Window}
 
 function Window:new()
-   return setmetatable(
-   		{
+	return setmetatable(
+		{
 			-- The selected mode and set
 			selectedmode = nil,
 			selectedset = nil,
@@ -162,16 +162,16 @@ function Window:new()
 			-- Flag for window-specific changes.
 			changed = false,
 
-	   	 }, mt)
+		}, mt)
 end
 
 function Window:AddOptions()
 	local db = self.db
 
 	local options = {
-	        type="group",
+			type="group",
 			name=function() return db.name end,
-	        args={
+			args={
 
 				rename = {
 					type="input",
@@ -183,15 +183,15 @@ function Window:AddOptions()
 				},
 
 				locked = {
-				       type="toggle",
-				       name=L["Lock window"],
-				       desc=L["Locks the bar window in place."],
-				       order=2,
-				       get=function() return db.barslocked end,
-				       set=function()
-				       		db.barslocked = not db.barslocked
-				       			Skada:ApplySettings()
-				       	end,
+					type="toggle",
+					name=L["Lock window"],
+					desc=L["Locks the bar window in place."],
+					order=2,
+					get=function() return db.barslocked end,
+					set=function()
+						db.barslocked = not db.barslocked
+						Skada:ApplySettings()
+					end,
 				},
 
 				delete = {
@@ -217,14 +217,14 @@ function Window:AddOptions()
 				type="select",
 				name=L["Combat mode"],
 				desc=L["Automatically switch to set 'Current' and this mode when entering combat."],
-				values=	function()
-							local modes = {}
-							modes[""] = L["None"]
-							for i, mode in ipairs(Skada:GetModes()) do
-								modes[mode:GetName()] = mode:GetName()
-							end
-							return modes
-						end,
+				values=function()
+					local modes = {}
+					modes[""] = L["None"]
+					for i, mode in ipairs(Skada:GetModes()) do
+						modes[mode:GetName()] = mode:GetName()
+					end
+					return modes
+				end,
 				get=function() return db.modeincombat end,
 				set=function(win, mode) db.modeincombat = mode end,
 				order=21,
@@ -234,26 +234,26 @@ function Window:AddOptions()
 				type="select",
 				name=L["Wipe mode"],
 				desc=L["Automatically switch to set 'Current' and this mode after a wipe."],
-				values=	function()
-							local modes = {}
-							modes[""] = L["None"]
-							for i, mode in ipairs(Skada:GetModes()) do
-								modes[mode:GetName()] = mode:GetName()
-							end
-							return modes
-						end,
+				values=function()
+					local modes = {}
+					modes[""] = L["None"]
+					for i, mode in ipairs(Skada:GetModes()) do
+						modes[mode:GetName()] = mode:GetName()
+					end
+					return modes
+				end,
 				get=function() return db.wipemode end,
 				set=function(win, mode) db.wipemode = mode end,
 				order=21,
 			},
 			returnaftercombat = {
 				type="toggle",
-               	name=L["Return after combat"],
-             			desc=L["Return to the previous set and mode after combat ends."],
-                order=23,
-     			        get=function() return db.returnaftercombat end,
-         			    set=function() db.returnaftercombat = not db.returnaftercombat end,
-         			    disabled=function() return db.returnaftercombat == nil end,
+				name=L["Return after combat"],
+				desc=L["Return to the previous set and mode after combat ends."],
+				order=23,
+	 			get=function() return db.returnaftercombat end,
+		 		set=function() db.returnaftercombat = not db.returnaftercombat end,
+		 		disabled=function() return db.returnaftercombat == nil end,
 			},
 		}
 	}
@@ -463,7 +463,7 @@ function Window:DisplaySets()
 
 	self.metadata.click = click_on_set
 	self.metadata.maxvalue = 1
---	self.metadata.sortfunc = function(a,b) return a.name < b.name end
+	-- self.metadata.sortfunc = function(a,b) return a.name < b.name end
 	self.changed = true
 
 	if self.child then
@@ -491,14 +491,14 @@ function Window:RightClick(group, button)
 end
 
 function Skada:tcopy(to, from)
-  for k,v in pairs(from) do
-    if(type(v)=="table") then
-      to[k] = {}
-      Skada:tcopy(to[k], v);
-    else
-      to[k] = v;
-    end
-  end
+	for k,v in pairs(from) do
+	if(type(v)=="table") then
+		to[k] = {}
+		Skada:tcopy(to[k], v);
+	else
+		to[k] = v;
+	end
+	end
 end
 
 function Skada:CreateWindow(name, db, display)
@@ -747,7 +747,7 @@ function Skada:CheckGroup()
 		end
 	end
 
-	-- Solo. Always check.
+	-- Solo, always check.
 	local playerGUID = UnitGUID("player")
 	if playerGUID then
 		players[playerGUID] = true
@@ -1062,7 +1062,6 @@ local function IsRaidDead()
 	elseif not UnitIsDeadOrGhost("player") then
 		return false
 	end
-
 	return true
 end
 
@@ -1096,9 +1095,7 @@ function Skada:EndSegment()
 
 			-- Add set to sets.
 			table.insert(self.char.sets, 1, self.current)
-
 		end
-
 	end
 
 	-- Make set last set.
@@ -1132,8 +1129,8 @@ function Skada:EndSegment()
 	end
 
 	for i, win in ipairs(windows) do
---		win:Wipe()
---		changed = true
+		-- win:Wipe()
+		-- changed = true
 
 		-- Wipe mode - switch to current set and specific mode if no party/raid members are alive.
 		-- Restore mode is not changed.
@@ -1206,7 +1203,7 @@ function Skada:StartCombat()
 
 			-- If the mode exists, switch to current set and this mode. Save current set/mode so we can return after combat if configured.
 			if mymode ~= nil then
-	--				self:Print("Switching to "..mymode.name.." mode.")
+				-- self:Print("Switching to "..mymode.name.." mode.")
 
 				if win.db.returnaftercombat then
 					if win.selectedset then
@@ -1293,18 +1290,19 @@ function Skada:find_set(s)
 end
 
 function Skada:ClearIndexes(set)
-  if set then
-     set._playeridx = nil
-  end
+	if set then
+		set._playeridx = nil
+	end
 end
+
 function Skada:ClearAllIndexes()
-  -- clear indexes used for accelerating set lookups
-  -- this is done on login/logout to prevent the in-memory aliasing from becoming redundant tables on reload
-  Skada:ClearIndexes(self.current)
-  Skada:ClearIndexes(self.char.total)
-  for _,set in pairs(self.char.sets) do
-    Skada:ClearIndexes(set)
-  end
+	-- clear indexes used for accelerating set lookups
+	-- this is done on login/logout to prevent the in-memory aliasing from becoming redundant tables on reload
+	Skada:ClearIndexes(self.current)
+	Skada:ClearIndexes(self.char.total)
+	for _,set in pairs(self.char.sets) do
+		Skada:ClearIndexes(set)
+	end
 end
 
 -- Returns a player from the current. Safe to use to simply view a player without creating an entry.
@@ -1399,7 +1397,7 @@ cleuFrame:SetScript("OnEvent", function(frame, event, timestamp, eventtype, hide
 	if not Skada.current and Skada.db.profile.tentativecombatstart and srcName and dstName and srcGUID ~= dstGUID and (eventtype == 'SPELL_DAMAGE' or eventtype == 'SPELL_BUILDING_DAMAGE' or eventtype == 'RANGE_DAMAGE' or eventtype == 'SWING_DAMAGE' or eventtype == 'SPELL_PERIODIC_DAMAGE') then
 		src_is_interesting = band(srcFlags, RAID_FLAGS) ~= 0 or (band(srcFlags, PET_FLAGS) ~= 0 and pets[srcGUID]) or players[srcGUID]
 		-- AWS: To avoid incoming periodic damage (e.g. from a debuff) triggering combat, we simply do not initialize
-		--      dst_is_interesting for periodic damage...
+		-- dst_is_interesting for periodic damage...
 		if eventtype ~= 'SPELL_PERIODIC_DAMAGE' then
 			dst_is_interesting = band(dstFlags, RAID_FLAGS) ~= 0 or (band(dstFlags, PET_FLAGS) ~= 0 and pets[dstGUID]) or players[dstGUID]
 		end
@@ -1509,7 +1507,7 @@ cleuFrame:SetScript("OnEvent", function(frame, event, timestamp, eventtype, hide
 	-- Pet scheme: save the GUID in a table along with the GUID of the owner.
 	-- Note to self: this needs 1) to be made self-cleaning so it can't grow too much, and 2) saved persistently.
 	-- Now also done on raid roster/party changes.
-	if eventtype == 'SPELL_SUMMON' and ( (band(srcFlags, RAID_FLAGS) ~= 0) or (band(srcFlags,(COMBATLOG_OBJECT_TYPE_NPC+COMBATLOG_OBJECT_CONTROL_NPC)) ~= 0) or ( (band(srcFlags, PET_FLAGS)) ~= 0 ) or ((band(dstFlags, PET_FLAGS) ~= 0) and pets[dstGUID])  )  then
+	if eventtype == 'SPELL_SUMMON' and ( (band(srcFlags, RAID_FLAGS) ~= 0) or (band(srcFlags,(COMBATLOG_OBJECT_TYPE_NPC+COMBATLOG_OBJECT_CONTROL_NPC)) ~= 0) or ( (band(srcFlags, PET_FLAGS)) ~= 0 ) or ((band(dstFlags, PET_FLAGS) ~= 0) and pets[dstGUID])) then
 		-- assign pet normally
 		pets[dstGUID] = {id = srcGUID, name = srcName}
 		-- fix the table by searching through the complete list
@@ -1541,34 +1539,34 @@ end
 --
 
 function dataobj:OnEnter()
-    GameTooltip:SetOwner(self, "ANCHOR_NONE")
-    GameTooltip:SetPoint("TOPLEFT", self, "BOTTOMLEFT")
-    GameTooltip:ClearLines()
+	GameTooltip:SetOwner(self, "ANCHOR_NONE")
+	GameTooltip:SetPoint("TOPLEFT", self, "BOTTOMLEFT")
+	GameTooltip:ClearLines()
 
-    local set
-    if Skada.current then
-    	set = Skada.current
-    else
-    	set = Skada.char.sets[1]
-    end
-    if set then
-	    GameTooltip:AddLine(L["Skada summary"], 0, 1, 0)
-	    for i, mode in ipairs(modes) do
-	    	if mode.AddToTooltip ~= nil then
-	    		mode:AddToTooltip(set, GameTooltip)
-	    	end
-	    end
+	local set
+	if Skada.current then
+		set = Skada.current
+	else
+		set = Skada.char.sets[1]
+	end
+	if set then
+		GameTooltip:AddLine(L["Skada summary"], 0, 1, 0)
+		for i, mode in ipairs(modes) do
+			if mode.AddToTooltip ~= nil then
+				mode:AddToTooltip(set, GameTooltip)
+			end
+		end
  	end
 
-    GameTooltip:AddLine(L["Hint: Left-Click to toggle Skada window."], 0, 1, 0)
-    GameTooltip:AddLine(L["Shift + Left-Click to reset."], 0, 1, 0)
-    GameTooltip:AddLine(L["Right-click to open menu"], 0, 1, 0)
+	GameTooltip:AddLine(L["Hint: Left-Click to toggle Skada window."], 0, 1, 0)
+	GameTooltip:AddLine(L["Shift + Left-Click to reset."], 0, 1, 0)
+	GameTooltip:AddLine(L["Right-click to open menu"], 0, 1, 0)
 
-    GameTooltip:Show()
+	GameTooltip:Show()
 end
 
 function dataobj:OnLeave()
-    GameTooltip:Hide()
+	GameTooltip:Hide()
 end
 
 function dataobj:OnClick(button)
@@ -1733,9 +1731,9 @@ function Skada:FormatNumber(number)
 	if number then
 		if self.db.profile.numberformat == 1 then
 			if number > 1000000 then
-				return 	("%02.2fM"):format(number / 1000000)
+				return ("%02.2fM"):format(number / 1000000)
 			else
-				return 	("%02.1fK"):format(number / 1000)
+				return ("%02.1fK"):format(number / 1000)
 			end
 		else
 			return math.floor(number)
@@ -1917,15 +1915,15 @@ end
 function Skada:SetTooltipPosition(tooltip, frame)
 	local p = self.db.profile.tooltippos
 	if p == "default" then
-	    tooltip:SetOwner(UIParent, "ANCHOR_NONE")
+		tooltip:SetOwner(UIParent, "ANCHOR_NONE")
 		tooltip:SetPoint("BOTTOMRIGHT", "UIParent", "BOTTOMRIGHT", -40, 40);
 	elseif p == "topleft" then
-	    tooltip:SetOwner(frame, "ANCHOR_NONE")
-	    tooltip:SetPoint("TOPRIGHT", frame, "TOPLEFT")
+		tooltip:SetOwner(frame, "ANCHOR_NONE")
+		tooltip:SetPoint("TOPRIGHT", frame, "TOPLEFT")
 	elseif p == "topright" then
-	    tooltip:SetOwner(frame, "ANCHOR_NONE")
-	    tooltip:SetPoint("TOPLEFT", frame, "TOPRIGHT")
-   end
+		tooltip:SetOwner(frame, "ANCHOR_NONE")
+		tooltip:SetPoint("TOPLEFT", frame, "TOPRIGHT")
+	end
 end
 
 -- Same thing, only takes two arguments and returns two arguments.
