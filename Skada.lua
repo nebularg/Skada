@@ -1,5 +1,5 @@
 
-local Skada = LibStub("AceAddon-3.0"):NewAddon("Skada", "AceConsole-3.0", "AceTimer-3.0")
+local Skada = LibStub("AceAddon-3.0"):NewAddon("Skada", "AceTimer-3.0")
 _G.Skada = Skada
 
 local L = LibStub("AceLocale-3.0"):GetLocale("Skada", false)
@@ -567,26 +567,30 @@ function Skada:DeleteWindow(name)
 	self.options.args.windows.args[name] = nil
 end
 
-function Skada:Command(param)
+function Skada:Print(msg)
+	print("|cFF33FF99Skada|r: "..msg)
+end
+
+local function slashHandler(param)
 	if param == "pets" then
-		self:PetDebug()
+		Skada:PetDebug()
 	elseif param == "test" then
-		self:OpenMenu()
+		Skada:OpenMenu()
 	elseif param == "reset" then
-		self:Reset()
+		Skada:Reset()
 	elseif param == "newsegment" then
-		self:NewSegment()
+		Skada:NewSegment()
 	elseif param == "toggle" then
-		self:ToggleWindow()
+		Skada:ToggleWindow()
 	elseif param == "config" then
-		InterfaceOptionsFrame_OpenToCategory(self.optionsFrame)
+		InterfaceOptionsFrame_OpenToCategory(Skada.optionsFrame)
 	elseif param:sub(1,6) == "report" then
 		param = param:sub(7)
 		local chan = "say"
 		local max = 0
 		local chantype = "preset"
 
-		local w1, w2, w3, w4 = self:GetArgs(param, 4)
+		local w1, w2, w3, w4 = Skada:GetArgs(param, 4)
 
 		local chan = w1 or "say"
 		local report_mode_name = w2 or L["Damage"]
@@ -594,18 +598,18 @@ function Skada:Command(param)
 
 		-- Sanity checks.
 		if chan and (chan == "say" or chan == "guild" or chan == "raid" or chan == "party" or chan == "officer") and (report_mode_name and find_mode(report_mode_name)) then
-			self:Report(chan, "preset", report_mode_name, "current", max)
+			Skada:Report(chan, "preset", report_mode_name, "current", max)
 		else
-			self:Print("Usage:")
-			self:Print(("%-20s"):format("/skada report [raid|guild|party|officer|say] [mode] [max lines]"))
+			Skada:Print("Usage:")
+			Skada:Print(("%-20s"):format("/skada report [raid|guild|party|officer|say] [mode] [max lines]"))
 		end
 	else
-		self:Print("Usage:")
-		self:Print(("%-20s"):format("/skada report [raid|guild|party|officer|say] [mode] [max lines]"))
-		self:Print(("%-20s"):format("/skada reset"))
-		self:Print(("%-20s"):format("/skada toggle"))
-		self:Print(("%-20s"):format("/skada newsegment"))
-		self:Print(("%-20s"):format("/skada config"))
+		Skada:Print("Usage:")
+		Skada:Print(("%-20s"):format("/skada report [raid|guild|party|officer|say] [mode] [max lines]"))
+		Skada:Print(("%-20s"):format("/skada reset"))
+		Skada:Print(("%-20s"):format("/skada toggle"))
+		Skada:Print(("%-20s"):format("/skada newsegment"))
+		Skada:Print(("%-20s"):format("/skada config"))
 	end
 end
 
@@ -2072,11 +2076,11 @@ function Skada:OnInitialize()
 	SkadaPerCharDB = SkadaPerCharDB or {}
 	self.char = SkadaPerCharDB
 	self.char.sets = self.char.sets or {}
-	LibStub("AceConfig-3.0"):RegisterOptionsTable("Skada", self.options)
+	LibStub("AceConfigRegistry-3.0"):RegisterOptionsTable("Skada", self.options, true)
 	self.optionsFrame = LibStub("AceConfigDialog-3.0"):AddToBlizOptions("Skada", "Skada")
 
 	-- Profiles
-	LibStub("AceConfig-3.0"):RegisterOptionsTable("Skada-Profiles", LibStub("AceDBOptions-3.0"):GetOptionsTable(self.db))
+	LibStub("AceConfigRegistry-3.0"):RegisterOptionsTable("Skada-Profiles", LibStub("AceDBOptions-3.0"):GetOptionsTable(self.db), true)
 	self.profilesFrame = LibStub("AceConfigDialog-3.0"):AddToBlizOptions("Skada-Profiles", "Profiles", "Skada")
 
 	-- Dual spec profiles
@@ -2085,7 +2089,10 @@ function Skada:OnInitialize()
 		lds:EnhanceOptions(LibStub("AceDBOptions-3.0"):GetOptionsTable(self.db), self.db)
 	end
 
-	self:RegisterChatCommand("skada", "Command")
+	-- Slash Handler
+	SLASH_SKADA1 = "/skada"
+	SlashCmdList.SKADA = slashHandler
+
 	self.db.RegisterCallback(self, "OnProfileChanged", "ReloadSettings")
 	self.db.RegisterCallback(self, "OnProfileCopied", "ReloadSettings")
 	self.db.RegisterCallback(self, "OnProfileReset", "ReloadSettings")
