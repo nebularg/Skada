@@ -30,8 +30,8 @@ end
 
 do
 	popup = CreateFrame("Frame", nil, UIParent) -- Recycle the popup frame as an event handler.
-	popup:SetScript("OnEvent", function(frame, event)
-		Skada[event](Skada)
+	popup:SetScript("OnEvent", function(frame, event, ...)
+		Skada[event](Skada, ...)
 	end)
 
 	popup:SetBackdrop({bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background-Dark",
@@ -1529,13 +1529,18 @@ function Skada:AssignPet(ownerguid, ownername, petguid)
 	pets[petguid] = {id = ownerguid, name = ownername}
 end
 
-function Skada:ENCOUNTER_START()
-	--Skada.current.mobname = dstName
-	--Skada.current.gotboss = true
+function Skada:ENCOUNTER_START(encounterId, encounterName)
+	if not disabled and not self.current then
+		self:StartCombat()
+		self.current.mobname = encounterName
+		self.current.gotboss = true
+	end
 end
 
 function Skada:ENCOUNTER_END()
-
+	if not disabled and self.current then
+		self:EndSegment()
+	end
 end
 
 --
