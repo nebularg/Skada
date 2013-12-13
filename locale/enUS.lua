@@ -23,6 +23,9 @@ L["Skada: Modes"] = true
 L["Skada: Fights"] = true
 
 -- Options
+L["Disabled Modules"] = true
+L["This change requires a UI reload. Are you sure?"] = true
+L["Tick the modules you want to disable."] = true
 L["Bar font"] = true
 L["The font used by all bars."] = true
 L["Bar font size"] = true

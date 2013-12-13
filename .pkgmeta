@@ -20,7 +20,6 @@ move-folders:
     Skada/modules/SkadaThreat: SkadaThreat
     Skada/modules/SkadaDeaths: SkadaDeaths
     Skada/modules/SkadaDebuffs: SkadaDebuffs
-    Skada/modules/SkadaDamage: SkadaDamage
     Skada/modules/SkadaHealing: SkadaHealing
     Skada/modules/SkadaDamageTaken: SkadaDamageTaken
     Skada/modules/SkadaDispels: SkadaDispels

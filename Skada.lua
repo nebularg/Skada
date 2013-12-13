@@ -2078,7 +2078,7 @@ function Skada:OnInitialize()
 
 	-- DB
 	self.db = LibStub("AceDB-3.0"):New("SkadaDB", self.defaults, "Default")
-	SkadaPerCharDB = SkadaPerCharDB or {}
+	if type(SkadaPerCharDB) ~= "table" then SkadaPerCharDB = {} end
 	self.char = SkadaPerCharDB
 	self.char.sets = self.char.sets or {}
 	LibStub("AceConfigRegistry-3.0"):RegisterOptionsTable("Skada", self.options, true)
@@ -2137,15 +2137,24 @@ function Skada:OnEnable()
 		Skada.classcolors = CUSTOM_CLASS_COLORS
 	end
 
+	if self.moduleList then
+		for i = 1, #self.moduleList do
+			self.moduleList[i](self, L)
+		end
+		self.moduleList = nil
+	end
+
 	-- Instead of listening for callbacks on SharedMedia we simply wait a few seconds and then re-apply settings
 	-- to catch any missing media. Lame? Yes.
 	self:ScheduleTimer("ApplySettings", 2)
 end
 
-function Skada:OnDisable()
-	cleuFrame:UnregisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
-	popup:UnregisterAllEvents()
+function Skada:AddLoadableModule(name, func)
+	if not self.moduleList then self.moduleList = {} end
+	self.moduleList[#self.moduleList+1] = func
+	self:AddLoadableModuleCheckbox(name, L[name] or "???")
 end
+
 
 -- A minimal mode showing test data. Used by the config.
 --[[

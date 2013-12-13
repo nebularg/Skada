@@ -1,6 +1,6 @@
-local L = LibStub("AceLocale-3.0"):GetLocale("Skada", false)
 
-local Skada = Skada
+Skada:AddLoadableModule("Damage", function(Skada, L)
+if Skada.db.profile.modulesToSkip.Damage then return end
 
 local mod = Skada:NewModule(L["Damage"])
 local dpsmod = Skada:NewModule(L["DPS"])
@@ -544,3 +544,4 @@ function mod:AddSetAttributes(set)
 		set.damage = 0
 	end
 end
+end)
