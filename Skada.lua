@@ -584,6 +584,7 @@ local function slashHandler(param)
 		Skada:ToggleWindow()
 	elseif param == "config" then
 		InterfaceOptionsFrame_OpenToCategory(Skada.optionsFrame)
+		InterfaceOptionsFrame_OpenToCategory(Skada.optionsFrame)
 	elseif param:sub(1,6) == "report" then
 		param = param:sub(7)
 		local chan = "say"
