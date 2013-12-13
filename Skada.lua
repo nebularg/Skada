@@ -1154,8 +1154,9 @@ function Skada:EndSegment()
 	end
 
 	self:UpdateDisplay()
-	self:CancelTimer(update_timer)
-	self:CancelTimer(tick_timer)
+	if update_timer then self:CancelTimer(update_timer) end
+	if tick_timer then self:CancelTimer(tick_timer) end
+	update_timer, tick_timer = nil, nil
 
 	-- Hide in combat option.
 	if self.db.profile.hidecombat then
@@ -1179,11 +1180,15 @@ local tentative = nil
 -- AceTimer handle for reverting combat start.
 local tentativehandle= nil
 
-function Skada:StartCombat()
+function Skada:StartCombat(isEncounter)
 	-- Cancel cancelling combat if needed.
 	if tentativehandle ~= nil then
 		self:CancelTimer(tentativehandle)
 		tentativehandle = nil
+	end
+
+	if update_timer then
+		self:EndSegment()
 	end
 
 	-- Remove old bars.
@@ -1230,7 +1235,9 @@ function Skada:StartCombat()
 
 	-- Schedule timers for updating windows and detecting combat end.
 	update_timer = self:ScheduleRepeatingTimer("UpdateDisplay", 0.5)
-	tick_timer = self:ScheduleRepeatingTimer("Tick", 1)
+	if not isEncounter then
+		tick_timer = self:ScheduleRepeatingTimer("Tick", 1)
+	end
 
 	-- Hide in combat option.
 	if self.db.profile.hidecombat then
@@ -1531,8 +1538,8 @@ function Skada:AssignPet(ownerguid, ownername, petguid)
 end
 
 function Skada:ENCOUNTER_START(encounterId, encounterName)
-	if not disabled and not self.current then
-		self:StartCombat()
+	if not disabled then
+		self:StartCombat(true)
 		self.current.mobname = encounterName
 		self.current.gotboss = true
 	end
