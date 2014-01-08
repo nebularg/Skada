@@ -112,12 +112,12 @@ do
 
 		local text = frame:CreateFontString(nil, "ARTWORK", "ChatFontNormal")
 		text:SetPoint("CENTER", frame, "CENTER")
-		text:SetText(
-[[It seems you didn't update using the automatic Curse Client updater :(
-
-You will need to manually delete the following AddOns:]]
-..concat)
-
+--		text:SetText(
+--It seems you didn't update using the automatic Curse Client updater :(
+--
+--You will need to manually delete the following AddOns:
+--..concat)
+--
 		local btn = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
 		btn:SetWidth(110)
 		btn:SetHeight(20)
