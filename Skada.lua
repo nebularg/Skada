@@ -6,7 +6,6 @@ local L = LibStub("AceLocale-3.0"):GetLocale("Skada", false)
 local ldb = LibStub:GetLibrary("LibDataBroker-1.1")
 local icon = LibStub("LibDBIcon-1.0", true)
 local media = LibStub("LibSharedMedia-3.0")
-local boss = LibStub("LibBossIDs-1.0")
 local lds = LibStub:GetLibrary("LibDualSpec-1.0", 1)
 local dataobj = ldb:NewDataObject("Skada", {label = "Skada", type = "data source", icon = "Interface\\Icons\\Spell_Lightning_LightningBolt01", text = "n/a"})
 local popup, cleuFrame
@@ -1570,16 +1569,9 @@ cleuFrame:SetScript("OnEvent", function(frame, event, timestamp, eventtype, hide
 	end
 
 	-- Note: relies on src_is_interesting having been checked.
-	if Skada.current and src_is_interesting and not Skada.current.gotboss then
-		-- Store mob name for set name. For now, just save first unfriendly name available, or first boss available.
-		if bit.band(dstFlags, COMBATLOG_OBJECT_REACTION_FRIENDLY) == 0 then
-			if not Skada.current.gotboss and boss.BossIDs[tonumber(dstGUID:sub(6, 10), 16)] then
-				Skada.current.mobname = dstName
-				Skada.current.gotboss = true
-			elseif not Skada.current.mobname then
-				Skada.current.mobname = dstName
-			end
-		end
+	if Skada.current and src_is_interesting and not Skada.current.gotboss and not Skada.current.mobname and band(dstFlags, COMBATLOG_OBJECT_REACTION_FRIENDLY) == 0 then
+		-- Store mob name for set name. For now, just save first unfriendly name available. This is a backup for ENCOUNTER_START failing.
+		Skada.current.mobname = dstName
 	end
 
 	-- Pet summons.
