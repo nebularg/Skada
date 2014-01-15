@@ -16,7 +16,7 @@ local function log_damage_taken(set, dmg)
 
 		-- Add spell to player if it does not exist.
 		if not player.damagetakenspells[dmg.spellname] then
-			player.damagetakenspells[dmg.spellname] = {id = dmg.spellid, name = dmg.spellname, damage = 0, totalhits = 0, min = nil, max = nil}
+			player.damagetakenspells[dmg.spellname] = {id = dmg.spellid, name = dmg.spellname, damage = 0, totalhits = 0, min = nil, max = nil, crushing = 0, glancing = 0, resisted = 0, critical = 0, absorbed = 0, blocked = 0}
 		end
 
 		-- Add to player total damage.
@@ -29,6 +29,30 @@ local function log_damage_taken(set, dmg)
 
 		if spell.max == nil or dmg.amount > spell.max then
 			spell.max = dmg.amount
+		end
+
+		if dmg.crushing then
+			spell.crushing = spell.crushing + dmg.crushing
+		end
+
+		if dmg.blocked then
+			spell.blocked = spell.blocked + dmg.blocked
+		end
+
+		if dmg.absorbed then
+			spell.absorbed = spell.absorbed + dmg.absorbed
+		end
+
+		if dmg.critical then
+			spell.critical = spell.critical + dmg.critical
+		end
+
+		if dmg.resisted then
+			spell.resisted = spell.resisted + dmg.resisted
+		end
+
+		if dmg.glancing then
+			spell.glancing = spell.glancing + dmg.glancing
 		end
 
 		if (spell.min == nil or dmg.amount < spell.min) then
@@ -49,6 +73,12 @@ local function SpellDamage(timestamp, eventtype, srcGUID, srcName, srcFlags, dst
 	dmg.spellid = spellId
 	dmg.spellname = spellName
 	dmg.amount = samount
+	dmg.blocked = sblocked
+	dmg.absorbed = sabsorbed
+	dmg.critical = scritical
+	dmg.resisted = sresisted
+	dmg.glancing = sglancing
+	dmg.crushing = scrushing
 
 	log_damage_taken(Skada.current, dmg)
 	log_damage_taken(Skada.total, dmg)
@@ -63,6 +93,12 @@ local function SwingDamage(timestamp, eventtype, srcGUID, srcName, srcFlags, dst
 	dmg.spellid = 6603
 	dmg.spellname = L["Attack"]
 	dmg.amount = samount
+	dmg.blocked = sblocked
+	dmg.absorbed = sabsorbed
+	dmg.critical = scritical
+	dmg.resisted = sresisted
+	dmg.glancing = sglancing
+	dmg.crushing = scrushing
 
 	log_damage_taken(Skada.current, dmg)
 	log_damage_taken(Skada.total, dmg)
@@ -211,10 +247,32 @@ local function playerspell_tooltip(win, id, label, tooltip)
 		if spell then
 			tooltip:AddLine(player.name.." - "..label)
 			if spell.max and spell.min then
+				tooltip:AddDoubleLine(L["Hits:"], spell.totalhits, 255,255,255,255,255,255)
 				tooltip:AddDoubleLine(L["Minimum hit:"], Skada:FormatNumber(spell.min), 255,255,255,255,255,255)
 				tooltip:AddDoubleLine(L["Maximum hit:"], Skada:FormatNumber(spell.max), 255,255,255,255,255,255)
 			end
 			tooltip:AddDoubleLine(L["Average hit:"], Skada:FormatNumber(spell.damage / spell.totalhits), 255,255,255,255,255,255)
+			if spell.resisted > 0 then
+				tooltip:AddDoubleLine(L["Resisted:"], Skada:FormatNumber(spell.resisted), 255,255,255,255,255,255)
+			end
+			if spell.critical > 0 then
+				tooltip:AddDoubleLine(L["Critical:"], Skada:FormatNumber(spell.critical), 255,255,255,255,255,255)
+			end
+			if spell.blocked > 0 then
+				tooltip:AddDoubleLine(L["Resisted:"], Skada:FormatNumber(spell.blocked), 255,255,255,255,255,255)
+			end
+			if spell.crushing > 0 then
+				tooltip:AddDoubleLine(L["Crushing:"], Skada:FormatNumber(spell.crushing), 255,255,255,255,255,255)
+			end
+			if spell.resisted > 0 then
+				tooltip:AddDoubleLine(L["Resisted:"], Skada:FormatNumber(spell.resisted), 255,255,255,255,255,255)
+			end
+			if spell.glancing > 0 then
+				tooltip:AddDoubleLine(L["Resisted:"], Skada:FormatNumber(spell.glancing), 255,255,255,255,255,255)
+			end
+			if spell.absorbed > 0 then
+				tooltip:AddDoubleLine(L["Absorbed:"], Skada:FormatNumber(spell.absorbed), 255,255,255,255,255,255)
+			end
 		end
 	end
 end
