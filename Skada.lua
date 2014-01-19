@@ -1217,17 +1217,17 @@ function Skada:EndSegment()
 				win.restore_set = nil
 			end
 		end
+
+		-- Hide in combat option.
+		if not win.db.hidden and self.db.profile.hidecombat then
+			win:Show()
+		end
 	end
 
 	self:UpdateDisplay()
 	if update_timer then self:CancelTimer(update_timer) end
 	if tick_timer then self:CancelTimer(tick_timer) end
 	update_timer, tick_timer = nil, nil
-
-	-- Hide in combat option.
-	if self.db.profile.hidecombat then
-		self:SetActive(true)
-	end
 end
 
 function Skada:PLAYER_REGEN_DISABLED()
@@ -1294,6 +1294,11 @@ function Skada:StartCombat(isEncounter)
 				win:DisplayMode(mymode)
 			end
 		end
+
+		-- Hide in combat option.
+		if not win.db.hidden and self.db.profile.hidecombat then
+			win:Hide()
+		end
 	end
 
 	-- Force immediate update.
@@ -1303,11 +1308,6 @@ function Skada:StartCombat(isEncounter)
 	update_timer = self:ScheduleRepeatingTimer("UpdateDisplay", 0.5)
 	if not isEncounter then
 		tick_timer = self:ScheduleRepeatingTimer("Tick", 1)
-	end
-
-	-- Hide in combat option.
-	if self.db.profile.hidecombat then
-		self:SetActive(false)
 	end
 end
 
