@@ -15,7 +15,7 @@ local function log_damage_taken(set, dmg)
 		set.damagetaken = set.damagetaken + dmg.amount
 
 		-- Add spell to player if it does not exist.
-		if not player.damagetakenspells[dmg.spellname] then
+		if not player.damagetakenspells[dmg.spellname] or not player.damagetakenspells[dmg.spellname]['absorbed'] then
 			player.damagetakenspells[dmg.spellname] = {id = dmg.spellid, name = dmg.spellname, damage = 0, totalhits = 0, min = nil, max = nil, crushing = 0, glancing = 0, resisted = 0, critical = 0, absorbed = 0, blocked = 0}
 		end
 
