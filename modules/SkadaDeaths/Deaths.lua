@@ -35,7 +35,7 @@ local function log_death(set, playerid, playername, timestamp)
 		table.insert(player.deaths, 1, {["ts"] = timestamp, ["log"] = player.deathlog})
 
 		-- Add a fake entry for the actual death.
-		local spellid = 5384 -- Feign Death.
+		local spellid = 41220 -- Death
 		local spellname = string.format(L["%s dies"], player.name)
 		log_deathlog(set, playerid, playername, nil, spellid, spellname, 0, timestamp)
 		player.deathlog.pos = nil
