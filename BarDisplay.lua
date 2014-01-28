@@ -272,16 +272,29 @@ function mod:Update(win)
 					if data.icon then
 						bar:ShowIcon()
 
+						local link
 						if data.spellid then
 							local spell = data.spellid
+							link = GetSpellLink(spell)
 							bar.iconFrame:EnableMouse(true)
 							bar.iconFrame:SetScript("OnEnter", function(bar) Skada:SetTooltipPosition(GameTooltip, win.bargroup); GameTooltip:SetSpellByID(spell); GameTooltip:Show() end)
 							bar.iconFrame:SetScript("OnLeave", function(bar) GameTooltip:Hide() end)
 						elseif data.hyperlink then
-							local link = data.hyperlink
+							link = data.hyperlink
 							bar.iconFrame:EnableMouse(true)
 							bar.iconFrame:SetScript("OnEnter", function(bar) Skada:SetTooltipPosition(GameTooltip, win.bargroup); GameTooltip:SetHyperlink(link); GameTooltip:Show(); end)
 							bar.iconFrame:SetScript("OnLeave", function(bar) GameTooltip:Hide() end)
+						end
+						if link then
+							bar.iconFrame:SetScript("OnMouseDown", function(bar) -- shift-click to link spell into chat
+								if not IsShiftKeyDown() then return end
+								local activeEditBox = ChatEdit_GetActiveWindow()
+								if activeEditBox then
+									ChatEdit_InsertLink(link)
+								else
+									ChatFrame_OpenChat(link, DEFAULT_CHAT_FRAME)
+								end
+							end)
 						end
 					end
 
@@ -451,6 +464,7 @@ function mod:CreateBar(win, name, label, value, maxvalue, icon, o)
 	bar:SetScript("OnMouseWheel", function(f, d) mod:OnMouseWheel(win, f, d) end)
 	bar.iconFrame:SetScript("OnEnter", nil)
 	bar.iconFrame:SetScript("OnLeave", nil)
+	bar.iconFrame:SetScript("OnMouseDown", nil)
 	bar.iconFrame:EnableMouse(false)
 	return bar
 end
