@@ -747,7 +747,7 @@ function Skada:Report(channel, chantype, report_mode_name, report_set_name, max,
 	local nr = 1
 	for i, data in ipairs(report_table.dataset) do
 		if data.id then
-			local label = (data.spellid and GetSpellLink(data.spellid)) or data.label
+			local label = data.reportlabel or (data.spellid and GetSpellLink(data.spellid)) or data.label
 			if report_mode.metadata and report_mode.metadata.showspots then
 				sendchat(("%2u. %s   %s"):format(nr, label, data.valuetext), channel, chantype)
 			else

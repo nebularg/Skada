@@ -5,7 +5,11 @@ local Skada = Skada
 local mod = Skada:NewModule(L["Deaths"])
 local deathlog = Skada:NewModule(L["Death log"])
 
-local function log_deathlog(set, playerid, playername, srcname, spellid, spellname, amount, timestamp, logoverride)
+local SORtime = {}
+
+local death_spell = 41220 -- Death
+
+local function log_deathlog(set, playerid, playername, srcname, spellid, spellname, amount, timestamp, logoverride, healthoverride)
 	local player = Skada:get_player(set, playerid, playername)
 	local log = logoverride or player.deathlog
 	local pos = log.pos or 1
@@ -20,7 +24,7 @@ local function log_deathlog(set, playerid, playername, srcname, spellid, spellna
 	entry.spellname = spellname
 	entry.amount =	  amount
 	entry.ts = 	  timestamp
-	entry.hp = 	  UnitHealth(playername)
+	entry.hp = 	  healthoverride or UnitHealth(playername)
 
 	pos = pos + 1
 	if pos > 15 then pos = 1 end
@@ -35,10 +39,17 @@ local function log_death(set, playerid, playername, timestamp)
 		table.insert(player.deaths, 1, {["ts"] = timestamp, ["log"] = player.deathlog})
 
 		-- Add a fake entry for the actual death.
-		local spellid = 41220 -- Death
+		local spellid = death_spell
 		local spellname = string.format(L["%s dies"], player.name)
-		log_deathlog(set, playerid, playername, nil, spellid, spellname, 0, timestamp)
-		player.deathlog.pos = nil
+		log_deathlog(set, playerid, playername, nil, spellid, spellname, 0, timestamp, nil, 0)
+
+		for i,entry in ipairs(player.deathlog) do
+			-- sometimes multiple close events arrive with the same timestamp
+			-- add a small bias to ensure we preserve the order in which we recorded them
+			-- this ensures sort stability (to prevent oscillation on :Update())
+			-- and makes it more likely the health bar progression is correct
+			entry.ts = entry.ts + i*0.0001
+		end
 
 		-- Also add to set deaths.
 		set.deaths = set.deaths + 1
@@ -53,14 +64,43 @@ local function log_resurrect(set, playerid, playername, srcname, spellid, spelln
 
 	-- Add log entry to to previous death.
 	if player and player.deaths and player.deaths[1] then
-		log_deathlog(set, playerid, playername, srcname, spellid, spellname, 0, timestamp, player.deaths[1].log)
+		log_deathlog(set, playerid, playername, srcname, spellid, spellname, 0, timestamp, player.deaths[1].log, 0)
+	end
+end
+
+local function log_SORdeath(set, playerid, playername, timestamp)
+	local player = Skada:get_player(set, playerid, playername)
+
+	local spellid = death_spell
+	local spellname = string.format(L["%s dies"], GetSpellInfo(20711))
+
+	-- Add log entry to to previous death.
+	if player and player.deaths and player.deaths[1] then
+		log_deathlog(set, playerid, playername, playername, spellid, spellname, 0, timestamp, player.deaths[1].log, 0)
+	end
+
+	-- this event is the death of the Spirit of Redemption who is immune to all damage, so the deathlog is meaningless
+	if player and player.deathlog then
+		wipe(player.deathlog)
 	end
 end
 
 local function UnitDied(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
-	if not UnitIsFeignDeath(dstName) then	-- Those pesky hunters
+	if timestamp < (SORtime[dstGUID] or 0) + 20 then -- Spirit of Redemption lasts 15 sec, allow some padding for latency
+		log_SORdeath(Skada.current, dstGUID, dstName, timestamp)
+		log_SORdeath(Skada.total,   dstGUID, dstName, timestamp)
+	elseif not UnitIsFeignDeath(dstName) then	-- Those pesky hunters
 		log_death(Skada.current, dstGUID, dstName, timestamp)
 		log_death(Skada.total, dstGUID, dstName, timestamp)
+	end
+end
+
+local function AuraApplied(...)
+        local spellId = select(9,...)
+	if spellId == 27827 then -- Spirit of Redemption, Holy priest just died
+		UnitDied(...)
+		local dstGUID = select(6,...)
+		SORtime[dstGUID] = ... -- timestamp
 	end
 end
 
@@ -190,16 +230,25 @@ function deathlog:Update(win, set)
 					win.dataset[nr] = d
 
 					d.id = nr
-					local spellname = log.spellname or GetSpellInfo(log.spellid or 88163) -- "Attack" spell
-					if log.srcname then 
-						spellname = log.srcname..L["'s "]..spellname
-					end
-					local spellid = log.spellid or 106727 -- "unknown" spell
-					if log.ts >= death.ts then
-						d.label = date("%H:%M:%S", log.ts).. ": "..spellname
+					local spellid = log.spellid or 88163 -- "Attack" spell
+					local spellname = log.spellname or GetSpellInfo(spellid)
+					local rspellname
+					if spellid == death_spell then
+						rspellname = spellname -- nicely formatted death message
 					else
-						d.label = ("%2.2f"):format(diff) .. ": "..spellname
+						rspellname = GetSpellLink(spellid) or spellname	
 					end
+					local label
+					if log.ts >= death.ts then
+						label = date("%H:%M:%S", log.ts).. ": "
+					else
+						label = ("%2.2f"):format(diff) .. ": "
+					end
+					if log.srcname then 
+						label = label..log.srcname..L["'s "]
+					end
+					d.label =       label..spellname
+					d.reportlabel = label..rspellname
 					d.ts = log.ts
 					d.value = log.hp or 0
 					local _, _, icon = GetSpellInfo(spellid)
@@ -243,6 +292,8 @@ function mod:OnEnable()
 	deathlog.metadata 	= {ordersort = true, columns = {Change = true, Health = false, Percent = true}}
 
 	Skada:RegisterForCL(UnitDied, 'UNIT_DIED', {dst_is_interesting_nopets = true})
+
+	Skada:RegisterForCL(AuraApplied, 'SPELL_AURA_APPLIED', {dst_is_interesting_nopets = true})
 
 	Skada:RegisterForCL(SpellDamage, 'SPELL_DAMAGE', {dst_is_interesting_nopets = true})
 	Skada:RegisterForCL(SpellDamage, 'SPELL_PERIODIC_DAMAGE', {dst_is_interesting_nopets = true})
