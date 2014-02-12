@@ -155,8 +155,8 @@ local pets, players = {}, {}
 -- Flag marking if we need an update.
 local changed = true
 
--- Flag for if we were in a party/raid. Set first time in PLAYER_ENTERING_WORLD.
-local wasinparty = false
+-- Flag for if we were in a party/raid.
+local wasinparty = nil
 
 -- By default we just use RAID_CLASS_COLORS as class colors.
 Skada.classcolors = RAID_CLASS_COLORS
@@ -892,11 +892,9 @@ function Skada:PLAYER_ENTERING_WORLD()
 		wasinpvp = false
 	end
 
-	-- Mark our last party status. This is done so that the flag is set to correct value on relog/reloadui.
-	wasinparty = IsInGroup()
-
-	-- Check for pets.
-	self:CheckGroup()
+	-- make sure we update once on reload
+	-- delay it because group is unavailable during first PLAYER_ENTERING_WORLD on login
+	if wasinparty == nil then Skada:ScheduleTimer("GROUP_ROSTER_UPDATE",1) end
 end
 
 -- Check if we join a party/raid.
@@ -916,7 +914,7 @@ local function check_for_join_and_leave()
 		end
 	end
 
-	if IsInGroup() and not wasinparty then
+	if IsInGroup() and wasinparty == false then -- if nil this is first check after reload/relog
 		-- We joined a raid.
 
 		if Skada.db.profile.reset.join == 3 then
@@ -933,7 +931,7 @@ local function check_for_join_and_leave()
 	end
 
 	-- Mark our last party status.
-	wasinparty = IsInGroup()
+	wasinparty = not not IsInGroup()
 end
 
 function Skada:GROUP_ROSTER_UPDATE()
