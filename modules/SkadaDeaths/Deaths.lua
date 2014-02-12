@@ -35,12 +35,10 @@ local function log_death(set, playerid, playername, timestamp)
 	local player = Skada:get_player(set, playerid, playername)
 
 	if player then
-		-- Add a death along with it's timestamp.
-		table.insert(player.deaths, 1, {["ts"] = timestamp, ["log"] = player.deathlog})
-
 		-- Add a fake entry for the actual death.
 		local spellid = death_spell
 		local spellname = string.format(L["%s dies"], player.name)
+		local deathts = timestamp
 		log_deathlog(set, playerid, playername, nil, spellid, spellname, 0, timestamp, nil, 0)
 
 		for i,entry in ipairs(player.deathlog) do
@@ -48,8 +46,12 @@ local function log_death(set, playerid, playername, timestamp)
 			-- add a small bias to ensure we preserve the order in which we recorded them
 			-- this ensures sort stability (to prevent oscillation on :Update())
 			-- and makes it more likely the health bar progression is correct
-			entry.ts = entry.ts + i*0.0001
+			entry.ts = entry.ts + i*0.00001 + (i < (player.deathlog.pos or 1) and 0.001 or 0)
+			if entry.spellid == death_spell then deathts = entry.ts end
 		end
+
+		-- Add a death along with it's timestamp.
+		table.insert(player.deaths, 1, {["ts"] = deathts, ["log"] = player.deathlog}) 
 
 		-- Also add to set deaths.
 		set.deaths = set.deaths + 1
@@ -224,7 +226,7 @@ function deathlog:Update(win, set)
 			for j, log in ipairs(death.log) do
 				local diff = tonumber(log.ts) - tonumber(death.ts)
 				-- Ignore hits older than 30s before death.
-				if diff > -30 or diff > 0 then
+				if diff > -30 then
 
 					local d = win.dataset[nr] or {}
 					win.dataset[nr] = d
@@ -262,7 +264,7 @@ function deathlog:Update(win, set)
 						change = "-"..change
 					end
 
-					if log.ts > death.ts then
+					if log.ts >= death.ts then
 						d.valuetext = ""
 					else
 						d.valuetext = Skada:FormatValueText(
