@@ -35,6 +35,7 @@ Skada.windowdefaults = {
 
 	hidden = false,
 	enabletitle = true,
+	titleset = true,
 
 	set = "current",
 	mode = nil,

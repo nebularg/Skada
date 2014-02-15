@@ -2,6 +2,8 @@ local L = LibStub("AceLocale-3.0"):NewLocale("Skada", "enUS", true)
 
 if not L then return end
 
+L["Include set"] = true
+L["Include set name in title bar"] = true
 L["Disable"] = true
 L["Profiles"] = true
 L["Hint: Left-Click to toggle Skada window."] = true

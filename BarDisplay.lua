@@ -768,7 +768,6 @@ function mod:AddDisplayOptions(win, options)
 			        type="toggle",
 			        name=L["Enable"],
 			        desc=L["Enables the title bar."],
-					width="full",
 			        order=0,
 			        get=function() return db.enabletitle end,
 			        set=function()
@@ -777,6 +776,17 @@ function mod:AddDisplayOptions(win, options)
 			        	end,
 			},
 
+			titleset = {
+			        type="toggle",
+			        name=L["Include set"],
+			        desc=L["Include set name in title bar"],
+			        order=0.5,
+			        get=function() return db.titleset end,
+			        set=function()
+			        		db.titleset = not db.titleset
+		         			Skada:ApplySettings()
+			        	end,
+			},
 			height = {
 				type="range",
 				name=L["Title height"],

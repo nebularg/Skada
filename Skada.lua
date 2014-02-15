@@ -370,6 +370,7 @@ function Window:UpdateDisplay()
 
 	-- Display it.
 	self.display:Update(self)
+	self:set_mode_title()
 end
 
 -- Called before dataset is updated.
@@ -432,20 +433,40 @@ function Window:DisplayMode(mode)
 		end
 	end
 
-	local name = mode.title or mode:GetName()
-
-	-- Save for posterity.
-	self.db.mode = name
-	self.metadata.title = name
-
-	self.display:SetTitle(self, self.metadata.title)
 	self.changed = true
+	self:set_mode_title() -- in case data sets are empty
 
 	if self.child then
 		self.child:DisplayMode(mode)
 	end
 
 	Skada:UpdateDisplay(false)
+end
+
+function Window:set_mode_title()
+	if not self.selectedmode or not self.selectedset then return end
+	local name = self.selectedmode.title or self.selectedmode:GetName()
+	self.db.mode = name -- Save for posterity.
+	if self.db.titleset then
+		local setname
+		if self.selectedset == "current" then
+			setname = L["Current"]
+		elseif self.selectedset == "total" then
+			setname = L["Total"]
+		else
+			local set = self:get_selected_set()
+			if set then
+				setname = set.name
+				local endtime = set.endtime or time()
+				setname = setname .. ": ".. date("%X",set.starttime).." - "..date("%X",endtime)
+			end
+		end
+		if setname then
+			name = name..": "..setname
+		end
+	end
+	self.metadata.title = name
+	self.display:SetTitle(self, name)
 end
 
 local function click_on_mode(win, id, label, button)
