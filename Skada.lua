@@ -2057,151 +2057,158 @@ function Skada:AddSubviewToTooltip(tooltip, win, mode, id, label)
 	end
 end
 
-function Skada:OnInitialize()
-	-- Register some SharedMedia goodies.
-	media:Register("font", "Adventure",				[[Interface\Addons\Skada\fonts\Adventure.ttf]])
-	media:Register("font", "ABF",					[[Interface\Addons\Skada\fonts\ABF.ttf]])
-	media:Register("font", "Vera Serif",			[[Interface\Addons\Skada\fonts\VeraSe.ttf]])
-	media:Register("font", "Diablo",				[[Interface\Addons\Skada\fonts\Avqest.ttf]])
-	media:Register("font", "Accidental Presidency",	[[Interface\Addons\Skada\fonts\Accidental Presidency.ttf]])
-	media:Register("statusbar", "Aluminium",		[[Interface\Addons\Skada\statusbar\Aluminium]])
-	media:Register("statusbar", "Armory",			[[Interface\Addons\Skada\statusbar\Armory]])
-	media:Register("statusbar", "BantoBar",			[[Interface\Addons\Skada\statusbar\BantoBar]])
-	media:Register("statusbar", "Glaze2",			[[Interface\Addons\Skada\statusbar\Glaze2]])
-	media:Register("statusbar", "Gloss",			[[Interface\Addons\Skada\statusbar\Gloss]])
-	media:Register("statusbar", "Graphite",			[[Interface\Addons\Skada\statusbar\Graphite]])
-	media:Register("statusbar", "Grid",				[[Interface\Addons\Skada\statusbar\Grid]])
-	media:Register("statusbar", "Healbot",			[[Interface\Addons\Skada\statusbar\Healbot]])
-	media:Register("statusbar", "LiteStep",			[[Interface\Addons\Skada\statusbar\LiteStep]])
-	media:Register("statusbar", "Minimalist",		[[Interface\Addons\Skada\statusbar\Minimalist]])
-	media:Register("statusbar", "Otravi",			[[Interface\Addons\Skada\statusbar\Otravi]])
-	media:Register("statusbar", "Outline",			[[Interface\Addons\Skada\statusbar\Outline]])
-	media:Register("statusbar", "Perl",				[[Interface\Addons\Skada\statusbar\Perl]])
-	media:Register("statusbar", "Smooth",			[[Interface\Addons\Skada\statusbar\Smooth]])
-	media:Register("statusbar", "Round",			[[Interface\Addons\Skada\statusbar\Round]])
-	media:Register("statusbar", "TukTex",			[[Interface\Addons\Skada\statusbar\normTex]])
+do
+	--[[ XXX TEMP UPGRADE POPUP ]]
+	local tempPopup = function()
+		local tbl = {
+			SkadaCC = true,
+			SkadaDamage = true,
+			SkadaDamageTaken = true,
+			SkadaDeaths = true,
+			SkadaDebuffs = true,
+			SkadaDispels = true,
+			SkadaEnemies = true,
+			SkadaHealing = true,
+			SkadaPower = true,
+			SkadaThreat = true,
+		}
 
-	-- Some sounds (copied from Omen).
-	media:Register("sound", "Rubber Ducky", [[Sound\Doodad\Goblin_Lottery_Open01.wav]])
-	media:Register("sound", "Cartoon FX", [[Sound\Doodad\Goblin_Lottery_Open03.wav]])
-	media:Register("sound", "Explosion", [[Sound\Doodad\Hellfire_Raid_FX_Explosion05.wav]])
-	media:Register("sound", "Shing!", [[Sound\Doodad\PortcullisActive_Closed.wav]])
-	media:Register("sound", "Wham!", [[Sound\Doodad\PVP_Lordaeron_Door_Open.wav]])
-	media:Register("sound", "Simon Chime", [[Sound\Doodad\SimonGame_LargeBlueTree.wav]])
-	media:Register("sound", "War Drums", [[Sound\Event Sounds\Event_wardrum_ogre.wav]])
-	media:Register("sound", "Cheer", [[Sound\Event Sounds\OgreEventCheerUnique.wav]])
-	media:Register("sound", "Humm", [[Sound\Spells\SimonGame_Visual_GameStart.wav]])
-	media:Register("sound", "Short Circuit", [[Sound\Spells\SimonGame_Visual_BadPress.wav]])
-	media:Register("sound", "Fel Portal", [[Sound\Spells\Sunwell_Fel_PortalStand.wav]])
-	media:Register("sound", "Fel Nova", [[Sound\Spells\SeepingGaseous_Fel_Nova.wav]])
-	media:Register("sound", "You Will Die!", [[Sound\Creature\CThun\CThunYouWillDie.wav]])
-
-	-- DB
-	self.db = LibStub("AceDB-3.0"):New("SkadaDB", self.defaults, "Default")
-	if type(SkadaPerCharDB) ~= "table" then SkadaPerCharDB = {} end
-	self.char = SkadaPerCharDB
-	self.char.sets = self.char.sets or {}
-	LibStub("AceConfigRegistry-3.0"):RegisterOptionsTable("Skada", self.options, true)
-	self.optionsFrame = LibStub("AceConfigDialog-3.0"):AddToBlizOptions("Skada", "Skada")
-
-	-- Profiles
-	LibStub("AceConfigRegistry-3.0"):RegisterOptionsTable("Skada-Profiles", LibStub("AceDBOptions-3.0"):GetOptionsTable(self.db), true)
-	self.profilesFrame = LibStub("AceConfigDialog-3.0"):AddToBlizOptions("Skada-Profiles", "Profiles", "Skada")
-
-	-- Dual spec profiles
-	if lds then
-		lds:EnhanceDatabase(self.db, "SkadaDB")
-		lds:EnhanceOptions(LibStub("AceDBOptions-3.0"):GetOptionsTable(self.db), self.db)
-	end
-
-	-- Slash Handler
-	SLASH_SKADA1 = "/skada"
-	SlashCmdList.SKADA = slashHandler
-
-	self.db.RegisterCallback(self, "OnProfileChanged", "ReloadSettings")
-	self.db.RegisterCallback(self, "OnProfileCopied", "ReloadSettings")
-	self.db.RegisterCallback(self, "OnProfileReset", "ReloadSettings")
-	self.db.RegisterCallback(self, "OnDatabaseShutdown", "ClearAllIndexes")
-
-	-- Migrate old settings.
-	if self.db.profile.barmax then
-		self:Print("Migrating old settings somewhat gracefully. This should only happen once.")
-		self.db.profile.barmax = nil
-		self.db.profile.background.height = 200
-	end
-	if self.db.profile.total then
-		self.db.profile.current = nil
-		self.db.profile.total = nil
-		self.db.profile.sets = nil
-	end
-
-end
-
---[[ XXX TEMP UPGRADE POPUP ]]
-local tempPopup = function()
-	local tbl = {
-		SkadaCC = true,
-		SkadaDamage = true,
-		SkadaDamageTaken = true,
-		SkadaDeaths = true,
-		SkadaDebuffs = true,
-		SkadaDispels = true,
-		SkadaEnemies = true,
-		SkadaHealing = true,
-		SkadaPower = true,
-		SkadaThreat = true,
-	}
-
-	local create
-	local concat = "\n"
-	for i = 1, GetNumAddOns() do
-		local name = GetAddOnInfo(i)
-		if tbl[name] then
-			create = true
-			concat = concat .. name .. "\n"
-			DisableAddOn(i)
-		end
-	end
-
-	if create or not SkadaDB.hasUpgraded then
-		local frame = CreateFrame("Frame", "SkadaWarn", UIParent)
-
-		frame:SetBackdrop({bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background-Dark",
-			edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
-			tile = true, tileSize = 16, edgeSize = 16,
-			insets = {left = 1, right = 1, top = 1, bottom = 1}}
-		)
-		frame:SetSize(550, 420)
-		frame:SetPoint("CENTER", UIParent, "CENTER")
-		frame:SetFrameStrata("DIALOG")
-		frame:Show()
-
-		local title = frame:CreateFontString(nil, "ARTWORK", "GameFontNormalHuge")
-		title:SetPoint("TOP", frame, "TOP", 0, -12)
-		title:SetText(L["Skada has changed!"])
-
-		local text = frame:CreateFontString(nil, "ARTWORK", "ChatFontNormal")
-		text:SetPoint("CENTER", frame, "CENTER")
-		text:SetText(L["All Skada functionality is now in 1 addon folder."] .. (create and "\n\n" .. L["Skada will |cFFFF0000NOT|r function properly until you delete the following AddOns:"] ..concat or ""))
-
-		local btn = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
-		btn:SetWidth(110)
-		btn:SetHeight(20)
-		btn:SetPoint("BOTTOM", frame, "BOTTOM", 0, 8)
-		btn:SetText(OKAY)
-		btn:SetScript("OnClick", function(f)
-			f:GetParent():Hide()
-			if not create then
-				InterfaceOptionsFrame_OpenToCategory(Skada.optionsFrame) InterfaceOptionsFrame_OpenToCategory(Skada.optionsFrame)
+		local create
+		local concat = "\n"
+		for i = 1, GetNumAddOns() do
+			local name = GetAddOnInfo(i)
+			if tbl[name] then
+				create = true
+				concat = concat .. name .. "\n"
+				DisableAddOn(i)
 			end
-		end)
-
-		local ending = frame:CreateFontString(nil, "ARTWORK", "ChatFontNormal")
-		ending:SetPoint("TOP", btn, "TOP", 0, 30)
-		ending:SetText(create and "" or L["Click below and configure your '|cFFFF0000Disabled Modules|r'."])
-		if not create then
-			SkadaDB.hasUpgraded = true
 		end
+
+		if create or not SkadaDB.hasUpgraded then
+			local frame = CreateFrame("Frame", "SkadaWarn", UIParent)
+
+			frame:SetBackdrop({bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background-Dark",
+				edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
+				tile = true, tileSize = 16, edgeSize = 16,
+				insets = {left = 1, right = 1, top = 1, bottom = 1}}
+			)
+			frame:SetSize(550, 420)
+			frame:SetPoint("CENTER", UIParent, "CENTER")
+			frame:SetFrameStrata("DIALOG")
+			frame:Show()
+
+			local title = frame:CreateFontString(nil, "ARTWORK", "GameFontNormalHuge")
+			title:SetPoint("TOP", frame, "TOP", 0, -12)
+			title:SetText(L["Skada has changed!"])
+
+			local text = frame:CreateFontString(nil, "ARTWORK", "ChatFontNormal")
+			text:SetPoint("CENTER", frame, "CENTER")
+			text:SetText(L["All Skada functionality is now in 1 addon folder."] .. (create and "\n\n" .. L["Skada will |cFFFF0000NOT|r function properly until you delete the following AddOns:"] ..concat or ""))
+
+			local btn = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
+			btn:SetWidth(110)
+			btn:SetHeight(20)
+			btn:SetPoint("BOTTOM", frame, "BOTTOM", 0, 8)
+			btn:SetText(OKAY)
+			btn:SetScript("OnClick", function(f)
+				f:GetParent():Hide()
+				if not create then
+					InterfaceOptionsFrame_OpenToCategory(Skada.optionsFrame) InterfaceOptionsFrame_OpenToCategory(Skada.optionsFrame)
+				end
+			end)
+
+			local ending = frame:CreateFontString(nil, "ARTWORK", "ChatFontNormal")
+			ending:SetPoint("TOP", btn, "TOP", 0, 30)
+			ending:SetText(create and "" or L["Click below and configure your '|cFFFF0000Disabled Modules|r'."])
+			if not create then
+				SkadaDB.hasUpgraded = true
+			end
+		end
+	end
+
+	function Skada:OnInitialize()
+		-- XXX temp
+		self:ScheduleTimer(tempPopup, 1)
+
+		-- Register some SharedMedia goodies.
+		media:Register("font", "Adventure",				[[Interface\Addons\Skada\fonts\Adventure.ttf]])
+		media:Register("font", "ABF",					[[Interface\Addons\Skada\fonts\ABF.ttf]])
+		media:Register("font", "Vera Serif",			[[Interface\Addons\Skada\fonts\VeraSe.ttf]])
+		media:Register("font", "Diablo",				[[Interface\Addons\Skada\fonts\Avqest.ttf]])
+		media:Register("font", "Accidental Presidency",	[[Interface\Addons\Skada\fonts\Accidental Presidency.ttf]])
+		media:Register("statusbar", "Aluminium",		[[Interface\Addons\Skada\statusbar\Aluminium]])
+		media:Register("statusbar", "Armory",			[[Interface\Addons\Skada\statusbar\Armory]])
+		media:Register("statusbar", "BantoBar",			[[Interface\Addons\Skada\statusbar\BantoBar]])
+		media:Register("statusbar", "Glaze2",			[[Interface\Addons\Skada\statusbar\Glaze2]])
+		media:Register("statusbar", "Gloss",			[[Interface\Addons\Skada\statusbar\Gloss]])
+		media:Register("statusbar", "Graphite",			[[Interface\Addons\Skada\statusbar\Graphite]])
+		media:Register("statusbar", "Grid",				[[Interface\Addons\Skada\statusbar\Grid]])
+		media:Register("statusbar", "Healbot",			[[Interface\Addons\Skada\statusbar\Healbot]])
+		media:Register("statusbar", "LiteStep",			[[Interface\Addons\Skada\statusbar\LiteStep]])
+		media:Register("statusbar", "Minimalist",		[[Interface\Addons\Skada\statusbar\Minimalist]])
+		media:Register("statusbar", "Otravi",			[[Interface\Addons\Skada\statusbar\Otravi]])
+		media:Register("statusbar", "Outline",			[[Interface\Addons\Skada\statusbar\Outline]])
+		media:Register("statusbar", "Perl",				[[Interface\Addons\Skada\statusbar\Perl]])
+		media:Register("statusbar", "Smooth",			[[Interface\Addons\Skada\statusbar\Smooth]])
+		media:Register("statusbar", "Round",			[[Interface\Addons\Skada\statusbar\Round]])
+		media:Register("statusbar", "TukTex",			[[Interface\Addons\Skada\statusbar\normTex]])
+
+		-- Some sounds (copied from Omen).
+		media:Register("sound", "Rubber Ducky", [[Sound\Doodad\Goblin_Lottery_Open01.wav]])
+		media:Register("sound", "Cartoon FX", [[Sound\Doodad\Goblin_Lottery_Open03.wav]])
+		media:Register("sound", "Explosion", [[Sound\Doodad\Hellfire_Raid_FX_Explosion05.wav]])
+		media:Register("sound", "Shing!", [[Sound\Doodad\PortcullisActive_Closed.wav]])
+		media:Register("sound", "Wham!", [[Sound\Doodad\PVP_Lordaeron_Door_Open.wav]])
+		media:Register("sound", "Simon Chime", [[Sound\Doodad\SimonGame_LargeBlueTree.wav]])
+		media:Register("sound", "War Drums", [[Sound\Event Sounds\Event_wardrum_ogre.wav]])
+		media:Register("sound", "Cheer", [[Sound\Event Sounds\OgreEventCheerUnique.wav]])
+		media:Register("sound", "Humm", [[Sound\Spells\SimonGame_Visual_GameStart.wav]])
+		media:Register("sound", "Short Circuit", [[Sound\Spells\SimonGame_Visual_BadPress.wav]])
+		media:Register("sound", "Fel Portal", [[Sound\Spells\Sunwell_Fel_PortalStand.wav]])
+		media:Register("sound", "Fel Nova", [[Sound\Spells\SeepingGaseous_Fel_Nova.wav]])
+		media:Register("sound", "You Will Die!", [[Sound\Creature\CThun\CThunYouWillDie.wav]])
+
+		-- DB
+		self.db = LibStub("AceDB-3.0"):New("SkadaDB", self.defaults, "Default")
+		if type(SkadaPerCharDB) ~= "table" then SkadaPerCharDB = {} end
+		self.char = SkadaPerCharDB
+		self.char.sets = self.char.sets or {}
+		LibStub("AceConfigRegistry-3.0"):RegisterOptionsTable("Skada", self.options, true)
+		self.optionsFrame = LibStub("AceConfigDialog-3.0"):AddToBlizOptions("Skada", "Skada")
+
+		-- Profiles
+		LibStub("AceConfigRegistry-3.0"):RegisterOptionsTable("Skada-Profiles", LibStub("AceDBOptions-3.0"):GetOptionsTable(self.db), true)
+		self.profilesFrame = LibStub("AceConfigDialog-3.0"):AddToBlizOptions("Skada-Profiles", "Profiles", "Skada")
+
+		-- Dual spec profiles
+		if lds then
+			lds:EnhanceDatabase(self.db, "SkadaDB")
+			lds:EnhanceOptions(LibStub("AceDBOptions-3.0"):GetOptionsTable(self.db), self.db)
+		end
+
+		-- Slash Handler
+		SLASH_SKADA1 = "/skada"
+		SlashCmdList.SKADA = slashHandler
+
+		self.db.RegisterCallback(self, "OnProfileChanged", "ReloadSettings")
+		self.db.RegisterCallback(self, "OnProfileCopied", "ReloadSettings")
+		self.db.RegisterCallback(self, "OnProfileReset", "ReloadSettings")
+		self.db.RegisterCallback(self, "OnDatabaseShutdown", "ClearAllIndexes")
+
+		-- Migrate old settings.
+		if self.db.profile.barmax then
+			self:Print("Migrating old settings somewhat gracefully. This should only happen once.")
+			self.db.profile.barmax = nil
+			self.db.profile.background.height = 200
+		end
+		if self.db.profile.total then
+			self.db.profile.current = nil
+			self.db.profile.total = nil
+			self.db.profile.sets = nil
+		end
+
+		-- XXX temp
+		self.db.profile.modulesToSkip = nil
 	end
 end
 
@@ -2235,10 +2242,6 @@ function Skada:OnEnable()
 	-- Instead of listening for callbacks on SharedMedia we simply wait a few seconds and then re-apply settings
 	-- to catch any missing media. Lame? Yes.
 	self:ScheduleTimer("ApplySettings", 2)
-
-	-- XXX temp
-	self:ScheduleTimer(tempPopup, 1)
-	self.db.profile.modulesToSkip = nil
 end
 
 function Skada:AddLoadableModule(name, func)
