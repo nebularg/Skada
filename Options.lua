@@ -427,16 +427,24 @@ Skada.options = {
 				name = L["Disabled Modules"],
 				order=6,
 				get = function(i) return Skada.db.profile.modulesBlocked[i[#i]] end,
-				set = function(i, value) Skada.db.profile.modulesBlocked[i[#i]] = value; ReloadUI() end,
-				confirm = function()
-					return L["This change requires a UI reload. Are you sure?"]
-				end,
+				set = function(i, value) Skada.db.profile.modulesBlocked[i[#i]] = value; Skada.options.args.modules.args.apply.disabled=false end,
 				args = {
 					desc = {
 						type="description",
 						name=L["Tick the modules you want to disable."],
 						width="full",
 						order=0,
+					},
+					apply = {
+						type="execute",
+						name=APPLY,
+						width="full",
+						func=ReloadUI,
+						confirm = function()
+							return L["This change requires a UI reload. Are you sure?"]
+						end,
+						disabled = true,
+						order=99,
 					},
 				},
 			}
