@@ -2236,7 +2236,9 @@ function Skada:OnEnable()
 	-- to catch any missing media. Lame? Yes.
 	self:ScheduleTimer("ApplySettings", 2)
 
+	-- XXX temp
 	self:ScheduleTimer(tempPopup, 1)
+	self.db.profile.modulesToSkip = nil
 end
 
 function Skada:AddLoadableModule(name, func)
