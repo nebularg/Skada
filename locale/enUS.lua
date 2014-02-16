@@ -393,3 +393,9 @@ L["Instance"] = "Instance"
 
 L["Enemy healing done"] = "Enemy healing done"
 L["Enemy healing taken"] = "Enemy healing taken"
+
+L["Skada has changed!"] = true
+L["All Skada functionality is now in 1 addon folder."] = true
+L["Skada will |cFFFF0000NOT|r function properly until you delete the following AddOns:"] = true
+L["Click below and configure your '|cFFFF0000Disabled Modules|r'."] = true
+
