@@ -32,7 +32,7 @@ local function log_damage_taken(set, dmg)
 		end
 
 		if dmg.crushing then
-			spell.crushing = spell.crushing + dmg.crushing
+			spell.crushing = spell.crushing + 1
 		end
 
 		if dmg.blocked then
@@ -44,7 +44,7 @@ local function log_damage_taken(set, dmg)
 		end
 
 		if dmg.critical then
-			spell.critical = spell.critical + dmg.critical
+			spell.critical = spell.critical + 1
 		end
 
 		if dmg.resisted then
@@ -52,7 +52,7 @@ local function log_damage_taken(set, dmg)
 		end
 
 		if dmg.glancing then
-			spell.glancing = spell.glancing + dmg.glancing
+			spell.glancing = spell.glancing + 1
 		end
 
 		if (spell.min == nil or dmg.amount < spell.min) then
@@ -246,32 +246,29 @@ local function playerspell_tooltip(win, id, label, tooltip)
 		local spell = player.damagetakenspells[label]
 		if spell then
 			tooltip:AddLine(player.name.." - "..label)
+			tooltip:AddDoubleLine(L["Hit"]..":", spell.totalhits, 255,255,255,255,255,255)
+			if spell.critical > 0 then
+				tooltip:AddDoubleLine(L["Critical"]..":", spell.critical, 255,255,255,255,255,255)
+			end
+			if spell.crushing > 0 then
+				tooltip:AddDoubleLine(L["Crushing"]..":", spell.crushing, 255,255,255,255,255,255)
+			end
+			if spell.glancing > 0 then
+				tooltip:AddDoubleLine(L["Glancing"]..":", spell.glancing, 255,255,255,255,255,255)
+			end
 			if spell.max and spell.min then
-				tooltip:AddDoubleLine(L["Hits:"], spell.totalhits, 255,255,255,255,255,255)
 				tooltip:AddDoubleLine(L["Minimum hit:"], Skada:FormatNumber(spell.min), 255,255,255,255,255,255)
 				tooltip:AddDoubleLine(L["Maximum hit:"], Skada:FormatNumber(spell.max), 255,255,255,255,255,255)
 			end
 			tooltip:AddDoubleLine(L["Average hit:"], Skada:FormatNumber(spell.damage / spell.totalhits), 255,255,255,255,255,255)
-			if spell.resisted > 0 then
-				tooltip:AddDoubleLine(L["Resisted:"], Skada:FormatNumber(spell.resisted), 255,255,255,255,255,255)
-			end
-			if spell.critical > 0 then
-				tooltip:AddDoubleLine(L["Critical:"], Skada:FormatNumber(spell.critical), 255,255,255,255,255,255)
-			end
 			if spell.blocked > 0 then
-				tooltip:AddDoubleLine(L["Resisted:"], Skada:FormatNumber(spell.blocked), 255,255,255,255,255,255)
-			end
-			if spell.crushing > 0 then
-				tooltip:AddDoubleLine(L["Crushing:"], Skada:FormatNumber(spell.crushing), 255,255,255,255,255,255)
+				tooltip:AddDoubleLine(L["Blocked"]..":", Skada:FormatNumber(spell.blocked), 255,255,255,255,255,255)
 			end
 			if spell.resisted > 0 then
-				tooltip:AddDoubleLine(L["Resisted:"], Skada:FormatNumber(spell.resisted), 255,255,255,255,255,255)
-			end
-			if spell.glancing > 0 then
-				tooltip:AddDoubleLine(L["Resisted:"], Skada:FormatNumber(spell.glancing), 255,255,255,255,255,255)
+				tooltip:AddDoubleLine(L["Resisted"]..":", Skada:FormatNumber(spell.resisted), 255,255,255,255,255,255)
 			end
 			if spell.absorbed > 0 then
-				tooltip:AddDoubleLine(L["Absorbed:"], Skada:FormatNumber(spell.absorbed), 255,255,255,255,255,255)
+				tooltip:AddDoubleLine(L["Absorbed"]..":", Skada:FormatNumber(spell.absorbed), 255,255,255,255,255,255)
 			end
 		end
 	end
