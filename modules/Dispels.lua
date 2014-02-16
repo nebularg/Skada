@@ -1,6 +1,6 @@
 
-Skada:AddLoadableModule("Damage", function(Skada, L)
-	if Skada.db.profile.modulesBlocked.Damage then return end
+Skada:AddLoadableModule("Dispels", function(Skada, L)
+	if Skada.db.profile.modulesBlocked.Dispels then return end
 
 	local mod = Skada:NewModule(L["Dispels"])
 
