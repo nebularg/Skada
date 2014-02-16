@@ -285,6 +285,11 @@ L["Healing"] = true
 L["'s Healing"] = true
 L["Overhealing"] = true
 L["Threat"] = true
+L["Power"] = true
+L["Enemies"] = true
+L["Debuffs"] = true
+L["DamageTaken"] = "Damage Taken"
+L["TotalHealing"] = "Total Healing"
 
 L["Announce CC breaking to party"] = true
 L["Ignore Main Tanks"] = true

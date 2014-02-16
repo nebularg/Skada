@@ -1,6 +1,6 @@
 
 Skada:AddLoadableModule("Damage", function(Skada, L)
-	if Skada.db.profile.modulesToSkip.Damage then return end
+	if Skada.db.profile.modulesBlocked.Damage then return end
 
 	local mod = Skada:NewModule(L["Damage"])
 	local dpsmod = Skada:NewModule(L["DPS"])

@@ -73,7 +73,11 @@ Skada.defaults = {
 		modules = {},
 		columns = {},
 		report = {mode = "Damage", set = "current", channel = "Say", chantype = "preset", number = 10},
-		modulesToSkip = {},
+		modulesBlocked = {
+			CC = true,
+			Power = true,
+			Threat = true,
+		},
 
 		windows = {windefaultscopy},
 	}
@@ -425,8 +429,8 @@ Skada.options = {
 				type = "group",
 				name = L["Disabled Modules"],
 				order=6,
-				get = function(i) return Skada.db.profile.modulesToSkip[i[#i]] end,
-				set = function(i, value) Skada.db.profile.modulesToSkip[i[#i]] = value; ReloadUI() end,
+				get = function(i) return Skada.db.profile.modulesBlocked[i[#i]] end,
+				set = function(i, value) Skada.db.profile.modulesBlocked[i[#i]] = value; ReloadUI() end,
 				confirm = function()
 					return L["This change requires a UI reload. Are you sure?"]
 				end,

@@ -88,7 +88,7 @@ function Skada:OpenMenu(window)
 
 	        wipe(info)
 	        info.text = L["Configure"]
-	        info.func = function() InterfaceOptionsFrame_OpenToCategory("Skada") end
+	        info.func = function() InterfaceOptionsFrame_OpenToCategory("Skada") InterfaceOptionsFrame_OpenToCategory("Skada") end
 	        info.notCheckable = 1
 	        UIDropDownMenu_AddButton(info, level)
 
