@@ -74,9 +74,6 @@ Skada.defaults = {
 		columns = {},
 		report = {mode = "Damage", set = "current", channel = "Say", chantype = "preset", number = 10},
 		modulesBlocked = {
-			CC = true,
-			Power = true,
-			Threat = true,
 		},
 
 		windows = {windefaultscopy},
