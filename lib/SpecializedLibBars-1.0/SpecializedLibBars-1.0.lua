@@ -837,6 +837,7 @@ function barListPrototype:SetLength(length)
 	if bars[self] then
 		for k, v in pairs(bars[self]) do
 			v:SetLength(length)
+			v:OnSizeChanged() -- widget fires this before .length is set, do it again to ensure update
 		end
 	end
 	self:UpdateOrientationLayout()
