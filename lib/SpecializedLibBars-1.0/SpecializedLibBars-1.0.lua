@@ -349,6 +349,11 @@ function barListPrototype:AdjustButtons()
 			nr = nr + 1
 		end
 	end
+	if lastbtn then
+		self.button:GetFontString():SetPoint("RIGHT", lastbtn, "LEFT")
+	else
+		self.button:GetFontString():SetPoint("RIGHT", self.button, "RIGHT")
+	end
 end
 
 function barListPrototype:SetBarBackgroundColor(r, g, b, a)
