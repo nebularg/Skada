@@ -1370,7 +1370,7 @@ function Skada:get_player(set, playerid, playername)
 		-- Tell each mode to apply its needed attributes.
 		for i, mode in ipairs(modes) do
 			if mode.AddPlayerAttributes ~= nil then
-				mode:AddPlayerAttributes(player)
+				mode:AddPlayerAttributes(player, set)
 			end
 		end
 
