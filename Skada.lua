@@ -2048,7 +2048,11 @@ function Skada:AddSubviewToTooltip(tooltip, win, mode, id, label)
 					local color = Skada.classcolors[data.class]
 				end
 
-				tooltip:AddDoubleLine(nr..". "..data.label, data.valuetext, color.r, color.g, color.b)
+				local label = data.label
+				if mode.metadata and mode.metadata.showspots then
+					label = nr..". "..label
+				end
+				tooltip:AddDoubleLine(label, data.valuetext, color.r, color.g, color.b)
 			end
 		end
 
