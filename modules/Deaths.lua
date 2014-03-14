@@ -2,7 +2,7 @@
 Skada:AddLoadableModule("Deaths", function(Skada, L)
 	if Skada.db.profile.modulesBlocked.Deaths then return end
 
-	local mod = Skada:NewModule(L["Deaths"])
+	local mod = Skada:NewModule(L["Deaths"], "AceTimer-3.0")
 	local deathlog = Skada:NewModule(L["Death log"])
 
 	local SORtime = {}
@@ -102,7 +102,9 @@ Skada:AddLoadableModule("Deaths", function(Skada, L)
 	end
 
 	local function UnitDied(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
-		if timestamp < (SORtime[dstGUID] or 0) + 20 then -- Spirit of Redemption lasts 15 sec, allow some padding for latency
+		local SORtime = SORtime[dstGUID] or 0
+		if timestamp > SORtime + 1 and 
+                   timestamp < SORtime + 20 then -- Spirit of Redemption lasts 15 sec, allow some padding for latency
 			log_SORdeath(Skada.total,   dstGUID, dstName, timestamp)
 		elseif not UnitIsFeignDeath(dstName) then	-- Those pesky hunters
 			local deathts, deathlog, maxhp = log_death(Skada.total, dstGUID, dstName, timestamp)
@@ -117,11 +119,32 @@ Skada:AddLoadableModule("Deaths", function(Skada, L)
 	local function AuraApplied(...)
 		local spellId = select(9,...)
 		if spellId == 27827 then -- Spirit of Redemption, Holy priest just died
-			UnitDied(...)
+			local timestamp = ...
 			local dstGUID = select(6,...)
-			SORtime[dstGUID] = ... -- timestamp
+			SORtime[dstGUID] = timestamp
+			-- SOR AURA_APPLIED often arrives before the actual killing blow (although usually with the same timestamp)
+			-- insert a short delay before closing the deathlog to increase the chances we capture the killing blow
+			local args = { select(2,...) } -- sigh, ... cannot be an upvalue
+			mod:ScheduleTimer(function()
+                           UnitDied((timestamp+0.01), unpack(args)) -- add a ts bias for display of "simultaneous" killing blow
+                        end, 0.01)
 		end
 	end
+
+        local function Missed(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
+		if dstGUID and timestamp == SORtime[dstGUID] then -- this is actually the killing blow for the SOR we just recorded
+			local spellId, samount
+			if eventtype == "SWING_MISSED" then
+				spellId = 88163
+				samount = select(3,...)
+			else
+				spellId = ...
+				samount = select(6,...)
+			end
+			-- print("SOR Miss killing blow: ",dstName, spellid, samount)
+			log_deathlog(Skada.total, dstGUID, dstName, srcName, spellId, nil, 0-samount, timestamp)
+		end
+        end
 
 	local function Resurrect(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
 		-- Resurrection.
@@ -332,7 +355,11 @@ Skada:AddLoadableModule("Deaths", function(Skada, L)
 
 		Skada:RegisterForCL(Resurrect, 'SPELL_RESURRECT', {dst_is_interesting_nopets = true})
 
-		Skada:AddMode(self)
+		Skada:RegisterForCL(Missed, 'SWING_MISSED', {dst_is_interesting_nopets = true})
+		Skada:RegisterForCL(Missed, 'SPELL_MISSED', {dst_is_interesting_nopets = true})
+		Skada:RegisterForCL(Missed, 'RANGE_MISSED', {dst_is_interesting_nopets = true})
+
+ 		Skada:AddMode(self)
 	end
 
 	function mod:OnDisable()
