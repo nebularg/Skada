@@ -965,6 +965,14 @@ function Skada:Reset()
 		end
 	end
 
+	-- Don't leave windows pointing to deleted sets
+	for _, win in ipairs(windows) do
+		if win.selectedset ~= "total" then
+			win.selectedset = "current"
+			win.changed = true
+		end
+	end
+
 	self:UpdateDisplay(true)
 	self:Print(L["All data has been reset."])
 	collectgarbage("collect")
@@ -978,6 +986,22 @@ function Skada:DeleteSet(set)
 	for i, s in ipairs(self.char.sets) do
 		if s == set then
 			wipe(table.remove(self.char.sets, i))
+
+			if set == self.last then
+				self.last = nil
+			end
+
+			-- Don't leave windows pointing to deleted sets
+			for _, win in ipairs(windows) do
+				if win:get_selected_set() == set then
+					win.selectedset = "current"
+					win.changed = true
+				elseif (tonumber(win.selectedset) or 0) > i then
+					win.selectedset = win.selectedset - 1
+					win.changed = true
+				end
+			end
+			break
 		end
 	end
 	self:Wipe()
@@ -1669,9 +1693,10 @@ function Skada:UpdateDisplay(force)
 						end
 					end
 
-					-- Let window display the data.
-					win:UpdateDisplay()
 				end
+
+				-- Let window display the data.
+				win:UpdateDisplay()
 
 			elseif win.selectedset then
 				local set = win:get_selected_set()
