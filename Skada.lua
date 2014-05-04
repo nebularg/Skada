@@ -994,7 +994,7 @@ function Skada:DeleteSet(set)
 
 			-- Don't leave windows pointing to deleted sets
 			for _, win in ipairs(windows) do
-				if win:get_selected_set() == set then
+				if win.selectedset == i or win:get_selected_set() == set then
 					win.selectedset = "current"
 					win.changed = true
 				elseif (tonumber(win.selectedset) or 0) > i then
