@@ -246,8 +246,8 @@ Skada:AddLoadableModule("Deaths", function(Skada, L)
 		end
 
 		table.sort(win.dataset, cmp_order_dataset)
-		local empty = wipe(win.dataset[nr] or {})
-		win.dataset[nr] = nil
+
+		local empty = wipe(table.remove(win.dataset,nr) or {})
 		table.insert(win.dataset, 1, empty) -- leave initial empty bar for optional total bar with ordersort
 	end
 
