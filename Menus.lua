@@ -36,18 +36,17 @@ function Skada:OpenMenu(window)
 	        UIDropDownMenu_AddButton(info, level)
 
 			-- Can't report if we are not in a mode.
-			if not window or (window or window.selectedmode) then
+		if not window or (window and window.selectedmode) then
 		        wipe(info)
 		        info.text = L["Report"]
 				info.func = function() Skada:OpenReportWindow(window) end
 		        info.value = "report"
 				info.notCheckable = 1
 		        UIDropDownMenu_AddButton(info, level)
-		    end
+		end
 
 	        wipe(info)
 	        info.text = L["Delete segment"]
-	        info.func = function() Skada:DeleteSet() end
 	        info.hasArrow = 1
 	        info.notCheckable = 1
 	        info.value = "delete"
@@ -55,7 +54,6 @@ function Skada:OpenMenu(window)
 
 	        wipe(info)
 	        info.text = L["Keep segment"]
-	        info.func = function() Skada:KeepSet() end
 	        info.notCheckable = 1
 	        info.hasArrow = 1
 	        info.value = "keep"
