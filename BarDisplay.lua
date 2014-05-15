@@ -265,7 +265,9 @@ function mod:Update(win)
 				bar:SetValue(data.value)
 			else
 				-- Initialization of bars.
-				bar = mod:CreateBar(win, barid, barlabel, data.value, win.metadata.maxvalue or 1, data.icon, false)
+				local icon = data.icon
+				icon = icon or (data.ignore and hasicon and "Interface\\Icons\\Spell_Lightning_LightningBolt01") -- icon for total bar
+				bar = mod:CreateBar(win, barid, barlabel, data.value, win.metadata.maxvalue or 1, icon, false)
 				bar.id = data.id
 				if not data.ignore then
 
