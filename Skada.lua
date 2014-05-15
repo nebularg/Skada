@@ -1,5 +1,5 @@
 
-local Skada = LibStub("AceAddon-3.0"):NewAddon("Skada", "AceConsole-3.0", "AceTimer-3.0")
+local Skada = LibStub("AceAddon-3.0"):NewAddon("Skada", "AceTimer-3.0")
 _G.Skada = Skada
 
 local L = LibStub("AceLocale-3.0"):GetLocale("Skada", false)
@@ -593,6 +593,7 @@ function Skada:Print(msg)
 end
 
 local function slashHandler(param)
+	local reportusage = "/skada report [raid|party|instance|guild|officer|say] [current||total|set_num] [mode] [max_lines]"
 	if param == "pets" then
 		Skada:PetDebug()
 	elseif param == "test" then
@@ -607,27 +608,41 @@ local function slashHandler(param)
 		InterfaceOptionsFrame_OpenToCategory(Skada.optionsFrame)
 		InterfaceOptionsFrame_OpenToCategory(Skada.optionsFrame)
 	elseif param:sub(1,6) == "report" then
-		param = param:sub(7)
-		local chan = "say"
-		local max = 0
-		local chantype = "preset"
+		local chan = (IsInGroup(LE_PARTY_CATEGORY_INSTANCE) and "instance") or
+				(IsInRaid() and "raid") or
+				(IsInGroup() and "party") or
+				"say"
+		local set = "current"
+		local report_mode_name = L["Damage"]
+		local w1, w2, w3, w4 = param:match("^%s*(%w*)%s*(%w*)%s*([^%d]-)%s*(%d*)%s*$",7)
+		if w1 and #w1 > 0 then 
+			chan = string.lower(w1)
+		end
+		if w2 and #w2 > 0 then
+			w2 = tonumber(w2) or w2:lower()
+			if Skada:find_set(w2) then 
+				set = w2
+			end
+		end
+		if w3 and #w3 > 0 then
+			w3 = strtrim(w3)
+			w3 = strtrim(w3,"'\"[]()") -- strip optional quoting
+			if find_mode(w3) then 
+				report_mode_name = w3
+			end
+		end
+		local max = tonumber(w4) or 10
 
-		local w1, w2, w3, w4 = Skada:GetArgs(param, 4)
-
-		local chan = w1 or "say"
-		local report_mode_name = w2 or L["Damage"]
-		local max = tonumber(w3 or 10)
-
-		-- Sanity checks.
-		if chan and (chan == "say" or chan == "guild" or chan == "raid" or chan == "party" or chan == "officer") and (report_mode_name and find_mode(report_mode_name)) then
-			Skada:Report(chan, "preset", report_mode_name, "current", max)
+		if chan == "instance" then chan = "instance_chat" end
+		if (chan == "say" or chan == "guild" or chan == "raid" or chan == "party" or chan == "officer" or chan == "instance_chat") then
+			Skada:Report(chan, "preset", report_mode_name, set, max)
 		else
 			Skada:Print("Usage:")
-			Skada:Print(("%-20s"):format("/skada report [raid|guild|party|officer|say] [mode] [max lines]"))
+			Skada:Print(("%-20s"):format(reportusage))
 		end
 	else
 		Skada:Print("Usage:")
-		Skada:Print(("%-20s"):format("/skada report [raid|guild|party|officer|say] [mode] [max lines]"))
+		Skada:Print(("%-20s"):format(reportusage))
 		Skada:Print(("%-20s"):format("/skada reset"))
 		Skada:Print(("%-20s"):format("/skada toggle"))
 		Skada:Print(("%-20s"):format("/skada newsegment"))
