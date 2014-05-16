@@ -219,7 +219,7 @@ function mod:Update(win)
 	-- Find out if we have icons in this update, and if so, adjust accordingly.
 	local hasicon = false
 	for i, data in ipairs(win.dataset) do
-		if data.icon or (data.class and win.db.classicons) then
+		if (data.icon and not data.ignore) or (data.class and win.db.classicons) then
 			hasicon = true
 		end
 	end
@@ -265,9 +265,7 @@ function mod:Update(win)
 				bar:SetValue(data.value)
 			else
 				-- Initialization of bars.
-				local icon = data.icon
-				icon = icon or (data.ignore and hasicon and "Interface\\Icons\\Spell_Lightning_LightningBolt01") -- icon for total bar
-				bar = mod:CreateBar(win, barid, barlabel, data.value, win.metadata.maxvalue or 1, icon, false)
+				bar = mod:CreateBar(win, barid, barlabel, data.value, win.metadata.maxvalue or 1, data.icon, false)
 				bar.id = data.id
 				if not data.ignore then
 

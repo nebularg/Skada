@@ -1709,6 +1709,7 @@ function Skada:UpdateDisplay(force)
 						d.valuetext = win.selectedmode:GetSetSummary(set)
 						d.value = total
 						d.label = L["Total"]
+						d.icon = dataobj.icon
 						d.id = "total"
 						d.ignore = true
 						if not existing then
