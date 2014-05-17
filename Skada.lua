@@ -1584,13 +1584,12 @@ cleuFrame:SetScript("OnEvent", function(frame, event, timestamp, eventtype, hide
 	if eventtype == 'SPELL_SUMMON' and ( (band(srcFlags, RAID_FLAGS) ~= 0) or ( (band(srcFlags, PET_FLAGS)) ~= 0 ) or ((band(dstFlags, PET_FLAGS) ~= 0) and pets[dstGUID])) then
 		-- assign pet normally
 		pets[dstGUID] = {id = srcGUID, name = srcName}
-		-- fix the table by searching through the complete list
-		for pet, owner in pairs(pets) do
-			if (pets[owner.id]) then
-				-- the pets owner is a pet -> change it to the owner of the pet
-				Skada:AssignPet(pets[owner.id].id, pets[owner.id].name, pet)
-				break
-			end
+		if pets[srcGUID] then
+			-- the pets owner is a pet -> change it to the owner of the pet
+			-- this check may no longer be necessary?
+			pets[dstGUID].id = pets[srcGUID].id
+			pets[dstGUID].name = pets[srcGUID].name
+
 		end
 	end
 end)
