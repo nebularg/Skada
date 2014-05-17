@@ -2009,11 +2009,9 @@ end
 
 -- Same thing, only takes two arguments and returns two arguments.
 function Skada:FixMyPets(playerGUID, playerName)
-	if not UnitIsPlayer(playerName) then
-		local pet = pets[playerGUID]
-		if pet then
-			return pet.id, pet.name
-		end
+	local pet = pets[playerGUID]
+	if pet then
+		return pet.id, pet.name
 	end
 	-- No pet match - return the player.
 	return playerGUID, playerName
