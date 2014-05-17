@@ -161,7 +161,6 @@ Skada:AddLoadableModule("Deaths", function(Skada, L)
 		-- Spell damage.
 		local spellId, spellName, spellSchool, samount, soverkill, sschool, sresisted, sblocked, sabsorbed, scritical, sglancing, scrushing = ...
 
-		dstGUID, dstName = Skada:FixMyPets(dstGUID, dstName)
 		log_deathlog(Skada.total, dstGUID, dstName, srcName, spellId, nil, samount and -samount, sabsorbed and -sabsorbed, timestamp)
 	end
 
@@ -170,7 +169,6 @@ Skada:AddLoadableModule("Deaths", function(Skada, L)
 		local samount, soverkill, sschool, sresisted, sblocked, sabsorbed, scritical, sglancing, scrushing = ...
 		local spellid = 88163
 
-		dstGUID, dstName = Skada:FixMyPets(dstGUID, dstName)
 		log_deathlog(Skada.total, dstGUID, dstName, srcName, spellid, nil, samount and -samount, sabsorbed and -sabsorbed, timestamp)
 	end
 
@@ -178,7 +176,6 @@ Skada:AddLoadableModule("Deaths", function(Skada, L)
 		-- Environmental damage.
 		local environmentalType, samount, soverkill, sschool, sresisted, sblocked, sabsorbed, scritical, sglancing, scrushing = ...
 
-		dstGUID, dstName = Skada:FixMyPets(dstGUID, dstName)
 		log_deathlog(Skada.total, dstGUID, dstName, srcName, nil, environmentalType, samount and -samount, sabsorbed and -sabsorbed, timestamp)
 	end
 
@@ -187,7 +184,6 @@ Skada:AddLoadableModule("Deaths", function(Skada, L)
 		local spellId, spellName, spellSchool = ...
 		spellId = spellId or 80468
 
-		dstGUID, dstName = Skada:FixMyPets(dstGUID, dstName)
 		log_deathlog(Skada.total, dstGUID, dstName, srcName, spellId, spellName, -1e9, nil, timestamp)
 	end
 
@@ -198,7 +194,6 @@ Skada:AddLoadableModule("Deaths", function(Skada, L)
 		samount = max(0, samount - soverhealing)
 
 		srcGUID, srcName_modified = Skada:FixMyPets(srcGUID, srcName)
-		dstGUID, dstName = Skada:FixMyPets(dstGUID, dstName)
 		log_deathlog(Skada.total, dstGUID, dstName, (srcName_modified or srcName), spellId, nil, samount, absorbed, timestamp)
 	end
 
