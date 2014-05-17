@@ -311,6 +311,9 @@ end
 -- Called before dataset is updated.
 function Window:UpdateInProgress()
 	for i, data in ipairs(self.dataset) do
+		if data.ignore then -- ensure total bar icon is cleared before bar is recycled
+			data.icon = nil 
+		end
 		data.id = nil
 		data.ignore = nil
 	end
