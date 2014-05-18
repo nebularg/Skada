@@ -178,7 +178,14 @@ function Window:AddOptions()
 					name=L["Rename window"],
 					desc=L["Enter the name for the window."],
 					get=function() return db.name end,
-					set=function(win, val) if val ~= db.name and val ~= "" then db.name = val end end,
+					set=function(win, val) 
+						if val ~= db.name and val ~= "" then 
+							local oldname = db.name
+							db.name = val 
+							Skada.options.args.windows.args[val] = Skada.options.args.windows.args[oldname]
+							Skada.options.args.windows.args[oldname] = nil
+						end 
+					    end,
 					order=1,
 				},
 
@@ -272,6 +279,9 @@ function Window:destroy()
 	self.dataset = nil
 
 	self.display:Destroy(self)
+
+	local name = self.db.name or Skada.windowdefaults.name
+	Skada.options.args.windows.args[name] = nil -- remove from options
 end
 
 function Window:SetDisplay(name)
@@ -647,7 +657,6 @@ function Skada:DeleteWindow(name)
 			table.remove(self.db.profile.windows, i)
 		end
 	end
-	self.options.args.windows.args[name] = nil
 end
 
 function Skada:Print(msg)
