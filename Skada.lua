@@ -886,8 +886,7 @@ local function IsInPVP()
 	return instanceType == "pvp" or instanceType == "arena" or pvpType == "arena" or pvpType == "combat" or isFFA
 end
 
--- Fired on entering a zone.
-function Skada:PLAYER_ENTERING_WORLD()
+function Skada:ZoneCheck()
 	-- Check if we are entering an instance.
 	local inInstance, instanceType = IsInInstance()
 	local isininstance = inInstance and (instanceType == "party" or instanceType == "raid")
@@ -924,6 +923,19 @@ function Skada:PLAYER_ENTERING_WORLD()
 	else
 		wasinpvp = false
 	end
+end
+
+-- Fired on entering a zone.
+function Skada:ZONE_CHANGED_NEW_AREA()
+	Skada:ZoneCheck()
+end
+
+-- Fired on blue bar screen
+function Skada:PLAYER_ENTERING_WORLD()
+
+	Skada:ZoneCheck() -- catch reloadui within a zone, which does not fire ZONE_CHANGED_NEW_AREA
+	-- If this event fired in response to a login or teleport, zone info is usually not yet available 
+	-- and will be caught by a sunsequent ZONE_CHANGED_NEW_AREA
 
 	-- make sure we update once on reload
 	-- delay it because group is unavailable during first PLAYER_ENTERING_WORLD on login
@@ -2329,6 +2341,7 @@ function Skada:OnEnable()
 	cleuFrame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
 
 	popup:RegisterEvent("PLAYER_ENTERING_WORLD")
+	popup:RegisterEvent("ZONE_CHANGED_NEW_AREA")
 	popup:RegisterEvent("GROUP_ROSTER_UPDATE")
 	popup:RegisterEvent("UNIT_PET")
 	popup:RegisterEvent("PLAYER_REGEN_DISABLED")
