@@ -381,6 +381,62 @@ function Window:DisplayMode(mode)
 	Skada:UpdateDisplay(false)
 end
 
+local numsetfmts = 8
+local function SetLabelFormat(name,starttime,endtime,fmt)
+	fmt = fmt or Skada.db.profile.setformat
+	local namelabel = name
+	if fmt < 1 or fmt > numsetfmts then fmt = 3 end
+	local timelabel = ""
+	if starttime and endtime and fmt > 1 then
+		local duration = SecondsToTime(endtime-starttime, false, false, 2)
+		-- translate locale time abbreviations, whose escape sequences are not legal in chat
+		Skada.getsetlabel_fs = Skada.getsetlabel_fs or UIParent:CreateFontString(nil, "ARTWORK", "ChatFontNormal")
+		Skada.getsetlabel_fs:SetText(duration)
+		duration = "("..Skada.getsetlabel_fs:GetText()..")"
+
+		if fmt == 2 then
+			timelabel = duration
+		elseif fmt == 3 then
+			timelabel = date("%H:%M",starttime).." "..duration
+		elseif fmt == 4 then
+			timelabel = date("%I:%M",starttime).." "..duration
+		elseif fmt == 5 then
+			timelabel = date("%H:%M",starttime).." - "..date("%H:%M",endtime)
+		elseif fmt == 6 then
+			timelabel = date("%I:%M",starttime).." - "..date("%I:%M",endtime)
+		elseif fmt == 7 then
+			timelabel = date("%H:%M:%S",starttime).." - "..date("%H:%M:%S",endtime)
+		elseif fmt == 8 then
+			timelabel = date("%H:%M",starttime).." - "..date("%H:%M",endtime).." "..duration
+		end
+	end
+
+	local comb
+	if #namelabel == 0 or #timelabel == 0 then
+		comb = namelabel..timelabel
+	elseif timelabel:match("^%p") then
+		comb = namelabel.." "..timelabel
+	else
+		comb = namelabel..": "..timelabel
+	end
+	-- provide both the combined label and the separated name/time labels
+	return comb, namelabel, timelabel
+end
+
+function Skada:SetLabelFormats() -- for config option display
+	local ret = {}
+	local start = 1000007900
+	for i=1,numsetfmts do
+		ret[i] = SetLabelFormat("Hogger", start, start+380, i)
+	end
+	return ret
+end
+
+function Skada:GetSetLabel(set) -- return a nicely-formatted label for a set
+	if not set then return "" end
+	return SetLabelFormat(set.name or "Unknown", set.starttime, set.endtime or time())
+end
+
 function Window:set_mode_title()
 	if not self.selectedmode or not self.selectedset then return end
 	local name = self.selectedmode.title or self.selectedmode:GetName()
@@ -394,9 +450,7 @@ function Window:set_mode_title()
 		else
 			local set = self:get_selected_set()
 			if set then
-				setname = set.name
-				local endtime = set.endtime or time()
-				setname = setname .. ": ".. date("%X",set.starttime).." - "..date("%X",endtime)
+				setname = Skada:GetSetLabel(set)
 			end
 		end
 		if setname then
@@ -714,8 +768,8 @@ function Skada:Report(channel, chantype, report_mode_name, report_set_name, max,
 	end
 
 	-- Title
-	local endtime = report_set.endtime or time()
-	sendchat(string.format(L["Skada report on %s for %s, %s to %s:"], report_mode.title or report_mode:GetName(), report_set.name, date("%X",report_set.starttime), date("%X",endtime)), channel, chantype)
+	sendchat(string.format(L["Skada: %s for %s:"], report_mode.title or report_mode:GetName(), Skada:GetSetLabel(report_set)),
+	         channel, chantype)
 
 	-- For each item in dataset, print label and valuetext.
 	local nr = 1
@@ -1770,8 +1824,7 @@ function Skada:UpdateDisplay(force)
 					win.dataset[nr] = d
 
 					d.id = tostring(set.starttime)
-					d.label = set.name
-					d.valuetext = date("%H:%M",set.starttime).." - "..date("%H:%M",set.endtime)
+					d.label, d.valuetext = select(2,Skada:GetSetLabel(set))
 					d.value = 1
 					if set.keep then
 						d.emphathize = true
