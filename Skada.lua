@@ -362,7 +362,7 @@ function Window:DisplayMode(mode)
 	self.selectedspell = nil
 	self.selectedmode = mode
 
-	self.metadata = {}
+	self.metadata = wipe(self.metadata or {})
 
 	-- Apply mode's metadata.
 	if mode.metadata then
@@ -440,7 +440,15 @@ end
 function Window:set_mode_title()
 	if not self.selectedmode or not self.selectedset then return end
 	local name = self.selectedmode.title or self.selectedmode:GetName()
-	self.db.mode = name -- Save for posterity.
+
+	-- save window settings for RestoreView after reload
+	self.db.set = self.selectedset 
+	local savemode = name
+	if self.history[1] then -- can't currently preserve a nested mode, use topmost one
+		savemode = self.history[1].title or self.history[1]:GetName()
+	end
+	self.db.mode = savemode
+
 	if self.db.titleset then
 		local setname
 		if self.selectedset == "current" then
@@ -474,18 +482,15 @@ end
 
 -- Sets up the mode list.
 function Window:DisplayModes(settime)
-	self.history = {}
+	self.history = wipe(self.history or {})
 	self:Wipe()
 
 	self.selectedplayer = nil
 	self.selectedmode = nil
 
-	self.metadata = {}
+	self.metadata = wipe(self.metadata or {})
 
 	self.metadata.title = L["Skada: Modes"]
-
-	-- Save for posterity.
-	self.db.set = settime
 
 	-- Find the selected set
 	if settime == "current" or settime == "total" then
@@ -528,10 +533,10 @@ end
 
 -- Sets up the set list.
 function Window:DisplaySets()
-	self.history = {}
+	self.history = wipe(self.history or {})
 	self:Wipe()
 
-	self.metadata = {}
+	self.metadata = wipe(self.metadata or {})
 
 	self.selectedplayer = nil
 	self.selectedmode = nil
