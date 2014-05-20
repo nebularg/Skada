@@ -879,7 +879,7 @@ local function verify_set(mode, set)
 	end
 	for j, player in ipairs(set.players) do
 		if mode.AddPlayerAttributes ~= nil then
-			mode:AddPlayerAttributes(player)
+			mode:AddPlayerAttributes(player, set)
 		end
 	end
 end
