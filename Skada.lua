@@ -2380,7 +2380,7 @@ end
 function Skada:AddLoadableModule(name, func)
 	if not self.moduleList then self.moduleList = {} end
 	self.moduleList[#self.moduleList+1] = func
-	self:AddLoadableModuleCheckbox(name, L[name] or "???")
+	self:AddLoadableModuleCheckbox(name, L[name])
 end
 
 
