@@ -340,7 +340,7 @@ Skada:AddLoadableModule("Healing", function(Skada, L)
 				local d = win.dataset[nr] or {}
 				win.dataset[nr] = d
 
-				d.id = spell.id
+				d.id = spell.name -- ticket 362: this needs to be spellname because spellid is not unique with pets that mirror abilities (DK DRW)
 				d.label = spell.name
 				d.value = spell.healing
 				d.valuetext = Skada:FormatValueText(
