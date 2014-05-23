@@ -2142,6 +2142,7 @@ end
 -- Tooltip display. Shows subview data for a specific row.
 -- Using a fake window, the subviews are asked to populate the window's dataset normally.
 local ttwin = Window:new()
+local white = {r = 1, g = 1, b = 1}
 function Skada:AddSubviewToTooltip(tooltip, win, mode, id, label)
 	-- Clean dataset.
 	wipe(ttwin.dataset)
@@ -2167,7 +2168,7 @@ function Skada:AddSubviewToTooltip(tooltip, win, mode, id, label)
 			if data.id and nr < Skada.db.profile.tooltiprows then
 				nr = nr + 1
 
-				local color = {r = 1, g = 1, b = 1}
+				local color = white
 				if data.color then
 					-- Explicit color from dataset.
 					color = data.color

@@ -57,6 +57,15 @@ function mod:Create(window)
 
 	-- Restore window position.
 	libwindow.RestorePosition(window.bargroup)
+
+	if not mod.class_icon_tcoords then -- amortized class icon coordinate adjustment
+		mod.class_icon_tcoords = {}
+		for class, coords in pairs(CLASS_ICON_TCOORDS) do
+			local l,r,t,b = unpack(coords)
+			local adj = 0.02
+			mod.class_icon_tcoords[class] = {(l+adj),(r-adj),(t+adj),(b-adj)}
+		end
+	end
 end
 
 -- Called by Skada windows when the window is to be destroyed/cleared.
@@ -99,7 +108,15 @@ local function showmode(win, id, label, mode)
 	win:DisplayMode(mode)
 end
 
-local function BarClick(win, id, label, button)
+local function BarClickIgnore(bar, button)
+	local win = bar.win
+	if button == "RightButton" then 
+		win:RightClick() 
+	end
+end
+
+local function BarClick(bar, button)
+	local win, id, label = bar.win, bar.id, bar.text
 	local click1 = win.metadata.click1
 	local click2 = win.metadata.click2
 	local click3 = win.metadata.click3
@@ -121,7 +138,8 @@ end
 
 local ttactive = false
 
-local function BarEnter(win, id, label)
+local function BarEnter(bar)
+	local win, id, label = bar.win, bar.id, bar.text
 	local t = GameTooltip
 	if Skada.db.profile.tooltips and (win.metadata.click1 or win.metadata.click2 or win.metadata.click3 or win.metadata.tooltip) then
 		ttactive = true
@@ -180,10 +198,32 @@ local function BarEnter(win, id, label)
 	end
 end
 
-local function BarLeave(win, id, label)
+local function BarLeave(bar)
+	local win, id, label = bar.win, bar.id, bar.text
 	if ttactive then
 		GameTooltip:Hide()
 		ttactive = false
+	end
+end
+
+local function BarIconEnter(icon)
+	local bar = icon.bar
+	local win = bar.win
+	if bar.link and win and win.bargroup then
+		Skada:SetTooltipPosition(GameTooltip, win.bargroup); 
+		GameTooltip:SetHyperlink(bar.link); 
+		GameTooltip:Show();
+	end
+end
+
+local function BarIconMouseDown(icon) -- shift-click to link spell into chat
+	local bar = icon.bar
+	if not IsShiftKeyDown() or not bar.link then return end
+	local activeEditBox = ChatEdit_GetActiveWindow()
+	if activeEditBox then
+		ChatEdit_InsertLink(bar.link)
+	else
+		ChatFrame_OpenChat(bar.link, DEFAULT_CHAT_FRAME)
 	end
 end
 
@@ -199,6 +239,10 @@ end
 
 local function bar_order_sort(a,b)
 	return a and b and a.order and b.order and a.order < b.order
+end
+
+local function HideGameTooltip()
+	GameTooltip:Hide()
 end
 
 -- Called by Skada windows when title of window should change.
@@ -267,46 +311,37 @@ function mod:Update(win)
 			else
 				-- Initialization of bars.
 				bar = mod:CreateBar(win, barid, barlabel, data.value, win.metadata.maxvalue or 1, data.icon, false)
-				bar.id = data.id
+				bar.id = barid
+				bar.text = barlabel
 				if not data.ignore then
 
 					if data.icon then
 						bar:ShowIcon()
 
-						local link
+						bar.link = nil
 						if data.spellid then
 							local spell = data.spellid
-							link = GetSpellLink(spell)
-							bar.iconFrame:EnableMouse(true)
-							bar.iconFrame:SetScript("OnEnter", function(bar) Skada:SetTooltipPosition(GameTooltip, win.bargroup); GameTooltip:SetSpellByID(spell); GameTooltip:Show() end)
-							bar.iconFrame:SetScript("OnLeave", function(bar) GameTooltip:Hide() end)
+							bar.link = GetSpellLink(spell)
 						elseif data.hyperlink then
-							link = data.hyperlink
-							bar.iconFrame:EnableMouse(true)
-							bar.iconFrame:SetScript("OnEnter", function(bar) Skada:SetTooltipPosition(GameTooltip, win.bargroup); GameTooltip:SetHyperlink(link); GameTooltip:Show(); end)
-							bar.iconFrame:SetScript("OnLeave", function(bar) GameTooltip:Hide() end)
+							bar.link = data.hyperlink
 						end
-						if link then
-							bar.iconFrame:SetScript("OnMouseDown", function(bar) -- shift-click to link spell into chat
-								if not IsShiftKeyDown() then return end
-								local activeEditBox = ChatEdit_GetActiveWindow()
-								if activeEditBox then
-									ChatEdit_InsertLink(link)
-								else
-									ChatFrame_OpenChat(link, DEFAULT_CHAT_FRAME)
-								end
-							end)
+						if bar.link then
+							bar.iconFrame.bar = bar
+							bar.iconFrame:EnableMouse(true)
+							bar.iconFrame:SetScript("OnEnter", BarIconEnter)
+							bar.iconFrame:SetScript("OnLeave", HideGameTooltip)
+							bar.iconFrame:SetScript("OnMouseDown", BarIconMouseDown)
 						end
 					end
 
 					bar:EnableMouse(true)
-					bar:SetScript("OnEnter", function(bar) BarEnter(win, barid, barlabel) end)
-					bar:SetScript("OnLeave", function(bar) BarLeave(win, barid, barlabel) end)
-					bar:SetScript("OnMouseDown", function(bar, button) BarClick(win, barid, barlabel, button) end)
+					bar:SetScript("OnEnter", BarEnter)
+					bar:SetScript("OnLeave", BarLeave)
+					bar:SetScript("OnMouseDown", BarClick)
 				else
 					bar:SetScript("OnEnter", nil)
 					bar:SetScript("OnLeave", nil)
-					bar:SetScript("OnMouseDown", function(bar, button) if button == "RightButton" then win:RightClick() end end)
+					bar:SetScript("OnMouseDown", BarClickIgnore)
 				end
 				bar:SetValue(data.value)
 
@@ -317,11 +352,9 @@ function mod:Update(win)
 					bar.missingclass = nil
 				end
 
-				if data.class and win.db.classicons and CLASS_ICON_TCOORDS[data.class] then
+				if data.class and win.db.classicons and mod.class_icon_tcoords[data.class] then
 					bar:ShowIcon()
-					local adj = 0.02
-					local l,r,t,b = unpack(CLASS_ICON_TCOORDS[data.class])
-					bar:SetIconWithCoord("Interface\\Glues\\CharacterCreate\\UI-CharacterCreate-Classes", {(l+adj),(r-adj),(t+adj),(b-adj)})
+					bar:SetIconWithCoord("Interface\\Glues\\CharacterCreate\\UI-CharacterCreate-Classes", mod.class_icon_tcoords[data.class])
 				end
 
 				if data.color then
@@ -450,7 +483,8 @@ local function getNumberOfBars(win)
 	return n
 end
 
-function mod:OnMouseWheel(win, frame, direction)
+local function OnMouseWheel(frame, direction)
+	local win = frame.win
 	local maxbars = win.db.background.height / (win.db.barheight + win.db.barspacing)
 	if direction == 1 and win.bargroup:GetBarOffset() > 0 then
 		win.bargroup:SetBarOffset(win.bargroup:GetBarOffset() - 1)
@@ -459,10 +493,20 @@ function mod:OnMouseWheel(win, frame, direction)
 	end
 end
 
+function mod:OnMouseWheel(win, frame, direction) -- external scrolling interface (SkadaScroll)
+	if not frame then
+		mod.framedummy = mod.framedummy or {}
+		mod.framedummy.win = win
+		frame = mod.framedummy
+	end
+	OnMouseWheel(frame, direction)
+end
+
 function mod:CreateBar(win, name, label, value, maxvalue, icon, o)
 	local bar = win.bargroup:NewCounterBar(name, label, value, maxvalue, icon)
+	bar.win = win
 	bar:EnableMouseWheel(true)
-	bar:SetScript("OnMouseWheel", function(f, d) mod:OnMouseWheel(win, f, d) end)
+	bar:SetScript("OnMouseWheel", OnMouseWheel)
 	bar.iconFrame:SetScript("OnEnter", nil)
 	bar.iconFrame:SetScript("OnLeave", nil)
 	bar.iconFrame:SetScript("OnMouseDown", nil)
