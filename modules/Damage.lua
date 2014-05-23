@@ -366,8 +366,10 @@ Skada:AddLoadableModule("Damage", function(Skada, L)
 		d.id = title
 		d.valuetext = Skada:FormatValueText(
 			value, mod.metadata.columns.Damage,
-			string.format("%02.1f%%", value / win.metadata.maxvalue * 100), mod.metadata.columns.Percent
+			string.format("%02.1f%%", value / spellmod.totalhits * 100), mod.metadata.columns.Percent
 		)
+
+		win.metadata.maxvalue = math.max(win.metadata.maxvalue, value)
 	end
 
 	function spellmod:Enter(win, id, label)
@@ -383,7 +385,8 @@ Skada:AddLoadableModule("Damage", function(Skada, L)
 			local spell = player.damagespells[self.spellname]
 
 			if spell then
-				win.metadata.maxvalue = spell.totalhits
+				spellmod.totalhits = spell.totalhits
+				win.metadata.maxvalue = 0
 
 				if spell.hit > 0 then
 					add_detail_bar(win, 1, L["Hit"], spell.hit)
