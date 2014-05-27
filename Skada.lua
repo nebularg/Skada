@@ -475,6 +475,10 @@ function Window:set_mode_title()
 			name = name..": "..setname
 		end
 	end
+	if disabled and (self.selectedset == "current" or self.selectedset == "total") then 
+		-- indicate when data collection is disabled
+		name = name.."  |cFFFF0000"..L["DISABLED"].."|r"
+	end
 	self.metadata.title = name
 	self.display:SetTitle(self, name)
 end
@@ -828,17 +832,26 @@ function Skada:SetActive(enable)
 		for i, win in ipairs(windows) do
 			win:Show()
 		end
-		disabled = false
-		cleuFrame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
 	else
 		for i, win in ipairs(windows) do
 			win:Hide()
 		end
-		if self.db.profile.hidedisables then
-			disabled = true
-			cleuFrame:UnregisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
-		end
 	end
+	if not enable and self.db.profile.hidedisables then
+		if not disabled then -- print a message when we change state
+			self:Print(L["Data Collection"].." ".."|cFFFF0000"..L["DISABLED"].."|r")
+		end
+		disabled = true
+		cleuFrame:UnregisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
+	else
+		if disabled then -- print a message when we change state
+			self:Print(L["Data Collection"].." ".."|cFF00FF00"..L["ENABLED"].."|r")
+		end
+		disabled = false
+		cleuFrame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
+	end
+
+	Skada:UpdateDisplay(true) -- update title indicator
 end
 
 function Skada:CheckGroup()
