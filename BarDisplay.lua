@@ -206,6 +206,15 @@ local function BarLeave(bar)
 	end
 end
 
+local function BarResize(bar)
+	if bar.bgwidth then
+		bar.bgtexture:SetWidth(bar.bgwidth * bar:GetWidth())
+	else
+		bar:SetScript("OnSizeChanged",bar.OnSizeChanged)
+	end
+	bar:OnSizeChanged() -- call library version
+end
+
 local function BarIconEnter(icon)
 	local bar = icon.bar
 	local win = bar.win
@@ -421,7 +430,11 @@ function mod:Update(win)
 				bar.bgtexture:ClearAllPoints()
 				bar.bgtexture:SetPoint("BOTTOMLEFT")
 				bar.bgtexture:SetPoint("TOPLEFT")
-				bar.bgtexture:SetWidth(data.backgroundwidth * bar:GetLength())
+				bar.bgwidth = data.backgroundwidth
+				bar:SetScript("OnSizeChanged",BarResize) -- ticket 365: required to resize bgtexture
+				BarResize(bar)
+			else
+				bar.bgwidth = nil
 			end
 
 			if not data.ignore then
