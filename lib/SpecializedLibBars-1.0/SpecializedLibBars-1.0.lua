@@ -504,6 +504,7 @@ do
 				local top, left = p:GetTop(), p:GetLeft()
 				if p.isResizing == true then
 					p:StopMovingOrSizing()
+					p:SetLength(p:GetWidth())
 					p.callbacks:Fire("WindowResized", self:GetParent())
 					p.isResizing = false
 					p:SortBars()
