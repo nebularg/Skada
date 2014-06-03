@@ -1248,6 +1248,7 @@ end
 -- We can not simply rely on PLAYER_REGEN_ENABLED since it is fired if we die and the fight continues.
 function Skada:Tick()
 	if not disabled and self.current and not InCombatLockdown() and not IsRaidInCombat() then
+		self:Debug("EndSegment: Tick")
 		self:EndSegment()
 	end
 end
@@ -1339,6 +1340,7 @@ end
 function Skada:PLAYER_REGEN_DISABLED()
 	-- Start a new set if we are not in one already.
 	if not disabled and not self.current then
+		self:Debug("StartCombat: PLAYER_REGEN_DISABLED")
 		self:StartCombat()
 	end
 end
@@ -1352,7 +1354,7 @@ local tentative = nil
 -- AceTimer handle for reverting combat start.
 local tentativehandle= nil
 
-function Skada:StartCombat(isEncounter)
+function Skada:StartCombat()
 	-- Cancel cancelling combat if needed.
 	if tentativehandle ~= nil then
 		self:CancelTimer(tentativehandle)
@@ -1360,6 +1362,7 @@ function Skada:StartCombat(isEncounter)
 	end
 
 	if update_timer then
+		self:Debug("EndSegment: StartCombat")
 		self:EndSegment()
 	end
 
@@ -1369,6 +1372,16 @@ function Skada:StartCombat(isEncounter)
 	-- Create a new current set unless we are already have one (combat detection kicked in).
 	if not self.current then
 		self.current = createSet(L["Current"])
+	end
+
+	if self.encounterName and 
+	   GetTime() < (self.encounterTime or 0) + 15 then -- a recent ENCOUNTER_START named our segment
+		self:Debug("StartCombat setting encounterName from ENCOUNTER_START",self.encounterName)
+		self.current.mobname = self.encounterName
+		self.current.gotboss = true
+
+		self.encounterName = nil
+		self.encounterTime = nil
 	end
 
 	-- Also start the total set if it is nil.
@@ -1412,9 +1425,8 @@ function Skada:StartCombat(isEncounter)
 
 	-- Schedule timers for updating windows and detecting combat end.
 	update_timer = self:ScheduleRepeatingTimer("UpdateDisplay", 0.5)
-	if not isEncounter then
-		tick_timer = self:ScheduleRepeatingTimer("Tick", 1)
-	end
+	-- ticket 363: It is NOT safe to use ENCOUNTER_END to replace combat detection
+	tick_timer = self:ScheduleRepeatingTimer("Tick", 1)
 end
 
 -- Simply calls the same function on all windows.
@@ -1666,6 +1678,7 @@ cleuFrame:SetScript("OnEvent", function(frame, event, timestamp, eventtype, hide
 						--self:Print("tentative combat start SUCCESS!")
 						Skada:CancelTimer(tentativehandle)
 						tentativehandle = nil
+						self:Debug("StartCombat: tentative combat")
 						Skada:StartCombat()
 					end
 				end
@@ -1709,16 +1722,28 @@ function Skada:AssignPet(ownerguid, ownername, petguid)
 end
 
 function Skada:ENCOUNTER_START(encounterId, encounterName)
+	self:Debug("ENCOUNTER_START", encounterId, encounterName)
 	if not disabled then
-		self:StartCombat(true)
-		self.current.mobname = encounterName
-		self.current.gotboss = true
+		if self.current then -- already in combat, update the segment name
+			self.current.mobname = encounterName
+			self.current.gotboss = true
+		else -- we are not in combat yet
+			-- if we StartCombat here, the segment will immediately end by Tick
+			-- just save the encounter name for use when we enter combat
+			self.encounterName = encounterName
+			self.encounterTime = GetTime()
+		end
 	end
 end
 
-function Skada:ENCOUNTER_END()
+function Skada:ENCOUNTER_END(encounterId, encounterName)
+	self:Debug("ENCOUNTER_END", encounterId, encounterName)
 	if not disabled and self.current then
-		self:EndSegment()
+		-- ticket 363: it is NOT safe to EndSegment here
+		if not self.current.gotboss then -- might have missed the bossname (eg d/c in combat)
+			self.current.mobname = encounterName
+			self.current.gotboss = true
+		end
 	end
 end
 
