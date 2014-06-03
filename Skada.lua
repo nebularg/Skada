@@ -1675,10 +1675,9 @@ cleuFrame:SetScript("OnEvent", function(frame, event, timestamp, eventtype, hide
 				if tentative ~= nil then
 					tentative = tentative + 1
 					if tentative == 5 then
-						--self:Print("tentative combat start SUCCESS!")
 						Skada:CancelTimer(tentativehandle)
 						tentativehandle = nil
-						self:Debug("StartCombat: tentative combat")
+						Skada:Debug("StartCombat: tentative combat")
 						Skada:StartCombat()
 					end
 				end
