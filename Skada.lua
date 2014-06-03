@@ -667,6 +667,19 @@ function Skada:Print(msg)
 	print("|cFF33FF99Skada|r: "..msg)
 end
 
+function Skada:Debug(...)
+	if not Skada.db.profile.debug then return end
+	local msg = ""
+	for i=1, select("#",...) do
+		local v = tostring(select(i,...))
+		if #msg > 0 then
+			msg = msg .. ", "
+		end
+		msg = msg..v
+	end
+	print("|cFF33FF99Skada Debug|r: "..msg)
+end
+
 local function slashHandler(param)
 	local reportusage = "/skada report [raid|party|instance|guild|officer|say] [current||total|set_num] [mode] [max_lines]"
 	if param == "pets" then
@@ -679,6 +692,9 @@ local function slashHandler(param)
 		Skada:NewSegment()
 	elseif param == "toggle" then
 		Skada:ToggleWindow()
+	elseif param == "debug" then
+		Skada.db.profile.debug = not Skada.db.profile.debug
+		Skada:Print("Debug mode "..(Skada.db.profile.debug and ("|cFF00FF00"..L["ENABLED"].."|r") or ("|cFFFF0000"..L["DISABLED"].."|r")))
 	elseif param == "config" then
 		InterfaceOptionsFrame_OpenToCategory(Skada.optionsFrame)
 		InterfaceOptionsFrame_OpenToCategory(Skada.optionsFrame)
@@ -720,6 +736,7 @@ local function slashHandler(param)
 		Skada:Print(("%-20s"):format(reportusage))
 		Skada:Print(("%-20s"):format("/skada reset"))
 		Skada:Print(("%-20s"):format("/skada toggle"))
+		Skada:Print(("%-20s"):format("/skada debug"))
 		Skada:Print(("%-20s"):format("/skada newsegment"))
 		Skada:Print(("%-20s"):format("/skada config"))
 	end
@@ -839,13 +856,13 @@ function Skada:SetActive(enable)
 	end
 	if not enable and self.db.profile.hidedisables then
 		if not disabled then -- print a message when we change state
-			self:Print(L["Data Collection"].." ".."|cFFFF0000"..L["DISABLED"].."|r")
+			self:Debug(L["Data Collection"].." ".."|cFFFF0000"..L["DISABLED"].."|r")
 		end
 		disabled = true
 		cleuFrame:UnregisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
 	else
 		if disabled then -- print a message when we change state
-			self:Print(L["Data Collection"].." ".."|cFF00FF00"..L["ENABLED"].."|r")
+			self:Debug(L["Data Collection"].." ".."|cFF00FF00"..L["ENABLED"].."|r")
 		end
 		disabled = false
 		cleuFrame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
