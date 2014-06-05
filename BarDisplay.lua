@@ -315,8 +315,8 @@ function mod:Update(win)
 			end
 
 			if bar then
-				bar:SetMaxValue(win.metadata.maxvalue or 1)
 				bar:SetValue(data.value)
+				bar:SetMaxValue(win.metadata.maxvalue or 1) -- MUST come after SetValue
 			else
 				-- Initialization of bars.
 				bar = mod:CreateBar(win, barid, barlabel, data.value, win.metadata.maxvalue or 1, data.icon, false)
