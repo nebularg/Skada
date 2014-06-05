@@ -1331,7 +1331,7 @@ function Skada:EndSegment()
 		end
 	end
 
-	self:UpdateDisplay()
+	self:UpdateDisplay(true) -- force required to update displays looking at older sets after insertion
 	if update_timer then self:CancelTimer(update_timer) end
 	if tick_timer then self:CancelTimer(tick_timer) end
 	update_timer, tick_timer = nil, nil
