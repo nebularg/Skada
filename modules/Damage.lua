@@ -70,6 +70,8 @@ Skada:AddLoadableModule("Damage", function(Skada, L)
 				spell.glancing = (spell.glancing or 0) + 1
 			elseif dmg.crushing then
 				spell.crushing = (spell.crushing or 0) + 1
+			elseif dmg.multistrike then
+				spell.multistrike = (spell.multistrike or 0) + 1
 			else
 				spell.hit = (spell.hit or 0) + 1
 			end
@@ -92,7 +94,7 @@ Skada:AddLoadableModule("Damage", function(Skada, L)
 
 	local dmg = {}
 
-	local function SpellDamage(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, spellId, spellName, spellSchool, samount, soverkill, sschool, sresisted, sblocked, sabsorbed, scritical, sglancing, scrushing)
+	local function SpellDamage(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, spellId, spellName, spellSchool, samount, soverkill, sschool, sresisted, sblocked, sabsorbed, scritical, sglancing, scrushing, soffhand, smultistrike)
 		-- Spell damage.
 		if srcGUID ~= dstGUID then
 			dmg.playerid = srcGUID
@@ -109,6 +111,8 @@ Skada:AddLoadableModule("Damage", function(Skada, L)
 			dmg.critical = scritical
 			dmg.glancing = sglancing
 			dmg.crushing = scrushing
+			dmg.offhand = soffhand
+			dmg.multistrike = smultistrike
 			dmg.missed = nil
 
 			Skada:FixPets(dmg)
@@ -117,7 +121,7 @@ Skada:AddLoadableModule("Damage", function(Skada, L)
 		end
 	end
 
-	local function SwingDamage(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, samount, soverkill, sschool, sresisted, sblocked, sabsorbed, scritical, sglancing, scrushing)
+	local function SwingDamage(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, samount, soverkill, sschool, sresisted, sblocked, sabsorbed, scritical, sglancing, scrushing, soffhand, smultistrike)
 		-- White melee.
 		if srcGUID ~= dstGUID then
 			dmg.playerid = srcGUID
@@ -134,6 +138,8 @@ Skada:AddLoadableModule("Damage", function(Skada, L)
 			dmg.critical = scritical
 			dmg.glancing = sglancing
 			dmg.crushing = scrushing
+			dmg.offhand = soffhand
+			dmg.multistrike = smultistrike
 			dmg.missed = nil
 
 			Skada:FixPets(dmg)
@@ -160,6 +166,8 @@ Skada:AddLoadableModule("Damage", function(Skada, L)
 			dmg.critical = nil
 			dmg.glancing = nil
 			dmg.crushing = nil
+			dmg.offhand = nil
+			dmg.multistrike = nil
 			dmg.missed = missed
 
 			Skada:FixPets(dmg)
@@ -185,6 +193,8 @@ Skada:AddLoadableModule("Damage", function(Skada, L)
 			dmg.critical = nil
 			dmg.glancing = nil
 			dmg.crushing = nil
+			dmg.offhand = nil
+			dmg.multistrike = nil
 			dmg.missed = missType
 
 			Skada:FixPets(dmg)
@@ -397,6 +407,9 @@ Skada:AddLoadableModule("Damage", function(Skada, L)
 				end
 				if spell.crushing and spell.crushing > 0 then
 					add_detail_bar(win, 4, L["Crushing"], spell.crushing)
+				end
+				if spell.multistrike and spell.multistrike > 0 then
+					add_detail_bar(win, 4, L["Multistrike"], spell.multistrike)
 				end
 				if spell.ABSORB and spell.ABSORB > 0 then
 					add_detail_bar(win, 5, L["Absorb"], spell.ABSORB)
