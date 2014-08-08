@@ -260,14 +260,14 @@ Skada:AddLoadableModule("DamageTaken", function(Skada, L)
 				if spell.critical > 0 then
 					tooltip:AddDoubleLine(L["Critical"]..":", spell.critical, 255,255,255,255,255,255)
 				end
-				if spell.crushing > 0 then
-					tooltip:AddDoubleLine(L["Crushing"]..":", spell.crushing, 255,255,255,255,255,255)
-				end
 				if spell.multistrike > 0 then
 					tooltip:AddDoubleLine(L["Multistrike"]..":", spell.multistrike, 255,255,255,255,255,255)
 				end
 				if spell.glancing > 0 then
 					tooltip:AddDoubleLine(L["Glancing"]..":", spell.glancing, 255,255,255,255,255,255)
+				end
+				if spell.crushing > 0 then
+					tooltip:AddDoubleLine(L["Crushing"]..":", spell.crushing, 255,255,255,255,255,255)
 				end
 				if spell.max and spell.min then
 					tooltip:AddDoubleLine(L["Minimum hit:"], Skada:FormatNumber(spell.min), 255,255,255,255,255,255)

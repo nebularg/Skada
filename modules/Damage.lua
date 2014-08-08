@@ -402,14 +402,14 @@ Skada:AddLoadableModule("Damage", function(Skada, L)
 				if spell.critical and spell.critical > 0 then
 					add_detail_bar(win, 2, L["Critical"], spell.critical)
 				end
+				if spell.multistrike and spell.multistrike > 0 then
+					add_detail_bar(win, 4, L["Multistrike"], spell.multistrike)
+				end
 				if spell.glancing and spell.glancing > 0 then
 					add_detail_bar(win, 3, L["Glancing"], spell.glancing)
 				end
 				if spell.crushing and spell.crushing > 0 then
 					add_detail_bar(win, 4, L["Crushing"], spell.crushing)
-				end
-				if spell.multistrike and spell.multistrike > 0 then
-					add_detail_bar(win, 4, L["Multistrike"], spell.multistrike)
 				end
 				if spell.ABSORB and spell.ABSORB > 0 then
 					add_detail_bar(win, 5, L["Absorb"], spell.ABSORB)
