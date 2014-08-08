@@ -97,6 +97,12 @@ Skada:AddLoadableModule("Damage", function(Skada, L)
 	local function SpellDamage(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, spellId, spellName, spellSchool, samount, soverkill, sschool, sresisted, sblocked, sabsorbed, scritical, sglancing, scrushing, soffhand, smultistrike)
 		-- Spell damage.
 		if srcGUID ~= dstGUID then
+			-- XXX WoD quick fix for Mage's Prismatic Crystal talent
+			-- All damage done to the crystal is transferred, so ignore it
+			if dstGUID:match("^Creature:0:%d+:%d+:%d+:76933:%w+$") then 
+				return
+			end
+
 			dmg.playerid = srcGUID
 			dmg.playerflags = srcFlags
 			dmg.dstname = dstName
