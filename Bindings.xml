@@ -1,5 +1,5 @@
 <Bindings>
-  <Binding name="SKADA_TOGGLE" description="Toggles visibility of all Skada windows." header="Skada">
+  <Binding name="SKADA_TOGGLE" description="Toggles visibility of all Skada windows." header="Skada" category="ADDONS">
     Skada:ToggleWindow();
   </Binding>
   <Binding name="SKADA_RESET" description="Resets all Skada data.">
