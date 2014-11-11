@@ -103,7 +103,7 @@ Skada:AddLoadableModule("Damage", function(Skada, L)
 		if srcGUID ~= dstGUID then
 			-- XXX WoD quick fix for Mage's Prismatic Crystal talent
 			-- All damage done to the crystal is transferred, so ignore it
-			if dstGUID:match("^Creature:0:%d+:%d+:%d+:76933:%w+$") then
+			if dstGUID:match("^Creature%-0%-%d+%-%d+%-%d+%-76933%-%w+$") then
 				return
 			end
 
