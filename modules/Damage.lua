@@ -131,7 +131,7 @@ Skada:AddLoadableModule("Damage", function(Skada, L)
 	end
 
 	local function SpellAbsorbed(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, spellId, spellName, spellSchool, aGUID, aName, _, _, aspellId, aspellName, _, aAmount)
-        spellDamage(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, spellId, spellName, spellSchool, aAmount, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil)
+        SpellDamage(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, spellId, spellName, spellSchool, aAmount, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil)
     end
 
 	local function SwingDamage(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, samount, soverkill, sschool, sresisted, sblocked, sabsorbed, scritical, sglancing, scrushing, soffhand, smultistrike)
