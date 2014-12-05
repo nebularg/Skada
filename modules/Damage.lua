@@ -97,10 +97,6 @@ Skada:AddLoadableModule("Damage", function(Skada, L)
 
 	local dmg = {}
 
-	local function SpellAbsorbed(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, spellId, spellName, spellSchool, aGUID, aName, _, _, aspellId, aspellName, _, aAmount)
-        spellDamage(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, spellId, spellName, spellSchool, aAmount, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil)
-    end
-        
 	local function SpellDamage(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, spellId, spellName, spellSchool, samount, soverkill, sschool, sresisted, sblocked, sabsorbed, scritical, sglancing, scrushing, soffhand, smultistrike)
 		-- Spell damage.
 		if srcGUID ~= dstGUID then
@@ -133,6 +129,10 @@ Skada:AddLoadableModule("Damage", function(Skada, L)
 			log_damage(Skada.total, dmg)
 		end
 	end
+
+	local function SpellAbsorbed(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, spellId, spellName, spellSchool, aGUID, aName, _, _, aspellId, aspellName, _, aAmount)
+        spellDamage(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, spellId, spellName, spellSchool, aAmount, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil)
+    end
 
 	local function SwingDamage(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, samount, soverkill, sschool, sresisted, sblocked, sabsorbed, scritical, sglancing, scrushing, soffhand, smultistrike)
 		-- White melee.
