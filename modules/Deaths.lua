@@ -218,11 +218,13 @@ Skada:AddLoadableModule("Deaths", function(Skada, L)
 				--   and this way "who died first" is clear in the order, despite brezzes
 				-- for total set: sort by number of deaths and omit timestamp in summary
 				--   because total often entails many unrelated combat segments with many deaths
+				local labeldeath
 				if set == Skada.total then
 					d.order = #player.deaths
 					d.valuetext = Skada:FormatValueText(
 						tostring(#player.deaths), self.metadata.columns.Deaths
 						)
+					labeldeath = player.deaths[1] -- last death in segment
 				else -- combat segment
 					local deathts
 					for j, death in ipairs(player.deaths) do
@@ -233,18 +235,19 @@ Skada:AddLoadableModule("Deaths", function(Skada, L)
 						tostring(#player.deaths), self.metadata.columns.Deaths,
 						date("%H:%M:%S", deathts), self.metadata.columns.Timestamp
 						)
+					labeldeath = player.deaths[#player.deaths] -- first death in segment
 				end
 
 				local spellname = nil
 				local spellid = nil
-				local death = player.deaths[#player.deaths]
-				if death.log and #death.log > 2 then
-					-- Find last deadly entry.
-					for j, v in ipairs(death.log) do
-						if v.amount and v.amount < 0 then
+				if labeldeath and labeldeath.log and #labeldeath.log > 2 then
+					local kbts = 0
+					-- Find the killing blow
+					for j, v in ipairs(labeldeath.log) do
+						if v.amount and v.amount < 0 and v.ts > kbts then
 							spellid = v.spellid
 							spellname = v.spellname
-							break
+							kbts = v.ts
 						end
 					end
 				end
@@ -271,7 +274,7 @@ Skada:AddLoadableModule("Deaths", function(Skada, L)
 
 	function deathlog:Enter(win, id, label)
 		deathlog.playerid = id
-		deathlog.title = label..L["'s Death"]
+		deathlog.title = label:gsub(": .*$","")..L["'s Death"]
 	end
 
 	local green = {r = 0, g = 255, b = 0, a = 1}
