@@ -7,10 +7,10 @@ Skada:AddLoadableModule("Healing", function(Skada, L)
 	local healedmod = Skada:NewModule(L["Healed players"])
 	local healingtaken = Skada:NewModule(L["Healing taken"])
 
-	local function log_heal(set, heal, is_absorb)
+	local function log_heal(set, heal)
 		-- Get the player from set.
 		local player = Skada:get_player(set, heal.playerid, heal.playername)
-		if player then
+		if player and heal and heal.spellname then
 			-- Subtract overhealing
 			local amount = math.max(0, heal.amount - heal.overhealing)
 			-- Add absorbed
