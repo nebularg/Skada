@@ -136,6 +136,12 @@ Skada:AddLoadableModule("Damage", function(Skada, L)
         end
     end
 
+	local function SwingAbsorbed(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, aGUID, aName, aFlags, aRaidFlags, aspellId, aspellName, aspellSchool, aAmount)
+        if aAmount then
+            SpellDamage(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, spellId, L["Attack"], nil, aAmount, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil)
+        end
+    end
+        
 	local function SwingDamage(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, samount, soverkill, sschool, sresisted, sblocked, sabsorbed, scritical, sglancing, scrushing, soffhand, smultistrike)
 		-- White melee.
 		if srcGUID ~= dstGUID then
@@ -512,6 +518,7 @@ Skada:AddLoadableModule("Damage", function(Skada, L)
 
 		Skada:RegisterForCL(SwingDamage, 'SWING_DAMAGE', {src_is_interesting = true, dst_is_not_interesting = true})
 		Skada:RegisterForCL(SwingMissed, 'SWING_MISSED', {src_is_interesting = true, dst_is_not_interesting = true})
+		Skada:RegisterForCL(SwingAbsorbed, 'SWING_ABSORBED', {src_is_interesting = true, dst_is_not_interesting = true})
 
 		Skada:RegisterForCL(SpellMissed, 'SPELL_MISSED', {src_is_interesting = true, dst_is_not_interesting = true})
 		Skada:RegisterForCL(SpellMissed, 'SPELL_PERIODIC_MISSED', {src_is_interesting = true, dst_is_not_interesting = true})
