@@ -46,7 +46,8 @@ Skada:AddLoadableModule("Healing", function(Skada, L)
 					-- Create recipient if it does not exist.
 					if not healed then
 						local _, className = UnitClass(heal.dstName)
-						healed = {name = heal.dstName, class = className, amount = 0, shielding = 0}
+                        local playerRole = UnitGroupRolesAssigned(heal.dstName)
+						healed = {name = heal.dstName, class = className, role = playerRole, amount = 0, shielding = 0}
 						player.healed[heal.dstGUID] = healed
 					end
 
@@ -285,6 +286,7 @@ Skada:AddLoadableModule("Healing", function(Skada, L)
 												string.format("%02.1f%%", totalhealing / set.healing * 100), self.metadata.columns.Percent
 											)
 				d.class = player.class
+				d.role = player.role
 
 				if totalhealing > max then
 					max = totalhealing
@@ -318,6 +320,7 @@ Skada:AddLoadableModule("Healing", function(Skada, L)
 												string.format("%02.1f%%", player.healing / set.healing * 100), self.metadata.columns.Percent
 											)
 				d.class = player.class
+				d.role = player.role
 
 				if player.healing > max then
 					max = player.healing
@@ -420,6 +423,7 @@ Skada:AddLoadableModule("Healing", function(Skada, L)
 					d.label = heal.name or dstGUID -- second clause for legacy data upgrade
 					d.value = heal.amount
 					d.class = heal.class
+                    d.role = player.role
 					d.valuetext = Skada:FormatValueText(
 													Skada:FormatNumber(heal.amount), self.metadata.columns.Healing,
 													string.format("%02.1f%%", heal.amount / player.healing * 100), self.metadata.columns.Percent

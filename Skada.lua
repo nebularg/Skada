@@ -1,4 +1,3 @@
-
 local Skada = LibStub("AceAddon-3.0"):NewAddon("Skada", "AceTimer-3.0")
 _G.Skada = Skada
 
@@ -71,6 +70,7 @@ BINDING_HEADER_Skada = "Skada"
 BINDING_NAME_SKADA_TOGGLE = L["Toggle window"]
 BINDING_NAME_SKADA_RESET = L["Reset"]
 BINDING_NAME_SKADA_NEWSEGMENT = L["Start new segment"]
+BINDING_NAME_SKADA_STOP = L["Stop"]
 
 -- The current set
 Skada.current = nil
@@ -613,11 +613,17 @@ function Skada:CreateWindow(name, db, display)
 		db.barbgcolor = {r = 0.3, g = 0.3, b = 0.3, a = 0.6}
 	end
 	if not db.buttons then
-		db.buttons = {menu = true, reset = true, report = true, mode = true, segment = true}
+		db.buttons = {menu = true, reset = true, report = true, mode = true, segment = true, stop = true}
 	end
 	if not db.scale then
 		db.scale = 1
 	end
+
+    if not db.version then
+        -- On changes that needs updates to window data structure, increment version in defaults and handle it after this bit.
+        db.version = 1
+        db.buttons.stop = true
+    end
 
 	local window = Window:new()
 	window.db = db
@@ -1255,15 +1261,38 @@ function Skada:Tick()
 	end
 end
 
+-- Stops the current segment immediately.
+-- To not complicate things, this only stops processing of CLEU events and sets the segment end time.
+-- A stopped segment can be resumed.
+function Skada:StopSegment()
+    if self.current then
+        self.current.stopped = true
+		self.current.endtime = time()
+		self.current.time = self.current.endtime - self.current.starttime
+    end
+end
+
+-- Resumes a stopped segment.
+function Skada:ResumeSegment()
+    if self.current and self.current.stopped then
+       self.current.stopped = nil
+	   self.current.endtime = nil
+        self.current.time = nil
+    end
+end
+
 function Skada:EndSegment()
 	-- Save current set unless this a trivial set, or if we have the Only keep boss fights options on, and no boss in fight.
 	-- A set is trivial if we have no mob name saved, or if total time for set is not more than 5 seconds.
 	if not self.db.profile.onlykeepbosses or self.current.gotboss then
 		if self.current.mobname ~= nil and time() - self.current.starttime > 5 then
 			-- End current set.
-			self.current.endtime = time()
+            if not self.current.endtime then
+                self.current.endtime = time()
+            end
 			self.current.time = self.current.endtime - self.current.starttime
 			setPlayerActiveTimes(self.current)
+            self.current.stopped = nil
 
 			-- compute a count suffix for the set name
 			local setname = self.current.mobname
@@ -1549,7 +1578,8 @@ function Skada:get_player(set, playerid, playername)
 		end
 
 		local _, playerClass = UnitClass(playername)
-		player = {id = playerid, class = playerClass, name = playername, first = time(), ["time"] = 0}
+        local playerRole = UnitGroupRolesAssigned(playername)
+		player = {id = playerid, class = playerClass, role = playerRole, name = playername, first = time(), ["time"] = 0}
 
 		-- Tell each mode to apply its needed attributes.
 		for i, mode in ipairs(modes) do
@@ -1570,7 +1600,9 @@ function Skada:get_player(set, playerid, playername)
 		local player_name, realm = string.split("-", playername, 2)
 		player.name = player_name or playername
 		local _, playerClass = UnitClass(playername)
+        local playerRole = UnitGroupRolesAssigned(playername)
 		player.class = playerClass
+        player.role = playerRole
 	end
 
 
@@ -1605,7 +1637,7 @@ cleuFrame = CreateFrame("Frame") -- Dedicated event handler for a small performa
 cleuFrame:SetScript("OnEvent", function(frame, event, timestamp, eventtype, hideCaster, srcGUID, srcName, srcFlags, srcRaidFlags, dstGUID, dstName, dstFlags, dstRaidFlags, ...)
 	local src_is_interesting = nil
 	local dst_is_interesting = nil
-
+        
 	-- Optional tentative combat detection.
 	-- Instead of simply checking when we enter combat, combat start is also detected based on needing a certain
 	-- amount of interesting (as defined by our modules) CL events.
@@ -1640,6 +1672,11 @@ cleuFrame:SetScript("OnEvent", function(frame, event, timestamp, eventtype, hide
 	end
 
 	if Skada.current and combatlogevents[eventtype] then
+        -- If segment is stopped, stop processing here.
+        if Skada.current.stopped then
+            return
+        end
+            
 		for i, mod in ipairs(combatlogevents[eventtype]) do
 			local fail = false
 
@@ -2082,7 +2119,7 @@ function Skada:GetSetTime(set)
 	if set.time then
 		return set.time
 	else
-		return (time() - set.starttime)
+        return (time() - set.starttime)
 	end
 end
 
@@ -2096,7 +2133,7 @@ function Skada:PlayerActiveTime(set, player)
 	end
 
 	-- Add in-progress time if set is not ended.
-	if not set.endtime and player.first then
+	if (not set.endtime or set.stopped) and player.first then
 		maxtime = maxtime + player.last - player.first
 	end
 	return maxtime
