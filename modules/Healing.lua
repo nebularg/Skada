@@ -138,7 +138,7 @@ Skada:AddLoadableModule("Healing", function(Skada, L)
             aGUID, aName, aFlags, aRaidFlags, aspellId, aspellName, aspellSchool, aAmount = ...
 
             if aAmount then
-                SpellHeal(timestamp, eventtype, aGUID, aName, aFlags, dstGUID, dstName, dstFlags, aspellId, L["Attack"], nil, aAmount, 0, 0)
+                SpellHeal(timestamp, eventtype, aGUID, aName, aFlags, dstGUID, dstName, dstFlags, aspellId, aspellName, nil, aAmount, 0, 0)
             end
         end
     end
