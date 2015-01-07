@@ -1684,7 +1684,7 @@ cleuFrame:SetScript("OnEvent", function(frame, event, timestamp, eventtype, hide
 	end
         
     -- Stop automatically on wipe to discount meaningless data.
-    if Skada.db.profile.autostop then
+    if Skada.current and Skada.db.profile.autostop then
         -- Add to death counter when a player dies.
         if Skada.current and eventtype == 'UNIT_DIED' and ((band(srcFlags, RAID_FLAGS) ~= 0 and band(srcFlags, PET_FLAGS) == 0) or players[srcGUID]) then
             deathcounter = deathcounter + 1
@@ -1694,7 +1694,7 @@ cleuFrame:SetScript("OnEvent", function(frame, event, timestamp, eventtype, hide
                 Skada:StopSegment()
             end
         end
-        -- Subtract from death counter when a player dies.
+        -- Subtract from death counter when a player is ressurected.
         if Skada.current and eventtype == 'SPELL_RESURRECT' and ((band(srcFlags, RAID_FLAGS) ~= 0 and band(srcFlags, PET_FLAGS) == 0) or players[srcGUID]) then
             deathcounter = deathcounter - 1
         end
