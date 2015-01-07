@@ -1031,12 +1031,6 @@ do
 		self:SetScript("OnSizeChanged", self.OnSizeChanged)
 		self.texture = self.texture or self:CreateTexture(nil, "ARTWORK")
 
-		if self.timeLeftTriggers then
-			for k, v in pairs(self.timeLeftTriggers) do
-				self.timeLeftTriggers[k] = false
-			end
-		end
-
 		self.bgtexture = self.bgtexture or self:CreateTexture(nil, "BACKGROUND")
 		self.bgtexture:SetAllPoints()
 		self.bgtexture:SetVertexColor(0.3, 0.3, 0.3, 0.6)
@@ -1112,11 +1106,6 @@ function barPrototype:OnBarReleased()
 	if self.gradMap then
 		for k, v in pairs(self.gradMap) do
 			self.gradMap[k] = nil
-		end
-	end
-	if self.timeLeftTriggers then
-		for k, v in pairs(self.timeLeftTriggers) do
-			self.timeLeftTriggers[k] = nil
 		end
 	end
 

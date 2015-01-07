@@ -10,6 +10,10 @@ local lds = LibStub:GetLibrary("LibDualSpec-1.0", 1)
 local dataobj = ldb:NewDataObject("Skada", {label = "Skada", type = "data source", icon = "Interface\\Icons\\Spell_Lightning_LightningBolt01", text = "n/a"})
 local popup, cleuFrame
 
+-- Used for automatic stop on wipe option
+local deathcounter = 0
+local startingmembers = 0
+
 -- Returns the group type (i.e., "party" or "raid") and the size of the group.
 function Skada:GetGroupTypeAndCount()
 	local type
@@ -1282,6 +1286,10 @@ function Skada:ResumeSegment()
 end
 
 function Skada:EndSegment()
+    if not self.current then
+        return
+    end
+    
 	-- Save current set unless this a trivial set, or if we have the Only keep boss fights options on, and no boss in fight.
 	-- A set is trivial if we have no mob name saved, or if total time for set is not more than 5 seconds.
 	if not self.db.profile.onlykeepbosses or self.current.gotboss then
@@ -1403,6 +1411,10 @@ local tentative = nil
 local tentativehandle= nil
 
 function Skada:StartCombat()
+    -- Reset automatic stop on wipe variables
+    deathcounter = 0
+    _, startingmembers = self:GetGroupTypeAndCount()
+    
 	-- Cancel cancelling combat if needed.
 	if tentativehandle ~= nil then
 		self:CancelTimer(tentativehandle)
@@ -1670,6 +1682,23 @@ cleuFrame:SetScript("OnEvent", function(frame, event, timestamp, eventtype, hide
 			--self:Print("tentative combat start INIT!")
 		end
 	end
+        
+    -- Stop automatically on wipe to discount meaningless data.
+    if Skada.db.profile.autostop then
+        -- Add to death counter when a player dies.
+        if Skada.current and eventtype == 'UNIT_DIED' and ((band(srcFlags, RAID_FLAGS) ~= 0 and band(srcFlags, PET_FLAGS) == 0) or players[srcGUID]) then
+            deathcounter = deathcounter + 1
+            -- If we reached the treshold for stopping the segment, do so.
+            if deathcounter > 0 and deathcounter / startingmembers >= 0.5 and not Skada.current.stopped then
+                Skada:Print('Stopping for wipe.')
+                Skada:StopSegment()
+            end
+        end
+        -- Subtract from death counter when a player dies.
+        if Skada.current and eventtype == 'SPELL_RESURRECT' and ((band(srcFlags, RAID_FLAGS) ~= 0 and band(srcFlags, PET_FLAGS) == 0) or players[srcGUID]) then
+            deathcounter = deathcounter - 1
+        end
+    end
 
 	if Skada.current and combatlogevents[eventtype] then
         -- If segment is stopped, stop processing here.
