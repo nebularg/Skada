@@ -127,8 +127,9 @@ Skada:AddLoadableModule("Healing", function(Skada, L)
 		local spellId, spellName, spellSchool, samount, soverhealing, absorbed, scritical, smultistrike = ...
 
 		if bit.band(srcFlags, COMBATLOG_OBJECT_CONTROL_PLAYER) ~= 0 and bit.band(srcFlags, dstFlags, COMBATLOG_OBJECT_REACTION_MASK) ~= 0 then
+            -- Spirit of Redemption - discount absorbs on priest.
+            -- Discount Monk's Stagger absorbs
             if spellId == 20711 or spellId == 115069 or spellId == 157533 then
-                -- Spirit of Redemption - discount absorbs on priest.
                 return
             end
 
