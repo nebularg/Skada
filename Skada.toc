@@ -5,7 +5,7 @@
 ## Notes-zhTW: 模組化的傷害統計。
 ## Notes-deDE: Ein Damage-Meter.
 ## Notes-frFR: Un damage meter.
-## Notes-zhCN: 伤害统计
+## Notes-zhCN: 模块化伤害统计。
 ## Author: Zarnivoop
 ## Version: @project-version@
 ## SavedVariables: SkadaDB
