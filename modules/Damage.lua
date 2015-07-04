@@ -161,15 +161,15 @@ Skada:AddLoadableModule("Damage", function(Skada, L)
         local chk = ...
         local spellId, spellName, spellSchool, aGUID, aName, aFlags, aRaidFlags, aspellId, aspellName, aspellSchool, aAmount
 
-        -- Exclude Spirit Shift damage
-        if aspellId == 184553 then
-            return
-        end
-            
         if type(chk) == "number" then
             -- Spell event
             spellId, spellName, spellSchool, aGUID, aName, aFlags, aRaidFlags, aspellId, aspellName, aspellSchool, aAmount = ...
             
+            -- Exclude Spirit Shift damage
+            if aspellId == 184553 then
+                return
+            end
+                
             if aAmount then
                 SpellDamage(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, spellId, spellName, spellSchool, aAmount)
             end
@@ -177,6 +177,11 @@ Skada:AddLoadableModule("Damage", function(Skada, L)
             -- Swing event
             aGUID, aName, aFlags, aRaidFlags, aspellId, aspellName, aspellSchool, aAmount = ...
 
+            -- Exclude Spirit Shift damage
+            if aspellId == 184553 then
+                return
+            end
+                
             if aAmount then
                 SwingDamage(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, aAmount)   
             end
