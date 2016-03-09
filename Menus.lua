@@ -507,7 +507,12 @@ function Skada:CreateReportWindow(window)
 			channel = BNet_GetPresenceID(Skada.db.profile.report.target)
 		elseif channel == "target" then
 			if UnitExists("target") then
-				channel = UnitName("target")
+				local toon, realm = UnitName("target")
+				if realm and #realm > 0 then
+					channel = toon .. "-" .. realm
+				else
+					channel = toon
+				end
 			else
 				channel = nil
 			end
