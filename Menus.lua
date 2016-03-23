@@ -277,9 +277,9 @@ function Skada:OpenMenu(window)
 	            info.func = function() Skada.db.profile.report.channel = "Self"; Skada.db.profile.report.chantype = "self" end
 	            UIDropDownMenu_AddButton(info, level)
 
-				info.text = L["RealID"]
-				info.checked = (Skada.db.profile.report.chantype == "realid")
-				info.func = function() Skada.db.profile.report.channel = "RealID"; Skada.db.profile.report.chantype = "realid" end
+				info.text = BATTLENET_OPTIONS_LABEL
+				info.checked = (Skada.db.profile.report.chantype == "bnet")
+				info.func = function() Skada.db.profile.report.channel = "bnet"; Skada.db.profile.report.chantype = "bnet" end
 				UIDropDownMenu_AddButton(info, level)
 
 				local list = {GetChannelList()}
@@ -454,7 +454,7 @@ function Skada:CreateReportWindow(window)
 		guild 		= { L["Guild"], "preset"},
 		officer 	= { L["Officer"], "preset"},
 		self 		= { L["Self"], "self"},
-		realid	 	= { L["RealID"], "RealID"},
+		bnet	 	= { BATTLENET_OPTIONS_LABEL, "bnet"},
 	}
 	local list = {GetChannelList()}
 	for i=1,#list/2 do
@@ -503,8 +503,8 @@ function Skada:CreateReportWindow(window)
 
 		if channel == "whisper" then
 			channel = Skada.db.profile.report.target
-		elseif channel == "realid" then
-			channel = BNet_GetPresenceID(Skada.db.profile.report.target)
+		elseif channel == "bnet" then
+			channel = BNet_GetBNetIDAccount(Skada.db.profile.report.target)
 		elseif channel == "target" then
 			if UnitExists("target") then
 				local toon, realm = UnitName("target")

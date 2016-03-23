@@ -765,7 +765,7 @@ local function sendchat(msg, chan, chantype)
 	elseif chantype == "whisper" then
 		-- To player.
 		SendChatMessage(msg, "WHISPER", nil, chan)
-	elseif chantype == "RealID" then
+	elseif chantype == "bnet" then
 		BNSendWhisper(chan,msg)
 	end
 end
