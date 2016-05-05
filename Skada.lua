@@ -47,6 +47,14 @@ do
 	popup:SetFrameStrata("DIALOG")
 	popup:Hide()
 
+	popup:EnableKeyboard(true)
+	popup:SetScript("OnKeyDown", function(self,key)
+		if GetBindingFromClick(key) == "TOGGLEGAMEMENU" then
+			popup:SetPropagateKeyboardInput(false) -- swallow escape
+			popup:Hide()
+                end
+        end)
+
 	local text = popup:CreateFontString(nil, "ARTWORK", "ChatFontNormal")
 	text:SetPoint("TOP", popup, "TOP", 0, -10)
 	text:SetText(L["Do you want to reset Skada?"])
@@ -65,6 +73,7 @@ do
 	close:SetPoint("BOTTOM", popup, "BOTTOM", 50, 0)
 	close:SetScript("OnClick", function(f) f:GetParent():Hide() end)
 	function Skada:ShowPopup()
+		popup:SetPropagateKeyboardInput(true)
 		popup:Show()
 	end
 end
