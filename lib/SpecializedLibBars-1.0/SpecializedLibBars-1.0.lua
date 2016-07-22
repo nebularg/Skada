@@ -1024,7 +1024,7 @@ do
 	end
 
 
-	local DEFAULT_ICON = [[Interface\ICONS\INV_Misc_QuestionMark]]
+	local DEFAULT_ICON = 134400
 	function barPrototype:Create(text, value, maxVal, icon, orientation, length, thickness)
 
 		self.callbacks = self.callbacks or CallbackHandler:New(self)
@@ -1159,9 +1159,6 @@ end
 
 function barPrototype:SetIconWithCoord(icon, coord)
 	if icon then
-		if type(icon) == "number" then
-			icon = select(3, GetSpellInfo(icon))
-		end
 		self.icon:SetTexture(icon)
 		self.icon:SetTexCoord(unpack(coord))
 		if self.showIcon then
@@ -1175,9 +1172,6 @@ end
 
 function barPrototype:SetIcon(icon)
 	if icon then
-		if type(icon) == "number" then
-			icon = select(3, GetSpellInfo(icon))
-		end
 		self.icon:SetTexture(icon)
 		if self.showIcon then
 			self.icon:Show()
