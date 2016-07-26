@@ -958,6 +958,16 @@ do
 			stop = math.min(maxbars + offset, #values)
 			step = 1
 		end
+        
+        -- Fixed bar replaces the last bar
+        if stop < #values then
+            for i = stop + 1, #values, 1 do
+                if values[i].fixed then
+                    table.insert(values, stop, values[i])
+                    break
+                end
+            end
+        end
 
 		local shown = 0
 		local last_icon = false
