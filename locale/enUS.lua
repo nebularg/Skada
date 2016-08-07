@@ -425,3 +425,7 @@ L["Whisper Target"] = true
 
 L["Always show self"] = true
 L["Keeps the player shown last even if there is not enough space."] = true
+
+L["Strata"] = true
+L["This determines what other frames will be in front of the frame."] = true
+

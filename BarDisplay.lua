@@ -527,6 +527,8 @@ function mod:ApplySettings(win)
 		g:Unlock()
 	end
 
+    if p.background.strata then g:SetFrameStrata(p.background.strata) end
+    
 	-- Header
 	local fo = CreateFont("TitleFont"..win.db.name)
 	fo:SetFont(p.title.fontpath or media:Fetch('font', p.title.font), p.title.fontsize, p.title.fontflags)
@@ -1137,6 +1139,20 @@ function mod:AddDisplayOptions(win, options)
 					end,
 				order=6,
 			},
+            
+            strata = {
+                type="select",
+                name=L["Strata"],
+                desc=L["This determines what other frames will be in front of the frame."],
+                values = {["BACKGROUND"]="BACKGROUND", ["LOW"]="LOW", ["MEDIUM"]="MEDIUM", ["HIGH"]="HIGH", ["DIALOG"]="DIALOG", ["FULLSCREEN"]="FULLSCREEN", ["FULLSCREEN_DIALOG"]="FULLSCREEN_DIALOG"},
+                get=function() return db.background.strata end,
+                set=function(win, val)
+                    db.background.strata = val
+                    Skada:ApplySettings()
+                end,
+                order=7,
+            },
+            
 
 		}
 	}

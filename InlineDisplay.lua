@@ -497,7 +497,6 @@ function mod:ApplySettings(win)
     fbackdrop.insets = { left = p.background.margin, right = p.background.margin, top = p.background.margin, bottom = p.background.margin }
     f:SetBackdrop(fbackdrop)
     f:SetBackdropColor(p.background.color.r,p.background.color.g,p.background.color.b,p.background.color.a)
-    if p.background.strata then f:SetFrameLevel(5) end
     if p.background.strata then f:SetFrameStrata(p.background.strata) end
 
     --
@@ -781,8 +780,8 @@ function mod:AddDisplayOptions(win, options)
 
             strata = {
                 type="select",
-                name="Strata",
-                desc="This determines what other frames will be in front of the frame. \nDefault: LOW",
+                name=L["Strata"],
+                desc=L["This determines what other frames will be in front of the frame."],
                 values = {["BACKGROUND"]="BACKGROUND", ["LOW"]="LOW", ["MEDIUM"]="MEDIUM", ["HIGH"]="HIGH", ["DIALOG"]="DIALOG", ["FULLSCREEN"]="FULLSCREEN", ["FULLSCREEN_DIALOG"]="FULLSCREEN_DIALOG"},
                 get=function() return db.background.strata end,
                 set=function(win, val)
