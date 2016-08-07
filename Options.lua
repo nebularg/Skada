@@ -28,7 +28,7 @@ Skada.windowdefaults = {
 	buttons = {menu = true, reset = true, report = true, mode = true, segment = true},
 
 	title = {height = 15, font="Accidental Presidency", fontsize=11,margin=0, texture="Aluminium", bordertexture="None", borderthickness=2, color = {r=0.1,g=0.1,b=0.3,a=0.8}, fontflags = ""},
-	background = {margin=0, height=200, texture="Solid", bordertexture="None", borderthickness=0, color = {r=0,g=0,b=0.5,a=0.2}},
+	background = {margin=0, height=200, texture="Solid", bordertexture="None", borderthickness=0, color = {r=0,g=0,b=0.5,a=0.2}, tile = false, tilesize = 0, edgesize = 0, margin = 0, strata = "LOW"},
 
 	reversegrowth=false,
 	modeincombat="",
@@ -45,7 +45,15 @@ Skada.windowdefaults = {
 	display = "bar",
 	snapto = true,
 	scale = 1,
-    version = 1
+    version = 1,
+    
+    -- Inline exclusive
+    isonnewline = true,
+    isusingclasscolors = true,
+    height = 23,
+    color = {r = 0.3, g = 0.3, b = 0.3, a = 0.6},
+    isusingelvuiskin = true,
+    issolidbackdrop = false,
 }
 
 local windefaultscopy = {}

@@ -570,6 +570,7 @@ function Window:DisplaySets()
 	self.selectedset = nil
 
 	self.metadata.title = L["Skada: Fights"]
+	self.display:SetTitle(self, self.metadata.title)
 
 	self.metadata.click = click_on_set
 	self.metadata.maxvalue = 1
@@ -612,7 +613,9 @@ function Skada:tcopy(to, from)
 end
 
 function Skada:CreateWindow(name, db, display)
+    local isnew = false
 	if not db then
+        isnew = true
 		db = {}
 		self:tcopy(db, Skada.windowdefaults)
 		table.insert(self.db.profile.windows, db)
@@ -646,17 +649,19 @@ function Skada:CreateWindow(name, db, display)
 		-- Set the window's display and call it's Create function.
 		window:SetDisplay(window.db.display or "bar")
 
-		window.display:Create(window)
+		window.display:Create(window, isnew)
 
 		table.insert(windows, window)
 
-		if window.db.set or window.db.mode then
+        -- Set initial view, set list.
+        window:DisplaySets()
+        
+        if isnew and find_mode(L["Damage"]) then
+            -- Default mode for new windows - will not fail if mode is disabled.
+            self:RestoreView(window, "current", L["Damage"])
+        elseif window.db.set or window.db.mode then
 			-- Restore view.
-			window:DisplaySets()
 			self:RestoreView(window, window.db.set, window.db.mode)
-		else
-			-- Set initial view, set list.
-			window:DisplaySets()
 		end
 	else
 		-- This window's display is missing.
@@ -2352,6 +2357,65 @@ function Skada:AddSubviewToTooltip(tooltip, win, mode, id, label)
 
 		-- Add an empty line.
 		tooltip:AddLine(" ")
+	end
+end
+
+-- Generic tooltip function for displays
+function Skada:ShowTooltip(win, id, label)
+	local t = GameTooltip
+	if Skada.db.profile.tooltips and (win.metadata.click1 or win.metadata.click2 or win.metadata.click3 or win.metadata.tooltip) then
+		Skada:SetTooltipPosition(t, win.bargroup)
+	    t:ClearLines()
+
+		local hasClick = win.metadata.click1 or win.metadata.click2 or win.metadata.click3
+
+	    -- Current mode's own tooltips.
+		if win.metadata.tooltip then
+			local numLines = t:NumLines()
+			win.metadata.tooltip(win, id, label, t)
+
+			-- Spacer
+			if t:NumLines() ~= numLines and hasClick then
+				t:AddLine(" ")
+			end
+		end
+
+		-- Generic informative tooltips.
+		if Skada.db.profile.informativetooltips then
+			if win.metadata.click1 then
+				Skada:AddSubviewToTooltip(t, win, win.metadata.click1, id, label)
+			end
+			if win.metadata.click2 then
+				Skada:AddSubviewToTooltip(t, win, win.metadata.click2, id, label)
+			end
+			if win.metadata.click3 then
+				Skada:AddSubviewToTooltip(t, win, win.metadata.click3, id, label)
+			end
+		end
+
+		-- Current mode's own post-tooltips.
+		if win.metadata.post_tooltip then
+			local numLines = t:NumLines()
+			win.metadata.post_tooltip(win, id, label, t)
+
+			-- Spacer
+			if t:NumLines() ~= numLines and hasClick then
+				t:AddLine(" ")
+			end
+		end
+
+		-- Click directions.
+		if win.metadata.click1 then
+			t:AddLine(L["Click for"].." "..win.metadata.click1:GetName()..".", 0.2, 1, 0.2)
+		end
+		if win.metadata.click2 then
+			t:AddLine(L["Shift-Click for"].." "..win.metadata.click2:GetName()..".", 0.2, 1, 0.2)
+		end
+		if win.metadata.click3 then
+			t:AddLine(L["Control-Click for"].." "..win.metadata.click3:GetName()..".", 0.2, 1, 0.2)
+		end
+
+	    t:Show()
 	end
 end
 

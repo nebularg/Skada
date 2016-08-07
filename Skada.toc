@@ -33,6 +33,7 @@ Skada.lua
 Menus.lua
 Options.lua
 BarDisplay.lua
+InlineDisplay.lua
 
 modules.xml
 

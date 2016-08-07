@@ -159,62 +159,7 @@ local ttactive = false
 
 local function BarEnter(bar)
 	local win, id, label = bar.win, bar.id, bar.text
-	local t = GameTooltip
-	if Skada.db.profile.tooltips and (win.metadata.click1 or win.metadata.click2 or win.metadata.click3 or win.metadata.tooltip) then
-		ttactive = true
-		Skada:SetTooltipPosition(t, win.bargroup)
-	    t:ClearLines()
-
-		local hasClick = win.metadata.click1 or win.metadata.click2 or win.metadata.click3
-
-	    -- Current mode's own tooltips.
-		if win.metadata.tooltip then
-			local numLines = t:NumLines()
-			win.metadata.tooltip(win, id, label, t)
-
-			-- Spacer
-			if t:NumLines() ~= numLines and hasClick then
-				t:AddLine(" ")
-			end
-		end
-
-		-- Generic informative tooltips.
-		if Skada.db.profile.informativetooltips then
-			if win.metadata.click1 then
-				Skada:AddSubviewToTooltip(t, win, win.metadata.click1, id, label)
-			end
-			if win.metadata.click2 then
-				Skada:AddSubviewToTooltip(t, win, win.metadata.click2, id, label)
-			end
-			if win.metadata.click3 then
-				Skada:AddSubviewToTooltip(t, win, win.metadata.click3, id, label)
-			end
-		end
-
-		-- Current mode's own post-tooltips.
-		if win.metadata.post_tooltip then
-			local numLines = t:NumLines()
-			win.metadata.post_tooltip(win, id, label, t)
-
-			-- Spacer
-			if t:NumLines() ~= numLines and hasClick then
-				t:AddLine(" ")
-			end
-		end
-
-		-- Click directions.
-		if win.metadata.click1 then
-			t:AddLine(L["Click for"].." "..win.metadata.click1:GetName()..".", 0.2, 1, 0.2)
-		end
-		if win.metadata.click2 then
-			t:AddLine(L["Shift-Click for"].." "..win.metadata.click2:GetName()..".", 0.2, 1, 0.2)
-		end
-		if win.metadata.click3 then
-			t:AddLine(L["Control-Click for"].." "..win.metadata.click3:GetName()..".", 0.2, 1, 0.2)
-		end
-
-	    t:Show()
-	end
+    Skada:ShowTooltip(win, id, label)
 end
 
 local function BarLeave(bar)
