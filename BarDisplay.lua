@@ -390,7 +390,7 @@ function mod:Update(win)
 				bar:SetFont(nil,nil,"OUTLINE")
 				bar.emphathize_set = true
 			elseif not data.emphathize and bar.emphathize_set ~= false then
-				bar:SetFont(nil,nil,"PLAIN")
+				bar:SetFont(nil,nil, win.db.barfontflags)
 				bar.emphathize_set = false
 			end
 
