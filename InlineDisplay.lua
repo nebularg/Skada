@@ -1,26 +1,10 @@
---
--- Created by IntelliJ IDEA.
--- User: Thomas
--- Date: 4/16/16
--- Time: 20:44
--- To change this template use File | Settings | File Templates.
---
-
---print("InlineDisplay.lua")
-
 local L = LibStub("AceLocale-3.0"):GetLocale("Skada", false) --localization
 local Skada = Skada
 local mod = Skada:NewModule("InlineBarDisplay")
 local mybars = {}
---mybars[1] = {}
---mybars[1].uuid = 1
---mybars[1].bg = CreateFrame("Frame", "bg"..mybars[1].uuid, UIParent)
---mybars[1].label = mybars[1].bg:CreateFontString("label"..mybars[1].uuid)
---mybars[1].value = 0
---mybars[1].class = "MAGE"
-
 local barlibrary = {
-    bars = {}
+    bars = {},
+    nextuuid = 1
 }
 local leftmargin = 40
 local ttactive = false
@@ -148,14 +132,10 @@ function mod:Create(window, isnew)
     title:SetJustifyH("LEFT")
     title:SetPoint("LEFT", leftmargin, -1)
     title:SetPoint("CENTER", 0, 0)
-    --title:SetPoint("BOTTOMLEFT", window.frame, "BOTTOMLEFT", barleft, -1)
-    --title:SetPoint("BOTTOMRIGHT", window.frame, "BOTTOMLEFT", 280, -1)
     title:SetHeight(window.db.barheight or 23)
     window.frame.fstitle = title
     window.frame.titlebg = titlebg
         
-    --titlebg:SetHeight(window.db.height)
-    --titlebg:SetWidth(leftmargin + window.frame.fstitle:GetStringWidth())
     titlebg:SetAllPoints(title)
     titlebg:EnableMouse(true)
     titlebg:SetScript("OnMouseDown", function(frame, button)
@@ -209,34 +189,8 @@ function mod:Create(window, isnew)
     --create 20 barframes
     local temp = 25
     repeat
-        local bar = {
-            uuid = 1,
-            inuse = false,
-            barid = ""
-        }
-        bar.bg = CreateFrame("Frame", "bg"..bar.uuid, window.frame)
-        bar.label = bar.bg:CreateFontString("label"..bar.uuid)
-        bar.label:SetFont(window.db.title.fontpath or media:Fetch('font', window.db.barfont), window.db.barfontsize, window.db.barfontflags)
-        bar.label:SetJustifyH("LEFT")
-        bar.label:SetJustifyV("CENTER")
-        bar.bg:EnableMouse(true)
-        --bar:SetScript("OnEnter", BarEnter)
-        --bar:SetScript("OnLeave", BarLeave)
-        bar.bg:SetScript("OnMouseDown", function(frame, button)
-            BarClick(window, bar, button)
-        end)
-        bar.bg:SetScript("OnEnter", function(frame, button)
-            ttactive = true
-            Skada:ShowTooltip(window, bar.valueid, bar.valuetext)
-        end)
-        bar.bg:SetScript("OnLeave", function(frame, button)
-            if ttactive then
-                GameTooltip:Hide()
-                ttactive = false
-            end
-        end)
+        local bar = barlibrary:CreateBar(nil, window)
         barlibrary.bars[temp] = bar
-        
         temp = temp - 1
     until(temp < 1)
 
@@ -268,6 +222,39 @@ function mod:SetTitle(win, title)
     win.frame.barstartx = leftmargin + win.frame.fstitle:GetStringWidth() + 20
 end
 
+function barlibrary:CreateBar(uuid, win)
+    local bar = {}
+    bar.uuid = uuid or self.nextuuid
+    bar.inuse = false
+    bar.value = 0
+    bar.win = win
+        
+    bar.bg = CreateFrame("Frame", "bg"..bar.uuid, win.frame)
+    bar.label = bar.bg:CreateFontString("label"..bar.uuid)
+    bar.label:SetFont(win.db.title.fontpath or media:Fetch('font', win.db.barfont), win.db.barfontsize, win.db.barfontflags)
+    bar.label:SetJustifyH("LEFT")
+    bar.label:SetJustifyV("MIDDLE")
+    bar.bg:EnableMouse(true)
+    bar.bg:SetScript("OnMouseDown", function(frame, button)
+        BarClick(win, bar, button)
+    end)
+    bar.bg:SetScript("OnEnter", function(frame, button)
+        ttactive = true
+        Skada:ShowTooltip(win, bar.valueid, bar.valuetext)
+    end)
+    bar.bg:SetScript("OnLeave", function(frame, button)
+        if ttactive then
+            GameTooltip:Hide()
+            ttactive = false
+        end
+    end)
+        
+    if uuid then
+        self.nextuuid = self.nextuuid + 1
+    end
+    return bar
+end
+    
 function barlibrary:Deposit (_bar)
     --strip the bar of variables
     _bar.inuse = false
@@ -285,26 +272,17 @@ function barlibrary:Withdraw (win)--TODO: also pass parent and assign parent
     if #barlibrary.bars < 2 then
         --if barlibrary is empty, create a new bar to replace this bar
         local replacement = {}
+        local uuid = 1
         if #barlibrary.bars==0 then
             --No data
-            replacement.uuid = 1
+            uuid = 1
         elseif #barlibrary.bars < 2 then
-            replacement.uuid = barlibrary.bars[#barlibrary.bars].uuid + 1
+            uuid = barlibrary.bars[#barlibrary.bars].uuid + 1
         else
-            replacement.uuid = 1
+            uuid = 1
             print("|c0033ff99SkadaInline|r: THIS SHOULD NEVER HAPPEN")
         end
-        replacement.bg = CreateFrame("Frame", "bg"..replacement.uuid, win.frame)
-        replacement.label = replacement.bg:CreateFontString("label"..replacement.uuid)
-        replacement.label:SetJustifyH("LEFT")
-        replacement.value = 0
-            
-        replacement.label:SetJustifyV("CENTER")
-        replacement.bg:EnableMouse(true)
-        replacement.bg:SetScript("OnMouseDown", function(frame, button)
-            BarClick(win, replacement, button)
-        end)
-        replacement.win = win
+        replacement = self:CreateBar(uuid, win)
             
         --add the replacement bar to the end of the bar library
         table.insert(barlibrary.bars, replacement)
@@ -313,7 +291,7 @@ function barlibrary:Withdraw (win)--TODO: also pass parent and assign parent
     barlibrary.bars[1].inuse = false
     barlibrary.bars[1].value = 0
     barlibrary.bars[1].label:SetJustifyH("LEFT")
-    barlibrary.bars[1].label:SetJustifyV("CENTER")
+    --barlibrary.bars[1].label:SetJustifyV("CENTER")
     mod:ApplySettings(win)
     return table.remove(barlibrary.bars, 1)
 end
@@ -351,7 +329,7 @@ function mod:UpdateBar(bar, bardata, db)
     bar.label:SetTextColor(mod:GetFontColor(db))
     bar.value = bardata.value
     bar.class = bardata.class
-        
+    
     bar.valueid = bardata.id
     bar.valuetext = bardata.label
 
@@ -397,10 +375,10 @@ function mod:Update(win)
     
     -- TODO: fixed bars
         
-    local yoffset = win.db.height / 2
-    if win.db.isonnewline then
-        yoffset = (win.db.height - (win.db.barfontsize * 2)) / 2
-    end
+    local yoffset = (win.db.barheight - win.db.barfontsize) / 2
+--    if win.db.isonnewline then
+--        yoffset = (win.db.height - (win.db.barfontsize * 2)) / 2
+--    end
     local left = win.frame.barstartx + 40
     for key, bar in pairs(mybars) do
         --set bar positions
@@ -408,12 +386,12 @@ function mod:Update(win)
         --bar.texture:SetTexture(255, 0, 0, 1.00)
         
         bar.bg:SetFrameLevel(9)
-        bar.bg:SetHeight(23)
-        bar.bg:SetPoint("BOTTOMLEFT", win.frame, "BOTTOMLEFT", left, yoffset)
-        bar.label:SetHeight(23)
-        bar.label:SetPoint("BOTTOMLEFT", win.frame, "BOTTOMLEFT", left, yoffset)
-        --increment left value
+        bar.bg:SetHeight(win.db.barheight)
+        bar.bg:SetPoint("BOTTOMLEFT", win.frame, "BOTTOMLEFT", left, 0)
+        bar.label:SetHeight(win.db.barheight)
+        bar.label:SetPoint("BOTTOMLEFT", win.frame, "BOTTOMLEFT", left, 0)
         bar.bg:SetWidth(bar.label:GetStringWidth())
+        --increment left value
         left = left + bar.label:GetStringWidth()
         left = left + 15
         --show bar
@@ -464,7 +442,8 @@ function mod:ApplySettings(win)
     local f = win.frame
     local p = win.db
 
-    --f:SetMovable(p.barslocked)
+    -- TODO: fix, this is not working
+    f:SetMovable(p.barslocked)
         
     --
     --bars
@@ -476,8 +455,11 @@ function mod:ApplySettings(win)
         --bar.label:SetFont(p.barfont,p.barfontsize,p.barfontflags )
         bar.label:SetFont( p.title.fontpath or media:Fetch('font', p.barfont), p.barfontsize, p.barfontflags )
         bar.label:SetTextColor(p.title.color.r,p.title.color.g,p.title.color.b,p.title.color.a)
+            
+        bar.bg:EnableMouse(not p.clickthrough)
     end
 
+    f:EnableMouse(not p.clickthrough)
     --print("SetFont", p.barfont, p.barfontsize, p.barfontflags)
 
     --
@@ -532,8 +514,6 @@ function mod:ApplySettings(win)
         f:SetBackdropBorderColor(borderR, borderG, borderB, 1.0)
 
     end
-
-    --f:SortBars()
 end
 
 function mod:AddDisplayOptions(win, options)
@@ -638,6 +618,19 @@ function mod:AddDisplayOptions(win, options)
                 end,
                 order=3,
             },
+                
+			clickthrough = {
+			        type="toggle",
+			        name=L["Clickthrough"],
+			        desc=L["Disables mouse clicks on bars."],
+			        order=20,
+			        get=function() return db.clickthrough end,
+			        set=function()
+			        		db.clickthrough = not db.clickthrough
+		         			Skada:ApplySettings()
+			        	end,
+			},
+                
         }
     }
 
