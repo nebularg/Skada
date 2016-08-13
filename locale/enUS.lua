@@ -434,3 +434,6 @@ L["If checked, bar width is fixed. Otherwise, bar width depends on the text widt
 
 L["Text color"] = true
 L["Choose the default color."] = true
+L["Hint: Left-Click to set active mode."] = true
+L["Right-click to set active set."] = true
+L["Shift + Left-Click to open menu."] = true
