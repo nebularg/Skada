@@ -429,3 +429,8 @@ L["Keeps the player shown last even if there is not enough space."] = true
 L["Strata"] = true
 L["This determines what other frames will be in front of the frame."] = true
 
+L["Fixed bar width"] = true
+L["If checked, bar width is fixed. Otherwise, bar width depends on the text width."] = true
+
+L["Text color"] = true
+L["Choose the default color."] = true

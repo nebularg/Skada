@@ -124,9 +124,9 @@ function mod:Create(window, isnew)
         
     local titlebg = CreateFrame("Frame", "InlineTitleBackground", window.frame)
     local title = window.frame:CreateFontString("frameTitle", 6)
-    title:SetTextColor(window.db.title.color.r,window.db.title.color.g,window.db.title.color.b,window.db.title.color.a)
+    title:SetTextColor(self:GetFontColor(window.db))
     --window.frame.fstitle:SetTextColor(255,255,255,1)
-    title:SetFont([[Interface\AddOns\Skada\fonts\ABF.ttf]], 10, nil)
+    title:SetFont(self:GetFont(window.db))
     title:SetText(window.metadata.title or "Skada")
     title:SetWordWrap(false)
     title:SetJustifyH("LEFT")
@@ -193,21 +193,7 @@ function mod:Create(window, isnew)
         barlibrary.bars[temp] = bar
         temp = temp - 1
     until(temp < 1)
-
-end
-
-function mod:IsShown()
-    return not window.db.hidden
-end
-
-function mod:Show()
-    window.db.hidden = true
-    window.frame:Show()
-end
-
-function mod:Hide()
-    window.db.hidden = false
-    window.frame:Hide()
+    self:Update(window)
 end
 
 function mod:Destroy(win)
@@ -231,7 +217,8 @@ function barlibrary:CreateBar(uuid, win)
         
     bar.bg = CreateFrame("Frame", "bg"..bar.uuid, win.frame)
     bar.label = bar.bg:CreateFontString("label"..bar.uuid)
-    bar.label:SetFont(win.db.title.fontpath or media:Fetch('font', win.db.barfont), win.db.barfontsize, win.db.barfontflags)
+    bar.label:SetFont(mod:GetFont(win.db))
+    bar.label:SetTextColor(mod:GetFontColor(win.db))
     bar.label:SetJustifyH("LEFT")
     bar.label:SetJustifyV("MIDDLE")
     bar.bg:EnableMouse(true)
@@ -376,9 +363,6 @@ function mod:Update(win)
     -- TODO: fixed bars
         
     local yoffset = (win.db.barheight - win.db.barfontsize) / 2
---    if win.db.isonnewline then
---        yoffset = (win.db.height - (win.db.barfontsize * 2)) / 2
---    end
     local left = win.frame.barstartx + 40
     for key, bar in pairs(mybars) do
         --set bar positions
@@ -392,11 +376,20 @@ function mod:Update(win)
         bar.label:SetPoint("BOTTOMLEFT", win.frame, "BOTTOMLEFT", left, 0)
         bar.bg:SetWidth(bar.label:GetStringWidth())
         --increment left value
-        left = left + bar.label:GetStringWidth()
-        left = left + 15
+        if win.db.fixedbarwidth then
+            left = left + win.db.barwidth
+        else
+            left = left + bar.label:GetStringWidth()
+            left = left + 15
+        end
         --show bar
-        bar.bg:Show()
-        bar.label:Show()
+        if true then --left < win.frame:GetRight() then
+            bar.bg:Show()
+            bar.label:Show()
+        else
+            bar.bg:Hide()
+            bar.label:Hide()
+        end
     end
 end
     
@@ -426,15 +419,15 @@ function mod:GetFont(db)
     if db.isusingelvuiskin and ElvUI then
         if ElvUI then return ElvUI[1]["media"].normFont, db.barfontsize, nil else return nil end
     else
-        return  db.title.fontpath or media:Fetch('font', db.barfont), db.barfontsize, db.barfontflags
+        return media:Fetch('font', db.barfont), db.barfontsize, db.barfontflags
     end
 end
 
 function mod:GetFontColor(db)
-    if not db.isusingelvuiskin and ElvUI then
-        return  db.title.color.r,db.title.color.g,db.title.color.b,db.title.color.a
-    else
+    if db.isusingelvuiskin and ElvUI then
         return 255,255,255,1
+    else
+        return  db.title.color.r,db.title.color.g,db.title.color.b,db.title.color.a
     end
 end
 
@@ -449,12 +442,12 @@ function mod:ApplySettings(win)
     --bars
     --
     f:SetHeight(p.barheight)
-    f.fstitle:SetTextColor(p.title.color.r,p.title.color.g,p.title.color.b,p.title.color.a)
-    f.fstitle:SetFont(p.title.fontpath or media:Fetch('font', p.barfont), p.barfontsize, p.barfontflags)
+    f.fstitle:SetTextColor(self:GetFontColor(p))
+    f.fstitle:SetFont(self:GetFont(p))
     for k,bar in pairs(mybars) do
         --bar.label:SetFont(p.barfont,p.barfontsize,p.barfontflags )
-        bar.label:SetFont( p.title.fontpath or media:Fetch('font', p.barfont), p.barfontsize, p.barfontflags )
-        bar.label:SetTextColor(p.title.color.r,p.title.color.g,p.title.color.b,p.title.color.a)
+        bar.label:SetFont(self:GetFont(p))
+        bar.label:SetTextColor(self:GetFontColor(p))
             
         bar.bg:EnableMouse(not p.clickthrough)
     end
@@ -547,8 +540,8 @@ function mod:AddDisplayOptions(win, options)
             },
             height = {
                 type = 'range',
-                name = "Height",
-                desc = "Height of the frame.\nDefault: 23",
+				name=L["Bar height"],
+				desc=L["The height of the bars."],
                 min=10,
                 max=math.floor(GetScreenHeight()),
                 step=1.0,
@@ -560,6 +553,22 @@ function mod:AddDisplayOptions(win, options)
                     Skada:ApplySettings()
                 end,
                 order=0.1,
+            },
+            barwidth = {
+                type = 'range',
+                name = "Width",
+                desc = "Width of bars. This only applies if the 'Fixed bar width' option is used.",
+                min=100,
+                max=300,
+                step=1.0,
+                get = function()
+                    return db.barwidth
+                end,
+                set = function(win,key)
+                    db.barwidth = key
+                    Skada:ApplySettings()
+                end,
+                order=2,
             },
             color = {
                 type="color",
@@ -627,6 +636,18 @@ function mod:AddDisplayOptions(win, options)
 			        get=function() return db.clickthrough end,
 			        set=function()
 			        		db.clickthrough = not db.clickthrough
+		         			Skada:ApplySettings()
+			        	end,
+			},
+            
+			fixedbarwidth = {
+			        type="toggle",
+			        name=L["Fixed bar width"],
+			        desc=L["If checked, bar width is fixed. Otherwise, bar width depends on the text width."],
+			        order=21,
+			        get=function() return db.fixedbarwidth end,
+			        set=function()
+			        		db.fixedbarwidth = not db.fixedbarwidth
 		         			Skada:ApplySettings()
 			        	end,
 			},

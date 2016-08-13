@@ -10,8 +10,8 @@ Skada.windowdefaults = {
 	bartexture="BantoBar",
 	barfont="Accidental Presidency",
 	barfontflags="",
-	barfontsize=11,
-	barheight=15,
+	barfontsize=12,
+	barheight=16,
 	barwidth=240,
 	barorientation=1,
 	barcolor = {r = 0.3, g = 0.3, b = 0.8, a=1},
@@ -27,8 +27,8 @@ Skada.windowdefaults = {
 
 	buttons = {menu = true, reset = true, report = true, mode = true, segment = true},
 
-	title = {height = 15, font="Accidental Presidency", fontsize=11,margin=0, texture="Aluminium", bordertexture="None", borderthickness=2, color = {r=0.1,g=0.1,b=0.3,a=0.8}, fontflags = ""},
-	background = {margin=0, height=200, texture="Solid", bordertexture="None", borderthickness=0, color = {r=0,g=0,b=0.5,a=0.2}, tile = false, tilesize = 0, edgesize = 0, margin = 0, strata = "LOW"},
+	title = {height = 16, font="Accidental Presidency", fontsize=13,margin=0, texture="None", bordertexture="None", borderthickness=2, color = {r=1,g=1,b=1,a=1}, fontflags = ""},
+	background = {margin=0, height=200, texture="Solid", bordertexture="None", borderthickness=0, color = {r=0,g=0,b=0,a=0.6}, tile = false, tilesize = 0, edgesize = 0, margin = 0, strata = "MEDIUM"},
 
 	reversegrowth=false,
 	modeincombat="",
@@ -48,12 +48,16 @@ Skada.windowdefaults = {
     version = 1,
     
     -- Inline exclusive
-    isonnewline = true,
+    isonnewline = false,
     isusingclasscolors = true,
     height = 23,
     color = {r = 0.3, g = 0.3, b = 0.3, a = 0.6},
     isusingelvuiskin = true,
     issolidbackdrop = false,
+    fixedbarwidth = false,
+    
+    -- Broker exclusive
+    textcolor = {r = 0.9, g = 0.9, b = 0.9},
 }
 
 local windefaultscopy = {}
