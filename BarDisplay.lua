@@ -503,26 +503,6 @@ end
 
 local titlebackdrop = {}
 local windowbackdrop = {}
-local borderbackdrop = {}
-
-local function applyBorder(frame, texture, color, thickness, padtop, padbottom, padleft, padright)
-    if not frame.borderFrame then
-        frame.borderFrame = CreateFrame("Frame", nil, frame)
-        frame.borderFrame:SetFrameLevel(0)
-    end
-    frame.borderFrame:SetPoint("TOPLEFT", frame, -thickness - (padleft or 0), thickness + (padtop or 0))
-    frame.borderFrame:SetPoint("BOTTOMRIGHT", frame, thickness + (padright or 0), -thickness - (padbottom or 0))
-    if color then
-        frame.borderFrame:SetBackdropBorderColor(color.r, color.g, color.b, color.a)
-    end
-    if texture then
-        borderbackdrop.edgeFile = media:Fetch("border", texture)
-    else
-        borderbackdrop.edgeFile = [[Interface/Buttons/WHITE8x8]]
-    end
-    borderbackdrop.edgeSize = thickness
-    frame.borderFrame:SetBackdrop(borderbackdrop)
-end
 
 -- Called by Skada windows when window settings have changed.
 function mod:ApplySettings(win)
@@ -567,7 +547,7 @@ function mod:ApplySettings(win)
 	g.button:SetBackdropColor(color.r, color.g, color.b, color.a or 1)
 	g.button:SetHeight(p.title.height or 15)
 
-    applyBorder(g.button, p.title.bordertexture, p.title.bordercolor, p.title.borderthickness)
+    Skada:ApplyBorder(g.button, p.title.bordertexture, p.title.bordercolor, p.title.borderthickness)
     
 	if p.enabletitle then
 		g:ShowAnchor()
@@ -588,7 +568,7 @@ function mod:ApplySettings(win)
 
 	-- Window
     local padtop = (p.enabletitle and p.title.height)
-    applyBorder(g, p.background.bordertexture, p.background.bordercolor, p.background.borderthickness, padtop)
+    Skada:ApplyBorder(g, p.background.bordertexture, p.background.bordercolor, p.background.borderthickness, padtop)
     
 	windowbackdrop.bgFile = p.background.texturepath or media:Fetch("background", p.background.texture)
 	windowbackdrop.tile = false
