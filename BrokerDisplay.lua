@@ -64,8 +64,8 @@ function mod:Create(win, isnew)
     end
 end
 
-function mod:IsShown()
-    return not window.db.hidden
+function mod:IsShown(win)
+    return not win.db.hidden
 end
 
 function mod:Show(win)

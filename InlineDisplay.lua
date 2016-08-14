@@ -171,7 +171,7 @@ function mod:Create(window, isnew)
     menu:SetHighlightTexture("Interface\\Buttons\\UI-OptionsButton", 1.0)
     menu:SetAlpha(0.5)
     menu:RegisterForClicks("LeftButtonUp", "RightButtonUp")
-    menu:SetBackdropColor(window.db.title.color.r,window.db.title.color.g,window.db.title.color.b,window.db.title.color.a)
+    menu:SetBackdropColor(window.db.title.textcolor.r,window.db.title.textcolor.g,window.db.title.textcolor.b,window.db.title.textcolor.a)
     menu:SetPoint("BOTTOMLEFT", window.frame, "BOTTOMLEFT", 6, window.db.barheight/2-6)
     menu:SetFrameLevel(9)
     menu:SetPoint("CENTER")
@@ -427,7 +427,7 @@ function mod:GetFontColor(db)
     if db.isusingelvuiskin and ElvUI then
         return 255,255,255,1
     else
-        return  db.title.color.r,db.title.color.g,db.title.color.b,db.title.color.a
+        return  db.title.textcolor.r,db.title.textcolor.g,db.title.textcolor.b,db.title.textcolor.a
     end
 end
 
@@ -436,7 +436,7 @@ function mod:ApplySettings(win)
     local p = win.db
 
     -- TODO: fix, this is not working
-    f:SetMovable(p.barslocked)
+    --f:SetMovable(p.barslocked)
         
     --
     --bars
@@ -576,12 +576,11 @@ function mod:AddDisplayOptions(win, options)
                 desc="Font Color. \nClick 'class color' to begin.",
                 hasAlpha=true,
                 get=function()
-                    local c = db.title.color
+                    local c = db.title.textcolor
                     return c.r, c.g, c.b, c.a
                 end,
                 set=function(win, r, g, b, a)
-                    db.title.color = {["r"] = r, ["g"] = g, ["b"] = b, ["a"] = a or 1.0 }
-                    if db.title.color.a==0.8 then db.title.color.a=100 end
+                    db.title.textcolor = {["r"] = r, ["g"] = g, ["b"] = b, ["a"] = a or 1.0 }
                     Skada:ApplySettings()
                 end,
                 order=3.1,

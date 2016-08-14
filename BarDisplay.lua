@@ -503,10 +503,31 @@ end
 
 local titlebackdrop = {}
 local windowbackdrop = {}
+local borderbackdrop = {}
+
+local function applyBorder(frame, texture, color, thickness, padtop, padbottom, padleft, padright)
+    if not frame.borderFrame then
+        frame.borderFrame = CreateFrame("Frame", nil, frame)
+        frame.borderFrame:SetFrameLevel(0)
+    end
+    frame.borderFrame:SetPoint("TOPLEFT", frame, -thickness - (padleft or 0), thickness + (padtop or 0))
+    frame.borderFrame:SetPoint("BOTTOMRIGHT", frame, thickness + (padright or 0), -thickness - (padbottom or 0))
+    if color then
+        frame.borderFrame:SetBackdropBorderColor(color.r, color.g, color.b, color.a)
+    end
+    if texture then
+        borderbackdrop.edgeFile = media:Fetch("border", texture)
+    else
+        borderbackdrop.edgeFile = [[Interface/Buttons/WHITE8x8]]
+    end
+    borderbackdrop.edgeSize = thickness
+    frame.borderFrame:SetBackdrop(borderbackdrop)
+end
 
 -- Called by Skada windows when window settings have changed.
 function mod:ApplySettings(win)
 	local g = win.bargroup
+    g:SetFrameLevel(1)
 	local p = win.db
 	g:ReverseGrowth(p.reversegrowth)
 	g:SetOrientation(p.barorientation)
@@ -532,24 +553,22 @@ function mod:ApplySettings(win)
 	-- Header
 	local fo = CreateFont("TitleFont"..win.db.name)
 	fo:SetFont(p.title.fontpath or media:Fetch('font', p.title.font), p.title.fontsize, p.title.fontflags)
+    if p.title.textcolor then
+        fo:SetTextColor(p.title.textcolor.r, p.title.textcolor.g, p.title.textcolor.b, p.title.textcolor.a)
+    end
 	g.button:SetNormalFontObject(fo)
 
-	local inset = p.title.margin
 	titlebackdrop.bgFile = media:Fetch("statusbar", p.title.texture)
-	if p.title.borderthickness > 0 and p.title.bordertexture ~= "None" then
-		titlebackdrop.edgeFile = media:Fetch("border", p.title.bordertexture)
-	else
-		titlebackdrop.edgeFile = nil
-	end
 	titlebackdrop.tile = false
 	titlebackdrop.tileSize = 0
 	titlebackdrop.edgeSize = p.title.borderthickness
-	titlebackdrop.insets = {left = inset, right = inset, top = inset, bottom = inset}
 	g.button:SetBackdrop(titlebackdrop)
 	local color = p.title.color
 	g.button:SetBackdropColor(color.r, color.g, color.b, color.a or 1)
 	g.button:SetHeight(p.title.height or 15)
 
+    applyBorder(g.button, p.title.bordertexture, p.title.bordercolor, p.title.borderthickness)
+    
 	if p.enabletitle then
 		g:ShowAnchor()
 	else
@@ -568,18 +587,14 @@ function mod:ApplySettings(win)
 	g:ShowButton(L["Stop"], p.buttons.stop)
 
 	-- Window
-	local inset = p.background.margin
+    local padtop = (p.enabletitle and p.title.height)
+    applyBorder(g, p.background.bordertexture, p.background.bordercolor, p.background.borderthickness, padtop)
+    
 	windowbackdrop.bgFile = p.background.texturepath or media:Fetch("background", p.background.texture)
-	if p.background.borderthickness > 0 and p.background.bordertexture ~= "None" then
-		windowbackdrop.edgeFile = media:Fetch("border", p.background.bordertexture)
-	else
-		windowbackdrop.edgeFile = nil
-	end
 	windowbackdrop.tile = false
 	windowbackdrop.tileSize = 0
-	windowbackdrop.edgeSize = p.background.borderthickness
-	windowbackdrop.insets = {left = inset, right = inset, top = inset, bottom = inset}
 	g:SetBackdrop(windowbackdrop)
+    
 	local color = p.background.color
 	g:SetBackdropColor(color.r, color.g, color.b, color.a or 1)
 
@@ -894,11 +909,26 @@ function mod:AddDisplayOptions(win, options)
 				order=4,
 		    },
 
+			textcolor = {
+				type="color",
+				name=L["Title color"],
+				desc=L["The text color of the title."],
+				hasAlpha=true,
+				get=function(i)
+						local c = db.title.textcolor or {r = 0.9, g = 0.9, b = 0.9, a = 1}
+						return c.r, c.g, c.b, c.a
+					end,
+				set=function(i, r,g,b,a)
+						db.title.titlecolor = {["r"] = r, ["g"] = g, ["b"] = b, ["a"] = a}
+						Skada:ApplySettings()
+					end,
+				order=4.1,
+			},
+            
 			texture = {
 		         type = 'select',
 		         dialogControl = 'LSM30_Statusbar',
 		         name = L["Background texture"],
-				 order=4,
 		         desc = L["The texture used as the background of the title."],
 		         values = AceGUIWidgetLSMlists.statusbar,
 		         get = function() return db.title.texture end,
@@ -908,11 +938,26 @@ function mod:AddDisplayOptions(win, options)
 						end,
 				order=5,
 		    },
-
+                
+			color = {
+				type="color",
+				name=L["Background color"],
+				desc=L["The background color of the title."],
+				hasAlpha=true,
+				get=function(i)
+						local c = db.title.color
+						return c.r, c.g, c.b, c.a
+					end,
+				set=function(i, r,g,b,a)
+						db.title.color = {["r"] = r, ["g"] = g, ["b"] = b, ["a"] = a}
+						Skada:ApplySettings()
+					end,
+				order=5.1,
+			},
+                
 		    bordertexture = {
 		         type = 'select',
 		         dialogControl = 'LSM30_Border',
-				 order=5,
 		         name = L["Border texture"],
 		         desc = L["The texture used for the border of the title."],
 		         values = AceGUIWidgetLSMlists.border,
@@ -924,11 +969,27 @@ function mod:AddDisplayOptions(win, options)
 				order=6,
 		    },
 
+                
+			bordercolor = {
+				type="color",
+				name=L["Border color"],
+				desc=L["The color used for the border."],
+				hasAlpha=true,
+				get=function(i)
+						local c = db.title.bordercolor or {r = 0, g = 0, b = 0, a = 1}
+						return c.r, c.g, c.b, c.a
+					end,
+				set=function(i, r,g,b,a)
+						db.title.bordercolor = {["r"] = r, ["g"] = g, ["b"] = b, ["a"] = a}
+						Skada:ApplySettings()
+					end,
+				order=6.1,
+			},
+                
 			thickness = {
 				type="range",
 				name=L["Border thickness"],
 				desc=L["The thickness of the borders."],
-				 order=6,
 				min=0,
 				max=50,
 				step=0.5,
@@ -937,40 +998,7 @@ function mod:AddDisplayOptions(win, options)
 							db.title.borderthickness = val
 		         			Skada:ApplySettings()
 						end,
-				order=7,
-			},
-
-			margin = {
-				type="range",
-				name=L["Margin"],
-				desc=L["The margin between the outer edge and the background texture."],
-				 order=7,
-				min=0,
-				max=50,
-				step=0.5,
-				get=function() return db.title.margin end,
-				set=function(win, val)
-							db.title.margin = val
-		         			Skada:ApplySettings()
-						end,
-				order=8,
-			},
-
-			color = {
-				type="color",
-				name=L["Background color"],
-				desc=L["The background color of the title."],
-				 order=8,
-				hasAlpha=true,
-				get=function(i)
-						local c = db.title.color
-						return c.r, c.g, c.b, c.a
-					end,
-				set=function(i, r,g,b,a)
-						db.title.color = {["r"] = r, ["g"] = g, ["b"] = b, ["a"] = a}
-						Skada:ApplySettings()
-					end,
-				order=9,
+				order=6.2,
 			},
 
 			buttons = {
@@ -1064,6 +1092,22 @@ function mod:AddDisplayOptions(win, options)
 						end,
 				order=1,
 		    },
+            
+			color = {
+				type="color",
+				name=L["Background color"],
+				desc=L["The color of the background."],
+				hasAlpha=true,
+				get=function(i)
+						local c = db.background.color
+						return c.r, c.g, c.b, c.a
+					end,
+				set=function(i, r,g,b,a)
+						db.background.color = {["r"] = r, ["g"] = g, ["b"] = b, ["a"] = a}
+						Skada:ApplySettings()
+					end,
+				order=1.1,
+			},                        
 
 		    bordertexture = {
 		         type = 'select',
@@ -1077,6 +1121,23 @@ function mod:AddDisplayOptions(win, options)
 		         			Skada:ApplySettings()
 						end,
 				order=2,
+		    },
+            
+		    bordercolor = {
+		         type = 'color',
+				 order=5,
+		         name = L["Border color"],
+		         desc = L["The color used for the border."],
+				hasAlpha=true,
+				get=function(i)
+						local c = db.background.bordercolor
+						return c.r, c.g, c.b, c.a
+					end,
+				set=function(i, r,g,b,a)
+						db.background.bordercolor = {["r"] = r, ["g"] = g, ["b"] = b, ["a"] = a}
+						Skada:ApplySettings()
+					end,
+				order=2.1,
 		    },
 
 			thickness = {
@@ -1094,21 +1155,6 @@ function mod:AddDisplayOptions(win, options)
 				order=3,
 			},
 
-			margin = {
-				type="range",
-				name=L["Margin"],
-				desc=L["The margin between the outer edge and the background texture."],
-				min=0,
-				max=50,
-				step=0.5,
-				get=function() return db.background.margin end,
-				set=function(win, val)
-							db.background.margin = val
-		         			Skada:ApplySettings()
-						end,
-				order=4,
-			},
-
 			scale = {
 				type="range",
 				name=L["Scale"],
@@ -1124,22 +1170,6 @@ function mod:AddDisplayOptions(win, options)
 				order=3,
 			},
 
-			color = {
-				type="color",
-				name=L["Background color"],
-				desc=L["The color of the background."],
-				hasAlpha=true,
-				get=function(i)
-						local c = db.background.color
-						return c.r, c.g, c.b, c.a
-					end,
-				set=function(i, r,g,b,a)
-						db.background.color = {["r"] = r, ["g"] = g, ["b"] = b, ["a"] = a}
-						Skada:ApplySettings()
-					end,
-				order=6,
-			},
-            
             strata = {
                 type="select",
                 name=L["Strata"],

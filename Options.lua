@@ -10,8 +10,8 @@ Skada.windowdefaults = {
 	bartexture="BantoBar",
 	barfont="Accidental Presidency",
 	barfontflags="",
-	barfontsize=12,
-	barheight=16,
+	barfontsize=13,
+	barheight=18,
 	barwidth=240,
 	barorientation=1,
 	barcolor = {r = 0.3, g = 0.3, b = 0.8, a=1},
@@ -27,8 +27,8 @@ Skada.windowdefaults = {
 
 	buttons = {menu = true, reset = true, report = true, mode = true, segment = true},
 
-	title = {height = 16, font="Accidental Presidency", fontsize=13,margin=0, texture="None", bordertexture="None", borderthickness=2, color = {r=1,g=1,b=1,a=1}, fontflags = ""},
-	background = {margin=0, height=200, texture="Solid", bordertexture="None", borderthickness=0, color = {r=0,g=0,b=0,a=0.6}, tile = false, tilesize = 0, edgesize = 0, margin = 0, strata = "MEDIUM"},
+	title = {textcolor = {r = 0.9, g = 0.9, b = 0.9, a = 1}, height = 20, font="Accidental Presidency", fontsize=13, texture="Armory", bordercolor = {r=0,g=0,b=0,a=1}, bordertexture="None", borderthickness=2, color = {r=0.3,g=0.3,b=0.3,a=1}, fontflags = ""},
+	background = {height=200, texture="Solid", bordercolor = {r=0,g=0,b=0,a=1}, bordertexture="Blizzard Party", borderthickness=2, color = {r=0,g=0,b=0,a=0.4}, tile = false, tilesize = 0, edgesize = 0, strata = "MEDIUM"},
 
 	reversegrowth=false,
 	modeincombat="",
