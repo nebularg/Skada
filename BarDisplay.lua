@@ -159,6 +159,7 @@ local ttactive = false
 
 local function BarEnter(bar)
 	local win, id, label = bar.win, bar.id, bar.text
+    ttactive = true
     Skada:ShowTooltip(win, id, label)
 end
 
