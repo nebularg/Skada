@@ -1110,7 +1110,7 @@ function mod:AddDisplayOptions(win, options)
 		         desc = L["The color used for the border."],
 				hasAlpha=true,
 				get=function(i)
-						local c = db.background.bordercolor
+						local c = db.background.bordercolor or {r=0,g=0,b=0,a=1}
 						return c.r, c.g, c.b, c.a
 					end,
 				set=function(i, r,g,b,a)

@@ -2431,10 +2431,10 @@ function Skada:ApplyBorder(frame, texture, color, thickness, padtop, padbottom, 
     if color then
         frame.borderFrame:SetBackdropBorderColor(color.r, color.g, color.b, color.a)
     end
-    if texture then
+    if texture and thickness > 0 then
         borderbackdrop.edgeFile = media:Fetch("border", texture)
     else
-        borderbackdrop.edgeFile = [[Interface/Buttons/WHITE8x8]]
+        borderbackdrop.edgeFile = nil
     end
     borderbackdrop.edgeSize = thickness
     frame.borderFrame:SetBackdrop(borderbackdrop)
