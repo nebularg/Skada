@@ -436,3 +436,5 @@ L["Title color"] = true
 L["The text color of the title."] = true
 L["Border color"] = true
 L["The color used for the border."] = true
+
+L["Tweaks"] = true
