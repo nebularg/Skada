@@ -41,9 +41,9 @@ Skada:AddLoadableModule("Tweaks", function(Skada, L)
             if firstArg == 195256 then
                 if eventtype == 'SPELL_DAMAGE' then
                     --Skada:Print('Ooh, caught a Stormlash!')
-                    if stormlashes[dstGUID] then
-                        srcGUID = stormlashes[dstGUID].id
-                        srcName = stormlashes[dstGUID].name
+                    if stormlashes[srcGUID] then
+                        srcGUID = stormlashes[srcGUID].id
+                        srcName = stormlashes[srcGUID].name
                     end
                 end
             end
@@ -59,7 +59,7 @@ Skada:AddLoadableModule("Tweaks", function(Skada, L)
 
                 if eventtype == 'SPELL_AURA_REMOVED' then
                     --Skada:Print('Removed Stormlash source')
-                    boms[dstGUID] = nil
+                    stormlashes[dstGUID] = nil
                 end
             end
                     
