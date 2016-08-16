@@ -38,19 +38,18 @@ Skada:AddLoadableModule("Tweaks", function(Skada, L)
             end
 
             -- Stormlash (7.0)
-            if firstArg == 195256 then
-                if eventtype == 'SPELL_DAMAGE' then
-                    --Skada:Print('Ooh, caught a Stormlash!')
-                    if stormlashes[srcGUID] then
-                        srcGUID = stormlashes[srcGUID].id
-                        srcName = stormlashes[srcGUID].name
-                    end
+            if firstArg == 195256 and eventtype == 'SPELL_DAMAGE' then
+                --Skada:Print('Ooh, caught a Stormlash!')
+                local source = stormlashes[srcGUID]
+                if source ~= nil then
+                    srcGUID = source.id
+                    srcName = source.name
                 end
             end
 
             if firstArg == 195222 then
-                if eventtype == 'SPELL_AURA_APPLIED' then
-                    --Skada:Print('New Stormlash source')
+                if eventtype == 'SPELL_AURA_APPLIED' and srcGUID ~= dstGUID then
+                    --Skada:Print('New Stormlash source: '..srcGUID..' - '..srcName)
                     stormlashes[dstGUID] = {
                         id = srcGUID,
                         name = srcName
