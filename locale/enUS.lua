@@ -438,3 +438,5 @@ L["Border color"] = true
 L["The color used for the border."] = true
 
 L["Tweaks"] = true
+L["Inline bar display"] = true
+L["Broker display"] = true
