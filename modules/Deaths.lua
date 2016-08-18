@@ -12,24 +12,26 @@ Skada:AddLoadableModule("Deaths", function(Skada, L)
 	local function log_deathlog(set, playerid, playername, srcname, spellid, spellname, amount, absorb, timestamp, logoverride, healthoverride)
 		local player = Skada:get_player(set, playerid, playername)
 		local log = logoverride or player.deathlog
-		local pos = log.pos or 1
+        if log then
+            local pos = log.pos or 1
 
-		local entry = log[pos] 
-		if not entry then
-		  entry = {}
-		  log[pos] = entry
-		end
-		entry.srcname =   srcname
-		entry.spellid =   spellid
-		entry.spellname = spellname
-		entry.amount =	  amount
-		entry.absorb =	  absorb
-		entry.ts = 	  timestamp
-		entry.hp = 	  healthoverride or UnitHealth(playername)
+            local entry = log[pos] 
+            if not entry then
+              entry = {}
+              log[pos] = entry
+            end
+            entry.srcname =   srcname
+            entry.spellid =   spellid
+            entry.spellname = spellname
+            entry.amount =	  amount
+            entry.absorb =	  absorb
+            entry.ts = 	  timestamp
+            entry.hp = 	  healthoverride or UnitHealth(playername)
 
-		pos = pos + 1
-		if pos > 15 then pos = 1 end
-		log.pos = pos
+            pos = pos + 1
+            if pos > 15 then pos = 1 end
+            log.pos = pos
+        end
 	end
 
 	local function log_death(set, playerid, playername, timestamp)
