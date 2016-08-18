@@ -51,23 +51,19 @@ Skada:AddLoadableModule("Damage", function(Skada, L)
 			-- Get the spell from player.
 			local spell = player.damagespells[dmg.spellname]
 
-			if not dmg.multistrike then
-				spell.totalhits = spell.totalhits + 1
+            spell.totalhits = spell.totalhits + 1
 
-				if spell.max == nil or amount > spell.max then
-					spell.max = amount
-				end
+            if spell.max == nil or amount > spell.max then
+                spell.max = amount
+            end
 
-				if (spell.min == nil or amount < spell.min) and not dmg.missed then
-					spell.min = amount
-				end
-			end
+            if (spell.min == nil or amount < spell.min) and not dmg.missed then
+                spell.min = amount
+            end
 
 			spell.damage = spell.damage + amount
 
-			if dmg.multistrike then
-				spell.multistrike = (spell.multistrike or 0) + 1
-			elseif dmg.critical then
+			if dmg.critical then
 				spell.critical = (spell.critical or 0) + 1
 			elseif dmg.missed ~= nil then
 				spell[dmg.missed] = (spell[dmg.missed] or 0) + 1
@@ -97,7 +93,7 @@ Skada:AddLoadableModule("Damage", function(Skada, L)
 
 	local dmg = {}
 
-	local function SpellDamage(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, spellId, spellName, spellSchool, samount, soverkill, sschool, sresisted, sblocked, sabsorbed, scritical, sglancing, scrushing, soffhand, smultistrike)
+	local function SpellDamage(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, spellId, spellName, spellSchool, samount, soverkill, sschool, sresisted, sblocked, sabsorbed, scritical, sglancing, scrushing, soffhand)
 		-- Spell damage.
 		if srcGUID ~= dstGUID then
 			-- XXX WoD quick fix for Mage's Prismatic Crystal talent
@@ -122,7 +118,6 @@ Skada:AddLoadableModule("Damage", function(Skada, L)
 			dmg.glancing = sglancing
 			dmg.crushing = scrushing
 			dmg.offhand = soffhand
-			dmg.multistrike = smultistrike
 			dmg.missed = nil
 
 			Skada:FixPets(dmg)
@@ -131,7 +126,7 @@ Skada:AddLoadableModule("Damage", function(Skada, L)
 		end
 	end
 
-	local function SwingDamage(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, samount, soverkill, sschool, sresisted, sblocked, sabsorbed, scritical, sglancing, scrushing, soffhand, smultistrike)
+	local function SwingDamage(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, samount, soverkill, sschool, sresisted, sblocked, sabsorbed, scritical, sglancing, scrushing, soffhand)
 		-- White melee.
 		if srcGUID ~= dstGUID then
 			dmg.playerid = srcGUID
@@ -149,7 +144,6 @@ Skada:AddLoadableModule("Damage", function(Skada, L)
 			dmg.glancing = sglancing
 			dmg.crushing = scrushing
 			dmg.offhand = soffhand
-			dmg.multistrike = smultistrike
 			dmg.missed = nil
 
 			Skada:FixPets(dmg)
@@ -208,7 +202,6 @@ Skada:AddLoadableModule("Damage", function(Skada, L)
 			dmg.glancing = nil
 			dmg.crushing = nil
 			dmg.offhand = nil
-			dmg.multistrike = nil
 			dmg.missed = missed
 
 			Skada:FixPets(dmg)
@@ -235,7 +228,6 @@ Skada:AddLoadableModule("Damage", function(Skada, L)
 			dmg.glancing = nil
 			dmg.crushing = nil
 			dmg.offhand = nil
-			dmg.multistrike = nil
 			dmg.missed = missType
 
 			Skada:FixPets(dmg)
@@ -446,9 +438,6 @@ Skada:AddLoadableModule("Damage", function(Skada, L)
 				end
 				if spell.critical and spell.critical > 0 then
 					add_detail_bar(win, L["Critical"], spell.critical)
-				end
-				if spell.multistrike and spell.multistrike > 0 then
-					add_detail_bar(win, L["Multistrike"], spell.multistrike)
 				end
 				if spell.glancing and spell.glancing > 0 then
 					add_detail_bar(win, L["Glancing"], spell.glancing)
