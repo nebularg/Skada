@@ -1121,8 +1121,7 @@ function Skada:Reset()
 	end
 	if self.total ~= nil then
 		wipe(self.total)
-		self.total = createSet(L["Total"])
-		self.char.total = self.total
+        Skada:setupTotal()
 	end
 	self.last = nil
 
@@ -1152,7 +1151,6 @@ end
 function Skada:DeleteSet(set)
 	if not set then return end
 
-
 	for i, s in ipairs(self.char.sets) do
 		if s == set then
 			wipe(table.remove(self.char.sets, i))
@@ -1174,8 +1172,40 @@ function Skada:DeleteSet(set)
 			break
 		end
 	end
+    
+    self:SetupTotal()
+    
 	self:Wipe()
 	self:UpdateDisplay(true)
+end
+
+local skipmerge = {
+    ["spellid"] = true,
+    ["id"] = true,
+    ["last"] = true,
+    ["max"] = true,
+    ["min"] = true
+}
+local function mergeTable(t1, t2)
+    for k, v in pairs(t2) do
+        if type(v) == "table" and (type(t1[k] or false) == "table") then
+           mergeTable(t1[k], t2[k])
+        elseif type(v) == "number" and (type(t1[k] or "number") == "number") and not skipmerge[k] then
+            t1[k] = (t1[k] or 0) + v
+        else
+            t1[k] = v
+        end
+    end
+    return t1
+end
+
+-- Merges all sets into a fresh Total set.
+function Skada:SetupTotal()
+    local set = createSet(L["Total"])
+	for i=table.maxn(self.char.sets), 1, -1 do
+        set = mergeTable(set, self.char.sets[i])
+	end
+    Skada.total = set
 end
 
 function Skada:ReloadSettings()
@@ -1191,7 +1221,7 @@ function Skada:ReloadSettings()
 		self:CreateWindow(win.name, win)
 	end
 
-	self.total = self.char.total
+    Skada:SetupTotal()
 
 	Skada:ClearAllIndexes()
 
@@ -1477,8 +1507,7 @@ function Skada:StartCombat()
 
 	-- Also start the total set if it is nil.
 	if self.total == nil then
-		self.total = createSet(L["Total"])
-		self.char.total = self.total
+        self:SetupTotal()
 	end
 
 	-- Auto-switch set/mode if configured.
@@ -1699,7 +1728,7 @@ cleuFrame:SetScript("OnEvent", function(frame, event, timestamp, eventtype, hide
 
 			-- Also create total set if needed.
 			if not Skada.total then
-				Skada.total = createSet(L["Total"])
+                Skada:SetupTotal()
 			end
 
 			-- Schedule an end to this tentative combat situation in 3 seconds.
@@ -2521,6 +2550,9 @@ do
 			self.db.profile.total = nil
 			self.db.profile.sets = nil
 		end
+        if self.char.total then
+            self.char.total = nil
+        end
 	end
 end
 
