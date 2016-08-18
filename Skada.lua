@@ -1121,7 +1121,7 @@ function Skada:Reset()
 	end
 	if self.total ~= nil then
 		wipe(self.total)
-        Skada:setupTotal()
+        Skada:SetupTotal()
 	end
 	self.last = nil
 
