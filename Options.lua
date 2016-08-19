@@ -28,7 +28,19 @@ Skada.windowdefaults = {
 	buttons = {menu = true, reset = true, report = true, mode = true, segment = true},
 
 	title = {textcolor = {r = 0.9, g = 0.9, b = 0.9, a = 1}, height = 20, font="Accidental Presidency", fontsize=13, texture="Armory", bordercolor = {r=0,g=0,b=0,a=1}, bordertexture="None", borderthickness=2, color = {r=0.3,g=0.3,b=0.3,a=1}, fontflags = ""},
-	background = {height=200, texture="Solid", bordercolor = {r=0,g=0,b=0,a=1}, bordertexture="Blizzard Party", borderthickness=2, color = {r=0,g=0,b=0,a=0.4}, tile = false, tilesize = 0, strata = "MEDIUM"},
+	background = {
+        height=200,
+        texture="Solid",
+        bordercolor = {r=0,g=0,b=0,a=1}, 
+        bordertexture="Blizzard Party", 
+        borderthickness=2, 
+        color = {r=0,g=0,b=0,a=0.4}, 
+        tile = false, 
+        tilesize = 0, 
+    },
+    
+    strata = "LOW",
+    scale = 1,
 
 	reversegrowth=false,
 	modeincombat="",
@@ -51,7 +63,7 @@ Skada.windowdefaults = {
     isonnewline = false,
     isusingclasscolors = true,
     height = 30,
-    width = nil,
+    width = 600,
     color = {r = 0.3, g = 0.3, b = 0.3, a = 0.6},
     isusingelvuiskin = true,
     issolidbackdrop = false,
@@ -59,6 +71,7 @@ Skada.windowdefaults = {
     
     -- Broker exclusive
     textcolor = {r = 0.9, g = 0.9, b = 0.9},
+    useframe = true
 }
 
 local windefaultscopy = {}

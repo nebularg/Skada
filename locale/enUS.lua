@@ -439,4 +439,12 @@ L["The color used for the border."] = true
 
 L["Tweaks"] = true
 L["Inline bar display"] = true
-L["Broker display"] = true
+L["Data text"] = true
+L["Width"] = true
+L["Height"] = true
+L["Tile"] = true
+L["Tile the background texture."] = true
+L["Tile size"] = true
+L["The size of the texture pattern."] = true
+L["Border"] = true
+L["General"] = true
