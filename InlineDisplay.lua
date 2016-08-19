@@ -551,22 +551,6 @@ function mod:AddDisplayOptions(win, options)
                 end,
                 order=0.05,
             },
-            height = {
-                type = 'range',
-                name=L["Bar height"],
-                desc=L["The height of the bars."],
-                min=10,
-                max=math.floor(GetScreenHeight()),
-                step=1.0,
-                get = function()
-                    return db.height
-                end,
-                set = function(win,key)
-                    db.height = key
-                    Skada:ApplySettings()
-                end,
-                order=0.1,
-            },
             barwidth = {
                 type = 'range',
                 name = "Width",

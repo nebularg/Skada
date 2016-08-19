@@ -2496,6 +2496,7 @@ function Skada:FrameSettings(db, include_dimensions)
 	         				db.background.texture = key
 		         			Skada:ApplySettings()
 						end,
+                width="double",
 				order=1.1
 		    },
             
@@ -2560,6 +2561,7 @@ function Skada:FrameSettings(db, include_dimensions)
 	         				db.background.bordertexture = key
 		         			Skada:ApplySettings()
 						end,
+                width="double",
 				order=2.1
 		    },
             
