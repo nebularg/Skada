@@ -42,7 +42,7 @@ do
 		tile = true, tileSize = 16, edgeSize = 16,
 		insets = {left = 1, right = 1, top = 1, bottom = 1}}
 	)
-	popup:SetSize(250, 70)
+	popup:SetSize(250, 100)
 	popup:SetPoint("CENTER", UIParent, "CENTER")
 	popup:SetFrameStrata("DIALOG")
 	popup:Hide()
@@ -56,21 +56,21 @@ do
         end)
 
 	local text = popup:CreateFontString(nil, "ARTWORK", "ChatFontNormal")
-	text:SetPoint("TOP", popup, "TOP", 0, -10)
+	text:SetPoint("TOP", popup, "TOP", 0, -15)
 	text:SetText(L["Do you want to reset Skada?"])
 
 	local accept = CreateFrame("Button", nil, popup)
 	accept:SetNormalTexture("Interface\\Buttons\\UI-CheckBox-Check")
 	accept:SetHighlightTexture("Interface\\Buttons\\UI-CheckBox-Highlight", "ADD")
 	accept:SetSize(50, 50)
-	accept:SetPoint("BOTTOM", popup, "BOTTOM", -50, 0)
+	accept:SetPoint("BOTTOM", popup, "BOTTOM", -50, 5)
 	accept:SetScript("OnClick", function(f) Skada:Reset() f:GetParent():Hide() end)
 
 	local close = CreateFrame("Button", nil, popup)
 	close:SetNormalTexture("Interface\\Buttons\\UI-Panel-MinimizeButton-Up")
 	close:SetHighlightTexture("Interface\\Buttons\\UI-Panel-MinimizeButton-Highlight", "ADD")
 	close:SetSize(50, 50)
-	close:SetPoint("BOTTOM", popup, "BOTTOM", 50, 0)
+	close:SetPoint("BOTTOM", popup, "BOTTOM", 50, 5)
 	close:SetScript("OnClick", function(f) f:GetParent():Hide() end)
 	function Skada:ShowPopup()
 		popup:SetPropagateKeyboardInput(true)
@@ -1121,7 +1121,8 @@ function Skada:Reset()
 	end
 	if self.total ~= nil then
 		wipe(self.total)
-        Skada:SetupTotal()
+		self.total = createSet(L["Total"])
+		self.char.total = self.total
 	end
 	self.last = nil
 
@@ -1151,6 +1152,7 @@ end
 function Skada:DeleteSet(set)
 	if not set then return end
 
+
 	for i, s in ipairs(self.char.sets) do
 		if s == set then
 			wipe(table.remove(self.char.sets, i))
@@ -1173,39 +1175,8 @@ function Skada:DeleteSet(set)
 		end
 	end
     
-    self:SetupTotal()
-    
 	self:Wipe()
 	self:UpdateDisplay(true)
-end
-
-local skipmerge = {
-    ["spellid"] = true,
-    ["id"] = true,
-    ["last"] = true,
-    ["max"] = true,
-    ["min"] = true
-}
-local function mergeTable(t1, t2)
-    for k, v in pairs(t2) do
-        if type(v) == "table" and (type(t1[k] or false) == "table") then
-           mergeTable(t1[k], t2[k])
-        elseif type(v) == "number" and (type(t1[k] or "number") == "number") and not skipmerge[k] then
-            t1[k] = (t1[k] or 0) + v
-        else
-            t1[k] = v
-        end
-    end
-    return t1
-end
-
--- Merges all sets into a fresh Total set.
-function Skada:SetupTotal()
-    local set = createSet(L["Total"])
-	for i=table.maxn(self.char.sets), 1, -1 do
-        set = mergeTable(set, self.char.sets[i])
-	end
-    Skada.total = set
 end
 
 function Skada:ReloadSettings()
@@ -1221,7 +1192,7 @@ function Skada:ReloadSettings()
 		self:CreateWindow(win.name, win)
 	end
 
-    Skada:SetupTotal()
+	self.total = self.char.total
 
 	Skada:ClearAllIndexes()
 
@@ -1507,7 +1478,8 @@ function Skada:StartCombat()
 
 	-- Also start the total set if it is nil.
 	if self.total == nil then
-        self:SetupTotal()
+		self.total = createSet(L["Total"])
+		self.char.total = self.total
 	end
 
 	-- Auto-switch set/mode if configured.
@@ -1728,7 +1700,7 @@ cleuFrame:SetScript("OnEvent", function(frame, event, timestamp, eventtype, hide
 
 			-- Also create total set if needed.
 			if not Skada.total then
-                Skada:SetupTotal()
+				Skada.total = createSet(L["Total"])
 			end
 
 			-- Schedule an end to this tentative combat situation in 3 seconds.
@@ -2763,9 +2735,6 @@ do
 			self.db.profile.total = nil
 			self.db.profile.sets = nil
 		end
-        if self.char.total then
-            self.char.total = nil
-        end
 	end
 end
 
@@ -2800,6 +2769,17 @@ function Skada:OnEnable()
 	-- Instead of listening for callbacks on SharedMedia we simply wait a few seconds and then re-apply settings
 	-- to catch any missing media. Lame? Yes.
 	self:ScheduleTimer("ApplySettings", 2)
+    
+    -- Memory usage warning
+	self:ScheduleTimer("MemoryCheck", 3)
+end
+
+function Skada:MemoryCheck()
+    UpdateAddOnMemoryUsage()
+    local mem = GetAddOnMemoryUsage("Skada")
+    if mem > 30000 then
+        self:Print(L["Memory usage is high. You may want to reset Skada, and enable one of the automatic reset options."])
+    end
 end
 
 function Skada:AddLoadableModule(name, func)
