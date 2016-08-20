@@ -517,7 +517,7 @@ function mod:ApplySettings(win)
         fbackdrop.tileSize = p.background.tilesize
         f:SetBackdrop(fbackdrop)
         f:SetBackdropColor(p.background.color.r,p.background.color.g,p.background.color.b,p.background.color.a)
-        if p.strata then f:SetFrameStrata(p.strata) end
+        f:SetFrameStrata(p.strata)
 
         Skada:ApplyBorder(f, p.background.bordertexture, p.background.bordercolor, p.background.borderthickness)
     end

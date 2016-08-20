@@ -225,7 +225,6 @@ function mod:ApplySettings(win)
         fbackdrop.tileSize = db.background.tilesize
         win.frame:SetBackdrop(fbackdrop)
         win.frame:SetBackdropColor(db.background.color.r,db.background.color.g,db.background.color.b,db.background.color.a)
-        if db.background.strata then win.frame:SetFrameStrata(db.background.strata) end
 
         Skada:ApplyBorder(win.frame, db.background.bordertexture, db.background.bordercolor, db.background.borderthickness)            
 
