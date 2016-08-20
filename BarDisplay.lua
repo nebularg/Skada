@@ -376,7 +376,11 @@ function mod:Update(win)
 			end
 
 			if win.metadata.showspots and Skada.db.profile.showranks and not data.ignore then
-				bar:SetLabel(("%2u. %s"):format(nr, data.label))
+                if win.db.barorientation == 1 then
+                    bar:SetLabel(("%2u. %s"):format(nr, data.label))
+                else
+                    bar:SetLabel(("%s %2u"):format(data.label, nr))
+                end
 			else
 				bar:SetLabel(data.label)
 			end
@@ -569,8 +573,9 @@ function mod:ApplySettings(win)
 	g:ShowButton(L["Stop"], p.buttons.stop)
 
 	-- Window
-    local padtop = (p.enabletitle and p.title.height)
-    Skada:ApplyBorder(g, p.background.bordertexture, p.background.bordercolor, p.background.borderthickness, padtop)
+    local padtop = (p.enabletitle and not p.reversegrowth and p.title.height)
+    local padbottom = (p.enabletitle and p.reversegrowth and p.title.height)
+    Skada:ApplyBorder(g, p.background.bordertexture, p.background.bordercolor, p.background.borderthickness, padtop, padbottom)
     
 	windowbackdrop.bgFile = p.background.texturepath or media:Fetch("background", p.background.texture)
 	windowbackdrop.tile = false
