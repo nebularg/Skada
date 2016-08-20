@@ -448,3 +448,7 @@ L["Tile size"] = true
 L["The size of the texture pattern."] = true
 L["Border"] = true
 L["General"] = true
+L["Inline display is a horizontal window style."] = true
+L["Data text acts as an LDB data feed. It can be integrated in any LDB display such as Titan Panel or ChocolateBar. It also has an optional internal frame."] = true
+L["Bar display is the normal bar window used by most damage meters. It can be extensively styled."] = true
+

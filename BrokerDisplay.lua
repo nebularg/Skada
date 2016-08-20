@@ -10,7 +10,8 @@ local libwindow = LibStub("LibWindow-1.1")
 local media = LibStub("LibSharedMedia-3.0")
 
 mod.name = name
-Skada.displays["broker"] = mod
+mod.description = L["Data text acts as an LDB data feed. It can be integrated in any LDB display such as Titan Panel or ChocolateBar. It also has an optional internal frame."]
+Skada:AddDisplaySystem("broker", mod)
 
 local function sortDataset(win)
     table.sort(win.dataset, function (a, b)

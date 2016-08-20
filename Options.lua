@@ -525,4 +525,3 @@ Skada.options = {
 			}
 	}
 }
-

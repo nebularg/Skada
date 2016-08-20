@@ -2126,6 +2126,20 @@ local function scan_for_columns(mode)
 	end
 end
 
+-- Register a display system
+local numorder = 5
+function Skada:AddDisplaySystem(key, mod)
+    self.displays[key] = mod
+    if mod.description then
+        Skada.options.args.windows.args[key.."desc"] = {
+            type = "description",
+            name = mod.description,
+            order = numorder
+        }
+        numorder = numorder + 1
+    end
+end
+
 -- Register a mode.
 function Skada:AddMode(mode)
 	-- Ask mode to verify our sets.

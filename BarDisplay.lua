@@ -18,7 +18,8 @@ local media = LibStub("LibSharedMedia-3.0")
 
 -- Add to Skada's enormous list of display providers.
 mod.name = L["Bar display"]
-Skada.displays["bar"] = mod
+mod.description = L["Bar display is the normal bar window used by most damage meters. It can be extensively styled."]
+Skada:AddDisplaySystem("bar", mod)
 
 -- Called when a Skada window starts using this display provider.
 function mod:Create(window)

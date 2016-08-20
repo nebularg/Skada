@@ -15,7 +15,8 @@ local libwindow = LibStub("LibWindow-1.1")
 local media = LibStub("LibSharedMedia-3.0")
 
 mod.name = name
-Skada.displays["inline"] = mod
+mod.description = L["Inline display is a horizontal window style."]
+Skada:AddDisplaySystem("inline", mod)
 
 function serial(val, name, skipnewlines, depth)
     skipnewlines = skipnewlines or false
