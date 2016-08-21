@@ -42,17 +42,9 @@ Skada:AddLoadableModule("Themes", function(Skada, L)
             strata = "LOW",
             scale = 1,
 
-            reversegrowth=false,
-            modeincombat="",
-            returnaftercombat=false,
-            wipemode="",
-
             hidden = false,
             enabletitle = true,
             titleset = true,
-
-            set = "current",
-            mode = nil,
 
             display = "bar",
             snapto = true,
@@ -72,7 +64,133 @@ Skada:AddLoadableModule("Themes", function(Skada, L)
             -- Broker exclusive
             textcolor = {r = 0.9, g = 0.9, b = 0.9},
             useframe = true
-        }
+        },
+            
+        {
+            name = "Minimalistic",
+
+            barspacing=0,
+            bartexture="Armory",
+            barfont="Accidental Presidency",
+            barfontflags="",
+            barfontsize=12,
+            barheight=16,
+            barwidth=240,
+            barorientation=1,
+            barcolor = {r = 0.3, g = 0.3, b = 0.8, a=1},
+            barbgcolor = {r = 0.3, g = 0.3, b = 0.3, a = 0.6},
+            barslocked=false,
+            clickthrough=false,
+
+            classcolorbars = true,
+            classcolortext = false,
+            classicons = true,
+            roleicons = false,
+            showself = true,
+
+            buttons = {menu = true, reset = true, report = true, mode = true, segment = true},
+
+            title = {textcolor = {r = 0.9, g = 0.9, b = 0.9, a = 1}, height = 18, font="Accidental Presidency", fontsize=12, texture="Armory", bordercolor = {r=0,g=0,b=0,a=1}, bordertexture="None", borderthickness=0, color = {r=0.6,g=0.6,b=0.8,a=1}, fontflags = ""},
+            background = {
+                height=195,
+                texture="None",
+                bordercolor = {r=0,g=0,b=0,a=1}, 
+                bordertexture="Blizzard Party", 
+                borderthickness=0,
+                color = {r=0,g=0,b=0,a=0.4}, 
+                tile = false, 
+                tilesize = 0, 
+            },
+
+            strata = "LOW",
+            scale = 1,
+
+            hidden = false,
+            enabletitle = true,
+            titleset = true,
+
+            display = "bar",
+            snapto = true,
+            scale = 1,
+            version = 1,
+
+            -- Inline exclusive
+            isonnewline = false,
+            isusingclasscolors = true,
+            height = 30,
+            width = 600,
+            color = {r = 0.3, g = 0.3, b = 0.3, a = 0.6},
+            isusingelvuiskin = true,
+            issolidbackdrop = false,
+            fixedbarwidth = false,
+
+            -- Broker exclusive
+            textcolor = {r = 0.9, g = 0.9, b = 0.9},
+            useframe = true
+        },
+            
+        {
+            name = "All glowy 'n stuff",
+
+            barspacing=0,
+            bartexture="LiteStep",
+            barfont="ABF",
+            barfontflags="",
+            barfontsize=12,
+            barheight=16,
+            barwidth=240,
+            barorientation=1,
+            barcolor = {r = 0.3, g = 0.3, b = 0.8, a=1},
+            barbgcolor = {r = 0.3, g = 0.3, b = 0.3, a = 0.6},
+            barslocked=false,
+            clickthrough=false,
+
+            classcolorbars = true,
+            classcolortext = false,
+            classicons = true,
+            roleicons = false,
+            showself = true,
+
+            buttons = {menu = true, reset = true, report = true, mode = true, segment = true},
+
+            title = {textcolor = {r = 0.9, g = 0.9, b = 0.9, a = 1}, height = 20, font="ABF", fontsize=12, texture="Aluminium", bordercolor = {r=0,g=0,b=0,a=1}, bordertexture="None", borderthickness=0, color = {r=0.6,g=0.6,b=0.8,a=1}, fontflags = ""},
+            background = {
+                height=195,
+                texture="None",
+                bordercolor = {r=0.9,g=0.9,b=0.5,a=0.6}, 
+                bordertexture="Glow", 
+                borderthickness=5,
+                color = {r=0,g=0,b=0,a=0.4}, 
+                tile = false, 
+                tilesize = 0, 
+            },
+
+            strata = "LOW",
+            scale = 1,
+
+            hidden = false,
+            enabletitle = true,
+            titleset = true,
+
+            display = "bar",
+            snapto = true,
+            scale = 1,
+            version = 1,
+
+            -- Inline exclusive
+            isonnewline = false,
+            isusingclasscolors = true,
+            height = 30,
+            width = 600,
+            color = {r = 0.3, g = 0.3, b = 0.3, a = 0.6},
+            isusingelvuiskin = true,
+            issolidbackdrop = false,
+            fixedbarwidth = false,
+
+            -- Broker exclusive
+            textcolor = {r = 0.9, g = 0.9, b = 0.9},
+            useframe = true
+        }            
     }
         
     local selectedwindow = nil
