@@ -452,3 +452,14 @@ L["Inline display is a horizontal window style."] = true
 L["Data text acts as an LDB data feed. It can be integrated in any LDB display such as Titan Panel or ChocolateBar. It also has an optional internal frame."] = true
 L["Bar display is the normal bar window used by most damage meters. It can be extensively styled."] = true
 
+L["Theme applied!"] = true
+L["Themes"] = true
+L["Theme"] = true
+L["Apply theme"] = true
+L["Save theme"] = true
+L["Name of your new theme."] = true
+L["Name"] = true
+L["Save"] = true
+L["Apply"] = true
+L["Delete"] = true
+L["Delete theme"] = true

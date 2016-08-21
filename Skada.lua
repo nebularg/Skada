@@ -601,14 +601,21 @@ function Window:RightClick(group, button)
 	end
 end
 
-function Skada:tcopy(to, from)
+function Skada:tcopy(to, from, ...)
 	for k,v in pairs(from) do
-	if(type(v)=="table") then
-		to[k] = {}
-		Skada:tcopy(to[k], v);
-	else
-		to[k] = v;
-	end
+    
+        local skip = false
+        if ... then
+            for i, j in ipairs(...) do if j == k then skip = true end end
+        end
+        if not skip then
+            if(type(v)=="table") then
+                to[k] = {}
+                Skada:tcopy(to[k], v, ...);
+            else
+                to[k] = v;
+            end
+        end
 	end
 end
 

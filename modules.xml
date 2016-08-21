@@ -15,6 +15,7 @@
 <Script file="modules\Power.lua"/>
 <Script file="modules\CC.lua"/>
 <Script file="modules\Tweaks.lua"/>
+<Script file="modules\Themes.lua"/>
 
 </Ui>
 
