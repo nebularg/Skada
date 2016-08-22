@@ -151,10 +151,11 @@ function Skada:AddColumnOptions(mod)
 	end
 end
 
-function Skada:AddLoadableModuleCheckbox(mod, name)
+function Skada:AddLoadableModuleCheckbox(mod, name, description)
 	local new = {
 		type = "toggle",
 		name = name,
+        desc=description,
 		order=1,
 	}
 	Skada.options.args.modules.args[mod] = new

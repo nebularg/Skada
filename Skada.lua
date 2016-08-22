@@ -2789,10 +2789,10 @@ function Skada:MemoryCheck()
     end
 end
 
-function Skada:AddLoadableModule(name, func)
+function Skada:AddLoadableModule(name, description, func)
 	if not self.moduleList then self.moduleList = {} end
 	self.moduleList[#self.moduleList+1] = func
-	self:AddLoadableModuleCheckbox(name, L[name])
+	self:AddLoadableModuleCheckbox(name, L[name], description and L[description])
 end
 
 

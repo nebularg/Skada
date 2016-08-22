@@ -1,5 +1,4 @@
-
-Skada:AddLoadableModule("Deaths", function(Skada, L)
+Skada:AddLoadableModule("Deaths", nil, function(Skada, L)
 	if Skada.db.profile.modulesBlocked.Deaths then return end
 
 	local mod = Skada:NewModule(L["Deaths"], "AceTimer-3.0")
