@@ -465,3 +465,4 @@ L["Delete"] = true
 L["Delete theme"] = true
 L["Various tweaks to get around deficiences and problems in the game's combat logs. Carries a small performance penalty."] = true
 L["Adds a set of standard themes to Skada. Custom themes can also be used."] = true
+L["Smart"] = true

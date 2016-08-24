@@ -246,6 +246,7 @@ function barlibrary:CreateBar(uuid, win)
     end)
     bar.bg:SetScript("OnEnter", function(frame, button)
         ttactive = true
+		Skada:SetTooltipPosition(GameTooltip, win.frame)
         Skada:ShowTooltip(win, bar.valueid, bar.valuetext)
     end)
     bar.bg:SetScript("OnLeave", function(frame, button)

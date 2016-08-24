@@ -161,6 +161,7 @@ local ttactive = false
 local function BarEnter(bar)
 	local win, id, label = bar.win, bar.id, bar.text
     ttactive = true
+    Skada:SetTooltipPosition(GameTooltip, win.bargroup)
     Skada:ShowTooltip(win, id, label)
 end
 

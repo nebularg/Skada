@@ -2276,6 +2276,15 @@ function Skada:SetTooltipPosition(tooltip, frame)
 	elseif p == "topright" then
 		tooltip:SetOwner(frame, "ANCHOR_NONE")
 		tooltip:SetPoint("TOPLEFT", frame, "TOPRIGHT")
+	elseif p == "smart" and frame then
+        -- Choose anchor point depending on frame position
+        if frame:GetLeft() < (GetScreenWidth() / 2) then
+            tooltip:SetOwner(frame, "ANCHOR_NONE")
+            tooltip:SetPoint("TOPLEFT", frame, "TOPRIGHT", 10, 0)
+        else
+            tooltip:SetOwner(frame, "ANCHOR_NONE")
+            tooltip:SetPoint("TOPRIGHT", frame, "TOPLEFT", -10, 0)
+        end
 	end
 end
 
@@ -2388,7 +2397,6 @@ end
 function Skada:ShowTooltip(win, id, label)
 	local t = GameTooltip
 	if Skada.db.profile.tooltips and (win.metadata.click1 or win.metadata.click2 or win.metadata.click3 or win.metadata.tooltip) then
-		Skada:SetTooltipPosition(t, win.bargroup)
 	    t:ClearLines()
 
 		local hasClick = win.metadata.click1 or win.metadata.click2 or win.metadata.click3
