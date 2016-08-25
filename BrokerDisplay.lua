@@ -57,7 +57,9 @@ local function clickHandler(win, frame, button)
 end
 
 local function tooltipHandler(win, tooltip)
-    tooltip:SetOwner(UIParent, "ANCHOR_CURSOR")
+    if win.db.useframe then
+        Skada:SetTooltipPosition(tooltip, win.frame)
+    end
 
     -- Default color.
     local color = win.db.textcolor
