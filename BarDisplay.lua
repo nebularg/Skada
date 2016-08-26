@@ -12,6 +12,10 @@ local mod = Skada:NewModule("BarDisplay", "SpecializedLibBars-1.0")
 local libwindow = LibStub("LibWindow-1.1")
 local media = LibStub("LibSharedMedia-3.0")
 
+-- Aliases
+local table_sort = _G.table.sort
+local next, pairs, ipairs, type = next, pairs, ipairs, type
+
 --
 -- Display implementation.
 --
@@ -234,7 +238,7 @@ function mod:Update(win)
 
 	-- Sort if we are showing spots with "showspots".
 	if win.metadata.showspots then
-		table.sort(win.dataset, value_sort)
+		table_sort(win.dataset, value_sort)
 	end
 
 	-- Find out if we have icons in this update, and if so, adjust accordingly.

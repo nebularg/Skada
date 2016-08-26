@@ -14,6 +14,11 @@ local popup, cleuFrame
 local deathcounter = 0
 local startingmembers = 0
 
+-- Aliases
+local table_sort, tinsert, tremove, table_maxn = _G.table.sort, tinsert, tremove, _G.table.maxn
+local next, pairs, ipairs, type = next, pairs, ipairs, type
+
+
 -- Returns the group type (i.e., "party" or "raid") and the size of the group.
 function Skada:GetGroupTypeAndCount()
 	local type
@@ -625,7 +630,7 @@ function Skada:CreateWindow(name, db, display)
         isnew = true
 		db = {}
 		self:tcopy(db, Skada.windowdefaults)
-		table.insert(self.db.profile.windows, db)
+		tinsert(self.db.profile.windows, db)
 	end
 	if display then
 		db.display = display
@@ -658,7 +663,7 @@ function Skada:CreateWindow(name, db, display)
 
 		window.display:Create(window, isnew)
 
-		table.insert(windows, window)
+		tinsert(windows, window)
 
         -- Set initial view, set list.
         window:DisplaySets()
@@ -684,12 +689,12 @@ function Skada:DeleteWindow(name)
 	for i, win in ipairs(windows) do
 		if win.db.name == name then
 			win:destroy()
-			wipe(table.remove(windows, i))
+			wipe(tremove(windows, i))
 		end
 	end
 	for i, win in ipairs(self.db.profile.windows) do
 		if win.name == name then
-			table.remove(self.db.profile.windows, i)
+			tremove(self.db.profile.windows, i)
 		end
 	end
 end
@@ -715,6 +720,23 @@ local function slashHandler(param)
 	local reportusage = "/skada report [raid|party|instance|guild|officer|say] [current||total|set_num] [mode] [max_lines]"
 	if param == "pets" then
 		Skada:PetDebug()
+    elseif param == "cpu" then
+        local funcs = {}
+        UpdateAddOnCPUUsage()
+        for k, v in pairs(Skada) do
+            if type(v) == "function" then
+                local usage, calls = GetFunctionCPUUsage(v, true)
+                --local info = debug.getinfo(v, "n")
+                tinsert(funcs, {["name"] = k, ["usage"] = usage, ["calls"] = calls})
+            end
+        end
+        table_sort(funcs, function(a, b) return a.usage > b.usage end)
+        for i, func in ipairs(funcs) do
+            print(func.name..'\t'..func.usage..' ('..func.calls..')')
+            if i > 10 then
+                break
+            end
+        end
 	elseif param == "test" then
 		Skada:OpenMenu()
 	elseif param == "reset" then
@@ -830,7 +852,7 @@ function Skada:Report(channel, chantype, report_mode_name, report_set_name, max,
 
 	-- Sort our temporary table according to value unless ordersort is set.
 	if not report_table.metadata.ordersort then
-		table.sort(report_table.dataset, Skada.valueid_sort)
+		table_sort(report_table.dataset, Skada.valueid_sort)
 	end
 
 	-- Title
@@ -1134,9 +1156,9 @@ function Skada:Reset()
 	self.last = nil
 
 	-- Delete sets that are not marked as persistent.
-	for i=table.maxn(self.char.sets), 1, -1 do
+	for i=table_maxn(self.char.sets), 1, -1 do
 		if not self.char.sets[i].keep then
-			wipe(table.remove(self.char.sets, i))
+			wipe(tremove(self.char.sets, i))
 		end
 	end
 
@@ -1162,7 +1184,7 @@ function Skada:DeleteSet(set)
 
 	for i, s in ipairs(self.char.sets) do
 		if s == set then
-			wipe(table.remove(self.char.sets, i))
+			wipe(tremove(self.char.sets, i))
 
 			if set == self.last then
 				self.last = nil
@@ -1365,7 +1387,7 @@ function Skada:EndSegment()
 			end
 
 			-- Add set to sets.
-			table.insert(self.char.sets, 1, self.current)
+			tinsert(self.char.sets, 1, self.current)
 		end
 	end
 
@@ -1392,9 +1414,9 @@ function Skada:EndSegment()
 	for i, set in ipairs(self.char.sets) do if not set.keep then numsets = numsets + 1 end end
 
 	-- Trim segments; don't touch persistent sets.
-	for i=table.maxn(self.char.sets), 1, -1 do
+	for i=table_maxn(self.char.sets), 1, -1 do
 		if numsets > self.db.profile.setstokeep and not self.char.sets[i].keep then
-			table.remove(self.char.sets, i)
+			tremove(self.char.sets, i)
 			numsets = numsets - 1
 		end
 	end
@@ -1542,7 +1564,7 @@ function Skada:RestoreView(win, theset, themode)
 	-- Set the... set. If no such set exists, set to current.
 	if theset and type(theset) == "string" and (theset == "current" or theset == "total" or theset == "last") then
 		win.selectedset = theset
-	elseif theset and type(theset) == "number" and theset <= table.maxn(self.char.sets) then
+	elseif theset and type(theset) == "number" and theset <= table_maxn(self.char.sets) then
 		win.selectedset = theset
 	else
 		win.selectedset = "current"
@@ -1644,7 +1666,7 @@ function Skada:get_player(set, playerid, playername)
 		local player_name, realm = string.split("-", playername, 2)
 		player.name = player_name or playername
 
-		table.insert(set.players, player)
+		tinsert(set.players, player)
 	end
 
 	if player.name == UNKNOWN and playername ~= UNKNOWN then -- fixup players created before we had their info
@@ -1975,7 +1997,7 @@ function Skada:UpdateDisplay(force)
 						d.id = "total"
 						d.ignore = true
 						if not existing then
-							table.insert(win.dataset, 1, d)
+							tinsert(win.dataset, 1, d)
 						end
 					end
 
@@ -2133,7 +2155,7 @@ function Skada:AddMode(mode)
 		verify_set(mode, set)
 	end
 
-	table.insert(modes, mode)
+	tinsert(modes, mode)
 
 	-- Set this mode as the active mode if it matches the saved one.
 	-- Bit of a hack.
@@ -2159,7 +2181,7 @@ function Skada:AddMode(mode)
 	end
 
 	-- Sort modes.
-	table.sort(modes, function(a, b) return a.name < b.name end)
+	table_sort(modes, function(a, b) return a.name < b.name end)
 
 	-- Remove all bars and start over to get ordering right.
 	-- Yes, this all sucks - the problem with this and the above is that I don't know when
@@ -2172,7 +2194,7 @@ end
 
 -- Unregister a mode.
 function Skada:RemoveMode(mode)
-	table.remove(modes, mode)
+	tremove(modes, mode)
 end
 
 function Skada:GetFeeds()
@@ -2188,7 +2210,7 @@ end
 function Skada:RemoveFeed(name, func)
 	for i, feed in ipairs(feeds) do
 		if feed.name == name then
-			table.remove(feeds, i)
+			tremove(feeds, i)
 		end
 	end
 end
@@ -2358,7 +2380,7 @@ function Skada:AddSubviewToTooltip(tooltip, win, mode, id, label)
 
 	-- Sort dataset unless we are using ordersort.
 	if not mode.metadata or not mode.metadata.ordersort then
-		table.sort(ttwin.dataset, value_sort)
+		table_sort(ttwin.dataset, value_sort)
 	end
 
 	-- Show title and data if we have data.
