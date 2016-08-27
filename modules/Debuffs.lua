@@ -1,7 +1,7 @@
 Skada:AddLoadableModule("Debuffs", nil, function(Skada, L)
 	if Skada.db.profile.modulesBlocked.Debuffs then return end
 
-	local mod = Skada:NewModule(L["Debuff uptimes"], "AceTimer-3.0")
+	local mod = Skada:NewModule(L["Debuff uptimes"])
 	local auramod = Skada:NewModule(L["Debuff spell list"])
 
 	local buffs = Skada:NewModule(L["Buff uptimes"])
