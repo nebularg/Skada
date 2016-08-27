@@ -13,6 +13,7 @@ L["A damage meter."] = true
 L["Skada summary"] = true
 
 L["opens the configuration window"] = true
+L["Memory usage is high. You may want to reset Skada, and enable one of the automatic reset options."] = true
 L["resets all data"] = true
 
 L["Current"] = "Current fight"
