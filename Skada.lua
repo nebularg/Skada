@@ -2009,7 +2009,7 @@ function Skada:UpdateDisplay(force)
 				local set = win:get_selected_set()
 
 				-- View available modes.
-				for i, mode in ipairs(modes) do
+				for i, mode in ipairs(self:GetModes()) do
 
 					local d = win.dataset[i] or {}
 					win.dataset[i] = d
@@ -2083,6 +2083,22 @@ function Skada:GetSets()
 end
 
 function Skada:GetModes()
+    if not self.modes_sorted then
+        table.sort(modes, function(a, b)
+            local a_score = 0
+            local b_score = 0
+            if a.category == L['Other'] then
+                a_score = 1000
+            end
+            if b.category == L['Other'] then
+                b_score = 1000
+            end
+            a_score = a_score + (string.byte(a.category, 1) * 10) + string.byte(a:GetName(), 1)
+            b_score = b_score + (string.byte(b.category, 1) * 10) + string.byte(b:GetName(), 1)
+            return a_score < b_score
+        end)
+    end
+    
 	return modes
 end
 

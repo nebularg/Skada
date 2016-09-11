@@ -1,22 +1,9 @@
 local L = LibStub("AceLocale-3.0"):GetLocale("Skada", false)
 local AceGUI = LibStub("AceGUI-3.0")
 
+-- Mode menu list sorted by category
 local function _modeMenu(window, level)
     local info = UIDropDownMenu_CreateInfo()
-
-    table.sort(Skada:GetModes(), function(a, b)
-        local a_score = 0
-        local b_score = 0
-        if a.category == L['Other'] then
-            a_score = -1000
-        end
-        if b.category == L['Other'] then
-            b_score = -1000
-        end
-        a_score = a_score + string.byte(a.category, 1) + string.byte(a:GetName(), 1)
-        b_score = b_score + string.byte(b.category, 1) + string.byte(b:GetName(), 1)
-        return a_score > b_score
-    end)
 
     local lastcat = nil
     for i, module in ipairs(Skada:GetModes()) do

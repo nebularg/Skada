@@ -470,3 +470,15 @@ L["Smart"] = true
 L["Memory usage is high. You may want to reset Skada, and enable one of the automatic reset options."] = true
 
 L["Other"] = true
+
+L["Energy gained"] = true
+L["Rage gained"] = true
+L["Runic power gained"] = true
+L["Holy power gained"] = true
+L["Energy gain sources"] = true
+L["Rage gain sources"] = true
+L["Holy power gain sources"] = true
+L["Runic power gain sources"] = true
+L["Power gains"] = true
+L["Focus gained"] = true
+L["Focus gain sources"] = true
