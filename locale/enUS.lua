@@ -468,3 +468,5 @@ L["Various tweaks to get around deficiences and problems in the game's combat lo
 L["Adds a set of standard themes to Skada. Custom themes can also be used."] = true
 L["Smart"] = true
 L["Memory usage is high. You may want to reset Skada, and enable one of the automatic reset options."] = true
+
+L["Other"] = true
