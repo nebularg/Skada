@@ -547,7 +547,7 @@ Skada:AddLoadableModule("Damage", nil, function(Skada, L)
 				return Skada:FormatNumber(getRaidDPS(Skada.current)).." "..L["RDPS"]
 			end
 		end)
-		Skada:AddMode(self)
+		Skada:AddMode(self, L["Damage"])
 	end
 
 	function mod:OnDisable()
@@ -558,7 +558,7 @@ Skada:AddLoadableModule("Damage", nil, function(Skada, L)
 	end
 
 	function dpsmod:OnEnable()
-		Skada:AddMode(self)
+		Skada:AddMode(self, L["Damage"])
 	end
 
 	function dpsmod:OnDisable()

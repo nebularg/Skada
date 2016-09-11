@@ -2141,7 +2141,7 @@ function Skada:AddDisplaySystem(key, mod)
 end
 
 -- Register a mode.
-function Skada:AddMode(mode)
+function Skada:AddMode(mode, category)
 	-- Ask mode to verify our sets.
 	-- Needed in case we enable a mode and we have old data.
 	if self.total then
@@ -2154,6 +2154,10 @@ function Skada:AddMode(mode)
 		verify_set(mode, set)
 	end
 
+    -- Set mode category (used for menus)
+    mode.category = category or L['Other']
+    
+    -- Add to mode list
 	tinsert(modes, mode)
 
 	-- Set this mode as the active mode if it matches the saved one.
