@@ -482,3 +482,7 @@ L["Runic power gain sources"] = true
 L["Power gains"] = true
 L["Focus gained"] = true
 L["Focus gain sources"] = true
+
+L["Minimum"] = true
+L["Maximum"] = true
+L["Average"] = true
