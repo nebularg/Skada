@@ -103,7 +103,11 @@ Skada:AddLoadableModule("Power", nil, function(Skada, L)
 				d.id = player.id
 				d.label = player.name
 				d.value = player.power[self.power].amount
-				d.valuetext = Skada:FormatNumber(player.power[self.power].amount)
+                if self.power == MANA then
+                    d.valuetext = Skada:FormatNumber(player.power[self.power].amount)
+                else
+                    d.valuetext = player.power[self.power].amount
+                end
 				d.class = player.class
 				d.role = player.role
 
@@ -122,7 +126,7 @@ Skada:AddLoadableModule("Power", nil, function(Skada, L)
 	end
 
 	function basemod:GetSetSummary(set)
-		return Skada:FormatNumber(set.power[self.power] or 0)
+        return Skada:FormatNumber(set.power[self.power] or 0)
 	end
         
     function playermod:GetName()
@@ -156,7 +160,11 @@ Skada:AddLoadableModule("Power", nil, function(Skada, L)
 				d.id = spellid
 				d.label = name
 				d.value = amount
-				d.valuetext = Skada:FormatNumber(amount)..(" (%02.1f%%)"):format(amount / player.power[self.power].amount * 100)
+                if self.power == MANA then
+                    d.valuetext = Skada:FormatNumber(amount)..(" (%02.1f%%)"):format(amount / player.power[self.power].amount * 100)
+                else
+                    d.valuetext = amount..(" (%02.1f%%)"):format(amount / player.power[self.power].amount * 100)
+                end
 				d.icon = icon
 				d.spellid = spellid
 
