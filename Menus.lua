@@ -5,8 +5,28 @@ local AceGUI = LibStub("AceGUI-3.0")
 local function _modeMenu(window, level)
     local info = UIDropDownMenu_CreateInfo()
 
+    local modes = Skada:GetModes()
+    local categorized = {}
+    for i, module in ipairs(modes) do
+        table.insert(categorized, module)
+    end
+    
+    table.sort(categorized, function(a, b)
+        local a_score = 0
+        local b_score = 0
+        if a.category == L['Other'] then
+            a_score = 1000
+        end
+        if b.category == L['Other'] then
+            b_score = 1000
+        end
+        a_score = a_score + (string.byte(a.category, 1) * 10) + string.byte(a:GetName(), 1)
+        b_score = b_score + (string.byte(b.category, 1) * 10) + string.byte(b:GetName(), 1)
+        return a_score < b_score
+    end)
+    
     local lastcat = nil
-    for i, module in ipairs(Skada:GetModes()) do
+    for i, module in ipairs(categorized) do
         if not lastcat or lastcat ~= module.category then
             if lastcat then
                 -- Add a blank separator

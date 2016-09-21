@@ -2009,8 +2009,7 @@ function Skada:UpdateDisplay(force)
 				local set = win:get_selected_set()
 
 				-- View available modes.
-				for i, mode in ipairs(self:GetModes()) do
-
+				for i, mode in ipairs(modes) do
 					local d = win.dataset[i] or {}
 					win.dataset[i] = d
 
@@ -2082,24 +2081,8 @@ function Skada:GetSets()
 	return self.char.sets
 end
 
-function Skada:GetModes()
-    if not self.modes_sorted then
-        table.sort(modes, function(a, b)
-            local a_score = 0
-            local b_score = 0
-            if a.category == L['Other'] then
-                a_score = 1000
-            end
-            if b.category == L['Other'] then
-                b_score = 1000
-            end
-            a_score = a_score + (string.byte(a.category, 1) * 10) + string.byte(a:GetName(), 1)
-            b_score = b_score + (string.byte(b.category, 1) * 10) + string.byte(b:GetName(), 1)
-            return a_score < b_score
-        end)
-    end
-    
-	return modes
+function Skada:GetModes(sortfunc)
+    return modes
 end
 
 -- Formats a number into human readable form.
@@ -2200,7 +2183,7 @@ function Skada:AddMode(mode, category)
 	end
 
 	-- Sort modes.
-	table_sort(modes, function(a, b) return a.name < b.name end)
+	table_sort(modes, function(a, b) return a:GetName() < b:GetName() end)
 
 	-- Remove all bars and start over to get ordering right.
 	-- Yes, this all sucks - the problem with this and the above is that I don't know when
