@@ -555,7 +555,7 @@ Skada:AddLoadableModule("Damage", nil, function(Skada, L)
 	end
 
 	function mod:OnEnable()
-		dpsmod.metadata = 		{showspots = true, tooltip = dps_tooltip}
+		dpsmod.metadata = 		{showspots = true, tooltip = dps_tooltip, click1 = playermod, click2 = damagedmod}
 		playermod.metadata = 	{tooltip = player_tooltip, click1 = spellmod, columns = {Damage = true, Percent = true}}
 		mod.metadata = 			{post_tooltip = damage_tooltip, showspots = true, click1 = playermod, click2 = damagedmod, columns = {Damage = true, DPS = true, Percent = true}}
 		damagedmod.metadata = 	{columns = {Damage = true, Percent = true}}
