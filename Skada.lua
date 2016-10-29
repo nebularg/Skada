@@ -1093,11 +1093,13 @@ end
 
 function Skada:PET_BATTLE_CLOSE()
 	-- Restore after pet battles
-	for i, win in ipairs(windows) do
-		if not win.db.hidden and not win:IsShown() then
-			win:Show()
-		end
-	end
+    if not Skada.db.profile.hidesolo or IsInGroup() then
+        for i, win in ipairs(windows) do
+            if not win.db.hidden and not win:IsShown() then
+                win:Show()
+            end
+        end
+    end
 end
 
 -- Toggles all windows.
@@ -1440,7 +1442,7 @@ function Skada:EndSegment()
 		end
 
 		-- Hide in combat option.
-		if not win.db.hidden and self.db.profile.hidecombat then
+        if not win.db.hidden and self.db.profile.hidecombat and (not self.db.profile.hidesolo or IsInGroup()) then
 			win:Show()
 		end
 	end
