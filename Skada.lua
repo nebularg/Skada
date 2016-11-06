@@ -2021,6 +2021,9 @@ function Skada:UpdateDisplay(force)
 					if set and mode.GetSetSummary ~= nil then
 						d.valuetext = mode:GetSetSummary(set)
 					end
+                    if mode.metadata and mode.metadata.icon then
+                        d.icon = mode.metadata.icon
+                    end
 				end
 
 				-- Tell window to sort by our data order. Our modes are in alphabetical order already.
@@ -2057,6 +2060,11 @@ function Skada:UpdateDisplay(force)
 					if set.keep then
 						d.emphathize = true
 					end
+                    if set.gotboss then
+                        d.icon = "Interface\\Icons\\Achievment_boss_ultraxion"
+                    else
+                        d.icon = "Interface\\Icons\\Achievement_boss_mutanus_the_devourer"
+                    end
 				end
 
 				win.metadata.ordersort = true
