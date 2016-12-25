@@ -1941,6 +1941,8 @@ function dataobj:OnClick(button)
 end
 
 local totalbarcolor = {r = 0.2, g = 0.2, b = 0.5, a = 1}
+local bossicon = "Interface\\Icons\\Achievment_boss_ultraxion"
+local nonbossicon = "Interface\\Icons\\icon_petfamily_critter"
 
 function Skada:UpdateDisplay(force)
 	-- Force an update by setting our "changed" flag to true.
@@ -2040,6 +2042,11 @@ function Skada:UpdateDisplay(force)
 				d.id = "total"
 				d.label = L["Total"]
 				d.value = 1
+                if self.total and self.total.gotboss then
+                    d.icon = bossicon
+                else
+                    d.icon = nonbossicon
+                end
 
 				nr = nr + 1
 				local d = win.dataset[nr] or {}
@@ -2048,6 +2055,11 @@ function Skada:UpdateDisplay(force)
 				d.id = "current"
 				d.label = L["Current"]
 				d.value = 1
+                if self.current and self.current.gotboss then
+                    d.icon = bossicon
+                else
+                    d.icon = nonbossicon
+                end
 
 				for i, set in ipairs(self.char.sets) do
 					nr = nr + 1
@@ -2061,9 +2073,9 @@ function Skada:UpdateDisplay(force)
 						d.emphathize = true
 					end
                     if set.gotboss then
-                        d.icon = "Interface\\Icons\\Achievment_boss_ultraxion"
+                        d.icon = bossicon
                     else
-                        d.icon = "Interface\\Icons\\Achievement_boss_mutanus_the_devourer"
+                        d.icon = nonbossicon
                     end
 				end
 
