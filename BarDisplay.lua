@@ -58,6 +58,16 @@ function mod:Create(window)
 	window.bargroup:EnableMouse(true)
 	window.bargroup:SetScript("OnMouseDown", function(win, button) if IsShiftKeyDown() then Skada:OpenMenu(window) elseif button == "RightButton" then window:RightClick() end end)
 	window.bargroup.button:SetScript("OnClick", function(win, button) if IsShiftKeyDown() then Skada:OpenMenu(window) elseif button == "RightButton" then window:RightClick() end end)
+    
+	window.bargroup.button:SetScript("OnEnter", function(win, button)
+        window.bargroup:SetButtonsOpacity(1.0)
+    end)
+	window.bargroup.button:SetScript("OnLeave", function(win, button)
+        if not window.bargroup.button:IsMouseOver() then
+            window.bargroup:SetButtonsOpacity(0.25)
+        end
+    end)
+    
 	window.bargroup:HideIcon()
 
     window.bargroup.button:GetFontString():SetWordWrap(false);
