@@ -18,7 +18,6 @@ local startingmembers = 0
 local table_sort, tinsert, tremove, table_maxn = _G.table.sort, tinsert, tremove, _G.table.maxn
 local next, pairs, ipairs, type = next, pairs, ipairs, type
 
-
 -- Returns the group type (i.e., "party" or "raid") and the size of the group.
 function Skada:GetGroupTypeAndCount()
 	local type
@@ -2798,6 +2797,7 @@ do
 			self.db.profile.total = nil
 			self.db.profile.sets = nil
 		end
+        
 	end
 end
 
@@ -2850,23 +2850,3 @@ function Skada:AddLoadableModule(name, description, func)
 	self.moduleList[#self.moduleList+1] = func
 	self:AddLoadableModuleCheckbox(name, L[name], description and L[description])
 end
-
-
--- A minimal mode showing test data. Used by the config.
---[[
-local testmod = {
-	name = "Test",
-	Update = function(self, win, set)
-				for i=1,i<10,1 do
-					local d = win.dataset[nr] or {}
-					win.dataset[nr] = d
-					d.value = math.random(100)
-					d.label = "Test"
-					d.class = math
-					d.id = player.id
-					d.valuetext = tostring(player.dispells)
-				end
-			end
-}
---]]
-

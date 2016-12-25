@@ -19,6 +19,7 @@ Skada.windowdefaults = {
 	barslocked=false,
 	clickthrough=false,
 
+    spellschoolcolors=true,
 	classcolorbars = true,
 	classcolortext = false,
 	classicons = true,
