@@ -2031,7 +2031,9 @@ function Skada:UpdateDisplay(force)
 				win.metadata.ordersort = true
                 
                 -- Let display provider/tooltip know we are showing a mode list.
-                win.metadata.is_modelist = true
+                if set then
+                    win.metadata.is_modelist = true
+                end
                 
 				-- Let window display the data.
 				win:UpdateDisplay()
