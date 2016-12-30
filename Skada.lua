@@ -500,10 +500,32 @@ function Window:set_mode_title()
 	self.display:SetTitle(self, name)
 end
 
+function sort_modes()
+	table_sort(modes, 
+        function(a, b) 
+            if Skada.db.profile.sortmodesbyusage and Skada.db.profile.modeclicks then
+                -- Most frequest usage order
+                return (Skada.db.profile.modeclicks[a:GetName()] or 0) > (Skada.db.profile.modeclicks[b:GetName()] or 0)
+            else
+                -- Alphabetic order
+                return a:GetName() < b:GetName()
+            end
+        end
+    )
+end
+
 local function click_on_mode(win, id, label, button)
 	if button == "LeftButton" then
 		local mode = find_mode(id)
 		if mode then
+            -- Store number of clicks on modes, for automatic sorting.
+            if Skada.db.profile.sortmodesbyusage then
+                if not Skada.db.profile.modeclicks then
+                    Skada.db.profile.modeclicks = {}
+                end
+                Skada.db.profile.modeclicks[id] = (Skada.db.profile.modeclicks[id] or 0) + 1
+                sort_modes()
+            end
 			win:DisplayMode(mode)
 		end
 	elseif button == "RightButton" then
@@ -2018,7 +2040,7 @@ function Skada:UpdateDisplay(force)
 
 					d.id = mode:GetName()
 					d.label = mode:GetName()
-					d.value = 1
+					d.value = 1    
 					if set and mode.GetSetSummary ~= nil then
 						d.valuetext = mode:GetSetSummary(set)
 					end
@@ -2027,8 +2049,8 @@ function Skada:UpdateDisplay(force)
                     end
 				end
 
-				-- Tell window to sort by our data order. Our modes are in alphabetical order already.
-				win.metadata.ordersort = true
+                -- Tell window to sort by our data order. Our modes are in the correct order already.
+                win.metadata.ordersort = true
                 
                 -- Let display provider/tooltip know we are showing a mode list.
                 if set then
@@ -2211,7 +2233,7 @@ function Skada:AddMode(mode, category)
 	end
 
 	-- Sort modes.
-	table_sort(modes, function(a, b) return a:GetName() < b:GetName() end)
+    sort_modes()
 
 	-- Remove all bars and start over to get ordering right.
 	-- Yes, this all sucks - the problem with this and the above is that I don't know when
