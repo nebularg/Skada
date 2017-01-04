@@ -1567,7 +1567,7 @@ function Skada:StartCombat()
 	self:UpdateDisplay(true)
 
 	-- Schedule timers for updating windows and detecting combat end.
-	update_timer = self:ScheduleRepeatingTimer("UpdateDisplay", 0.5)
+	update_timer = self:ScheduleRepeatingTimer("UpdateDisplay", 0.25)
 	-- ticket 363: It is NOT safe to use ENCOUNTER_END to replace combat detection
 	tick_timer = self:ScheduleRepeatingTimer("Tick", 1)
 end

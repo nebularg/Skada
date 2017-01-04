@@ -59,6 +59,7 @@ Skada.windowdefaults = {
 	snapto = true,
 	scale = 1,
     version = 1,
+    smoothing = false,
     
     -- Inline exclusive
     isonnewline = false,
