@@ -166,6 +166,7 @@ end
 
 local deletewindow = nil
 local newdisplay = "bar"
+
 Skada.options = {
 	type="group",
 	name="Skada",

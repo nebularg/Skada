@@ -9,6 +9,7 @@ local boss = LibStub("LibBossIDs-1.0")
 local lds = LibStub:GetLibrary("LibDualSpec-1.0", 1)
 local dataobj = ldb:NewDataObject("Skada", {label = "Skada", type = "data source", icon = "Interface\\Icons\\Spell_Lightning_LightningBolt01", text = "n/a"})
 local popup, cleuFrame
+local AceConfigDialog = LibStub('AceConfigDialog-3.0')
 
 -- Used for automatic stop on wipe option
 local deathcounter = 0
@@ -770,8 +771,7 @@ local function slashHandler(param)
 		Skada.db.profile.debug = not Skada.db.profile.debug
 		Skada:Print("Debug mode "..(Skada.db.profile.debug and ("|cFF00FF00"..L["ENABLED"].."|r") or ("|cFFFF0000"..L["DISABLED"].."|r")))
 	elseif param == "config" then
-		InterfaceOptionsFrame_OpenToCategory(Skada.optionsFrame)
-		InterfaceOptionsFrame_OpenToCategory(Skada.optionsFrame)
+        Skada:OpenOptions()
 	elseif param:sub(1,6) == "report" then
 		local chan = (IsInGroup(LE_PARTY_CATEGORY_INSTANCE) and "instance") or
 				(IsInRaid() and "raid") or
@@ -2805,17 +2805,40 @@ do
 		self.char = SkadaPerCharDB
 		self.char.sets = self.char.sets or {}
 		LibStub("AceConfigRegistry-3.0"):RegisterOptionsTable("Skada", self.options, true)
-		self.optionsFrame = LibStub("AceConfigDialog-3.0"):AddToBlizOptions("Skada", "Skada")
 
 		-- Profiles
 		LibStub("AceConfigRegistry-3.0"):RegisterOptionsTable("Skada-Profiles", LibStub("AceDBOptions-3.0"):GetOptionsTable(self.db), true)
-		self.profilesFrame = LibStub("AceConfigDialog-3.0"):AddToBlizOptions("Skada-Profiles", "Profiles", "Skada")
+        local profiles = LibStub('AceDBOptions-3.0'):GetOptionsTable(self.db)
+        profiles.order = 600
+        profiles.disabled = false
+        Skada.options.args.profiles = profiles
 
 		-- Dual spec profiles
 		if lds then
 			lds:EnhanceDatabase(self.db, "SkadaDB")
 			lds:EnhanceOptions(LibStub("AceDBOptions-3.0"):GetOptionsTable(self.db), self.db)
 		end
+        
+        -- Blizzard options frame
+        local panel = CreateFrame("Frame", "SkadaBlizzOptions")
+        panel.name = "Skada"
+        InterfaceOptions_AddCategory(panel)
+
+        local fs = panel:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+        fs:SetPoint("TOPLEFT", 10, -15)
+        fs:SetPoint("BOTTOMRIGHT", panel, "TOPRIGHT", 10, -45)
+        fs:SetJustifyH("LEFT")
+        fs:SetJustifyV("TOP")
+        fs:SetText("Skada")
+
+        local button = CreateFrame("Button", nil, panel, "UIPanelButtonTemplate")
+        button:SetText(L['Configure'])
+        button:SetWidth(128)
+        button:SetPoint("TOPLEFT", 10, -48)
+        button:SetScript('OnClick', function()
+            while CloseWindows() do end
+            return Skada:OpenOptions()
+        end)
 
 		-- Slash Handler
 		SLASH_SKADA1 = "/skada"
@@ -2838,6 +2861,16 @@ do
 			self.db.profile.sets = nil
 		end
         
+	end
+end
+
+function Skada:OpenOptions(window)
+    AceConfigDialog:SetDefaultSize('Skada', 800, 600)
+	if window then
+		AceConfigDialog:Open('Skada')
+		AceConfigDialog:SelectGroup('Skada', 'windows', window.db.name)
+	elseif not AceConfigDialog:Close('Skada') then
+		AceConfigDialog:Open('Skada')
 	end
 end
 

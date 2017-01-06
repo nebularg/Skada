@@ -346,9 +346,9 @@ function barListPrototype:SetSmoothing(smoothing)
                         
                         local amt
                         if v.targetamount > v.lastamount then
-                            amt = math.min(((v.targetamount - v.lastamount) / 10) + v.lastamount, v.targetamount)
+                            amt = min(((v.targetamount - v.lastamount) / 10) + v.lastamount, v.targetamount)
                         else
-                            amt = math.max(v.lastamount - ((v.lastamount - v.targetamount) / 10), v.targetamount)
+                            amt = max(v.lastamount - ((v.lastamount - v.targetamount) / 10), v.targetamount)
                         end
                         v.lastamount = amt
                         if amt == v.targetamount then
@@ -381,7 +381,7 @@ function barListPrototype:AdjustButtons()
 
 		if btn:IsShown() then
 			if nr == 0 then
-				btn:SetPoint("TOPRIGHT", self.button, "TOPRIGHT", -5, 0 - (math.max(self.button:GetHeight() - btn:GetHeight(), 0) / 2))
+				btn:SetPoint("TOPRIGHT", self.button, "TOPRIGHT", -5, 0 - (max(self.button:GetHeight() - btn:GetHeight(), 0) / 2))
 			else
 				btn:SetPoint("TOPRIGHT", lastbtn, "TOPLEFT", 0, 0)
 			end
@@ -979,20 +979,20 @@ do
 		local thickness, showIcon = self.thickness, self.showIcon
 		local offset = self.offset
 		local x1, y1, x2, y2 = 0, 0, 0, 0
-		local maxbars = math.min(#values, math.floor(self:GetHeight() / (thickness + spacing)))
+		local maxbars = min(#values, floor(self:GetHeight() / (thickness + spacing)))
 
 		local start, stop, step
 		if growup then
 			from = "BOTTOM"
 			to = "TOP"
-			start = math.min(#values, maxbars + offset)
-			stop = math.min(#values, 1 + offset)
+			start = min(#values, maxbars + offset)
+			stop = min(#values, 1 + offset)
 			step = -1
 		else
 			from = "TOP"
 			to = "BOTTOM"
-			start = math.min(1 + offset, #values)
-			stop = math.min(maxbars + offset, #values)
+			start = min(1 + offset, #values)
+			stop = min(maxbars + offset, #values)
 			step = 1
 		end
         
