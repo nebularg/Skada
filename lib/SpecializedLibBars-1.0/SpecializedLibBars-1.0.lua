@@ -1,6 +1,6 @@
 -- LibBars-1.0 by Antiarc, all glory to him, ripped into pieces for Skada.
 local MAJOR = "SpecializedLibBars-1.0"
-local MINOR = 90000 + tonumber(("$Revision: 1 $"):match("%d+"))
+local MINOR = 900000 + tonumber(("$Revision: 1 $"):match("%d+"))
 
 local lib, oldminor = LibStub:NewLibrary(MAJOR, MINOR)
 if not lib then return end -- No Upgrade needed.
