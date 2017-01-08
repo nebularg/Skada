@@ -104,6 +104,7 @@ Skada.defaults = {
 		showtotals = false,
         autostop = false,
         sortmodesbyusage = true,
+        updatefrequency = 0.25,
 
 		modules = {},
 		columns = {},
@@ -505,6 +506,19 @@ Skada.options = {
 						order=17,
 						width="double",
 					},
+                
+                    updatefrequency = {
+						type="range",
+						name=L["Update frequency"],
+						desc=L["How often windows are updated. Shorter for faster updates. Increases CPU usage."],
+                        min = 0.10,
+                        max = 1,
+                        step = 0.05,
+						get=function() return Skada.db.profile.updatefrequency end,
+						set=function(self, opt) Skada.db.profile.updatefrequency = opt end,
+						order=18,
+						width="double",
+                    }
                 
 				}
 			},
