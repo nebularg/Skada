@@ -1,4 +1,4 @@
-local Skada = LibStub("AceAddon-3.0"):NewAddon("Skada", "AceTimer-3.0")
+local Skada = LibStub("AceAddon-3.0"):NewAddon("Skada", "AceTimer-3.0", "LibNotify-1.0")
 _G.Skada = Skada
 
 local L = LibStub("AceLocale-3.0"):GetLocale("Skada", false)
@@ -2861,6 +2861,9 @@ do
 			self.db.profile.sets = nil
 		end
         
+        self:SetNotifyIcon("Interface\\Icons\\Spell_Lightning_LightningBolt01")
+        self:SetNotifyStorage(self.db.profile.versions)
+        self:NotifyOnce(self.versions)
 	end
 end
 
