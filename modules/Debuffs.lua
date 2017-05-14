@@ -146,6 +146,9 @@ Skada:AddLoadableModule("Debuffs", nil, function(Skada, L)
                     d.label = spellname
                     d.spellid = spell.id
                         
+                    local _, _, icon = GetSpellInfo(spell.id)
+                    d.icon = icon
+                        
                     if spell.school then
                         d.spellschool = spell.school
                     end
