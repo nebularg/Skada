@@ -131,7 +131,9 @@ Skada:AddLoadableModule("Debuffs", nil, function(Skada, L)
 				if spell.auratype == auratype then
                         
                     local spellnr = spells[spell.id]
+                    local was_new = false
                     if not spellnr then
+                        was_new = true
                         spells[spell.id] = nr
                         nr = nr + 1
                         spellnr = spells[spell.id]
@@ -141,7 +143,11 @@ Skada:AddLoadableModule("Debuffs", nil, function(Skada, L)
                     win.dataset[spellnr] = d
 
                     d.id = spell.id
-                    d.value = (d.value or 0) + 1
+                    if was_new then
+                        d.value = 1
+                    else
+                        d.value = (d.value or 0) + 1
+                    end
                     d.valuetext = ("%i"):format(d.value)
                     d.label = spellname
                     d.spellid = spell.id
