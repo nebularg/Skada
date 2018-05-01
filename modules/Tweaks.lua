@@ -1,25 +1,25 @@
 -- Various silly tweaks needed to keep up with Blizzard's shenanigans. Not added to core because they may not be needed/relevant forever.
 Skada:AddLoadableModule("Tweaks", "Various tweaks to get around deficiences and problems in the game's combat logs. Carries a small performance penalty.", function(Skada, L)
-	if Skada.db.profile.modulesBlocked.Tweaks then return end
+    if Skada.db.profile.modulesBlocked.Tweaks then return end
 
     local band = bit.band
-        
+
     -- Cache variables
     local boms = {}
     local stormlashes = {}
     local akaarisource = nil
     local lastpet = {}
     local assignedhatis = {}
-        
-    local PET_FLAG = COMBATLOG_OBJECT_TYPE_PET
-        
-    local orig = Skada.cleuFrame:GetScript("OnEvent")
-    Skada.cleuFrame:SetScript("OnEvent", function(frame, event, timestamp, eventtype, hideCaster, srcGUID, srcName, srcFlags, srcRaidFlags, dstGUID, dstName, dstFlags, dstRaidFlags, ...)
 
+    local PET_FLAG = COMBATLOG_OBJECT_TYPE_PET
+
+    local frame = Skada.cleuFrame
+    local orig = frame:GetScript("OnEvent")
+    local function cleuHandler(timestamp, eventtype, hideCaster, srcGUID, srcName, srcFlags, srcRaidFlags, dstGUID, dstName, dstFlags, dstRaidFlags, ...)
         -- Only perform these modifications if we are already in combat
         if Skada.current then
             local firstArg = select(1, ...)
-            
+
             -- Hati (7.0, BM hunter artifact)
             if band(srcFlags, PET_FLAG) ~= 0 then
                 lastpet.timestamp = timestamp
@@ -33,7 +33,7 @@ Skada:AddLoadableModule("Tweaks", "Various tweaks to get around deficiences and 
                     end
                 end
             end
-                    
+
             -- Akaari's Soul (7.0, Rogue artifact)
             if (firstArg == 185438 or firstArg == 145424) and eventtype == 'SPELL_DAMAGE' then
                 akaarisource = srcGUID
@@ -49,7 +49,7 @@ Skada:AddLoadableModule("Tweaks", "Various tweaks to get around deficiences and 
                 --Skada:Print('Ooh, caught a GBOM!')
                 if not boms[srcGUID] then
                     local spellname = select(2, ...)
-                    
+
                     -- Had no luck without iterating, sadly.
                     local i = 1
                     local buffname, _, _, _, _, _, _, caster, _, _, _ = UnitBuff(srcName, i)
@@ -61,7 +61,7 @@ Skada:AddLoadableModule("Tweaks", "Various tweaks to get around deficiences and 
                         i = i + 1;
                         buffname, _, _, _, _, _, _, caster, _, _, _ = UnitBuff(srcName, i)
                     end
-                    
+
                     if bomSource then
                         boms[srcGUID] = {
                             id = UnitGUID(bomSource),
@@ -106,10 +106,19 @@ Skada:AddLoadableModule("Tweaks", "Various tweaks to get around deficiences and 
                     stormlashes[dstGUID] = nil
                 end
             end
-                    
+
         end
 
-        orig(frame, event, timestamp, eventtype, hideCaster, srcGUID, srcName, srcFlags, srcRaidFlags, dstGUID, dstName, dstFlags, dstRaidFlags, ...)
-    end)
-        
+        orig(frame, "COMBAT_LOG_EVENT_UNFILTERED", timestamp, eventtype, hideCaster, srcGUID, srcName, srcFlags, srcRaidFlags, dstGUID, dstName, dstFlags, dstRaidFlags, ...)
+    end
+    if CombatLogGetCurrentEventInfo then -- XXX bfa
+        frame:SetScript("OnEvent", function()
+            cleuHandler(CombatLogGetCurrentEventInfo())
+        end)
+    else
+        frame:SetScript("OnEvent", function(self, event, ...)
+            cleuHandler(...)
+        end)
+    end
+
 end)
