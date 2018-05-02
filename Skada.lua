@@ -1885,6 +1885,7 @@ local function cleuHandler(timestamp, eventtype, hideCaster, srcGUID, srcName, s
 		end
 	end
 end
+Skada.cleuHandler = cleuHandler -- For tweaks
 if CombatLogGetCurrentEventInfo then -- XXX bfa
 	cleuFrame:SetScript("OnEvent", function()
 		cleuHandler(CombatLogGetCurrentEventInfo())
