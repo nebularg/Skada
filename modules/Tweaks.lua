@@ -71,6 +71,5 @@ Skada:AddLoadableModule("Tweaks", "Various tweaks to get around deficiences and 
 
     Skada.cleuFrame:SetScript("OnEvent", function()
         cleuHandler(CombatLogGetCurrentEventInfo())
-    end
-
+    end)
 end)
