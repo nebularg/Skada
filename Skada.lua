@@ -1192,6 +1192,7 @@ function Skada:Reset()
 		end
 	end
 
+	dataobj.text = "n/a"
 	self:UpdateDisplay(true)
 	self:Print(L["All data has been reset."])
 	if not InCombatLockdown() then -- ticket 377: avoid timeout errors in combat because GC can run too long
