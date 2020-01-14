@@ -141,10 +141,10 @@ Skada:AddLoadableModule("Deaths", nil, function(Skada, L)
 		local spellId, misstype, _, samount
 		if eventtype == "SWING_MISSED" then
 			spellId = 88163
-			misstype, _, _, samount = ...
+			misstype, _, samount = ...
 		else
 			spellId = ...
-			misstype, _, _, samount = select(3,...)
+			misstype, _, samount = select(3,...)
 		end
 		if dstGUID and timestamp == SORtime[dstGUID] then -- this is actually the killing blow for the SOR we just recorded
 			Skada:Debug("SOR Miss killing blow: ",dstName, spellId, samount)
