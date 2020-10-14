@@ -48,7 +48,6 @@ Skada:AddLoadableModule("Themes", "Adds a set of standard themes to Skada. Custo
 
 			display = "bar",
 			snapto = true,
-			scale = 1,
 			version = 1,
 
 			-- Inline exclusive
@@ -103,7 +102,6 @@ Skada:AddLoadableModule("Themes", "Adds a set of standard themes to Skada. Custo
 			},
 
 			strata = "LOW",
-			scale = 1,
 
 			hidden = false,
 			enabletitle = true,
@@ -174,7 +172,6 @@ Skada:AddLoadableModule("Themes", "Adds a set of standard themes to Skada. Custo
 
 			display = "bar",
 			snapto = true,
-			scale = 1,
 			version = 1,
 
 			-- Inline exclusive

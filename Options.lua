@@ -58,7 +58,6 @@ Skada.windowdefaults = {
 
 	display = "bar",
 	snapto = true,
-	scale = 1,
 	version = 1,
 	smoothing = false,
 

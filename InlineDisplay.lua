@@ -167,8 +167,8 @@ function mod:Create(window, isnew)
 	end)
 
 	local skadamenubuttonbackdrop = {
-		bgFile = "Interface\\Buttons\\UI-OptionsButton",
-		edgeFile = "Interface\\Buttons\\UI-OptionsButton",
+		-- bgFile = "Interface\\Buttons\\UI-OptionsButton",
+		-- edgeFile = "Interface\\Buttons\\UI-OptionsButton",
 		bgFile = nil,
 		edgeFile = nil,
 		tile = true,
