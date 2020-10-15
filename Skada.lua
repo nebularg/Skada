@@ -50,16 +50,17 @@ function Skada:GetGroupTypeAndCount()
 end
 
 do
-	popup = CreateFrame("Frame", nil, UIParent) -- Recycle the popup frame as an event handler.
+	popup = CreateFrame("Frame", nil, UIParent, "BackdropTemplate") -- Recycle the popup frame as an event handler.
 	popup:SetScript("OnEvent", function(frame, event, ...)
 		Skada[event](Skada, ...)
 	end)
 
-	popup:SetBackdrop({bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background-Dark",
+	popup:SetBackdrop({
+		bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background-Dark",
 		edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
 		tile = true, tileSize = 16, edgeSize = 16,
-		insets = {left = 1, right = 1, top = 1, bottom = 1}}
-	)
+		insets = {left = 1, right = 1, top = 1, bottom = 1}
+	})
 	popup:SetSize(250, 100)
 	popup:SetPoint("CENTER", UIParent, "CENTER")
 	popup:SetFrameStrata("DIALOG")
@@ -2561,7 +2562,7 @@ end
 function Skada:ApplyBorder(frame, texture, color, thickness, padtop, padbottom, padleft, padright)
 	local borderbackdrop = {}
 	if not frame.borderFrame then
-		frame.borderFrame = CreateFrame("Frame", nil, frame)
+		frame.borderFrame = CreateFrame("Frame", nil, frame, "BackdropTemplate")
 		frame.borderFrame:SetFrameLevel(0)
 	end
 	frame.borderFrame:SetPoint("TOPLEFT", frame, -thickness - (padleft or 0), thickness + (padtop or 0))

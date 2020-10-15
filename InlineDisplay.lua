@@ -96,7 +96,7 @@ end
 
 function mod:Create(window, isnew)
 	if not window.frame then
-		window.frame = CreateFrame("Frame", window.db.name.."InlineFrame", UIParent)
+		window.frame = CreateFrame("Frame", window.db.name.."InlineFrame", UIParent, "BackdropTemplate")
 		window.frame.win = window
 		window.frame:SetFrameLevel(5)
 		if window.db.height==15 then window.db.height = 23 end--TODO: Fix dirty hack
