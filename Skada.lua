@@ -2317,44 +2317,65 @@ function Skada:PlayerActiveTime(set, player)
 	return maxtime
 end
 
--- Modify objects if they are pets.
--- Expects to find "playerid", "playername", and optionally "spellname" in the object.
--- Playerid and playername are exchanged for the pet owner's, and spellname is modified to include pet name.
-function Skada:FixPets(action)
-	if action and action.playername then
-		local pet = pets[action.playerid]
-		if pet then
+do
+	local ownerPattern = UNITNAME_TITLE_PET:gsub("%%s", "(.-)")
+	local tooltip = CreateFrame("GameTooltip", "SkadaTooltip", nil, "GameTooltipTemplate")
+	tooltip:SetOwner(WorldFrame, "ANCHOR_NONE")
 
-			if (self.db.profile.mergepets) then
+	local function GetPetOwner(guid)
+		tooltip:SetHyperlink("unit:" .. guid)
+		for i = 2, tooltip:NumLines() do
+			local text = _G["SkadaTooltipTextLeft"..i]:GetText() or ""
+			local owner = text:match(ownerPattern)
+			if owner then
+				return owner
+			end
+		end
+	end
+
+	-- Modify objects if they are pets.
+	-- Expects to find "playerid", "playername", and optionally "spellname" in the object.
+	-- playerid and playername are exchanged for the pet owner's, and spellname is modified to include pet name.
+	function Skada:FixPets(action)
+		if not action or not action.playername or not action.playerid then return end
+
+		local owner = pets[action.playerid]
+
+		-- Try to associate pets and guardians with their owner
+		if not owner and action.playerflags and band(action.playerflags, PET_FLAGS) ~= 0 and band(action.playerflags, RAID_FLAGS) ~= 0 then
+			if band(action.playerflags, COMBATLOG_OBJECT_AFFILIATION_MINE) ~= 0 then
+				-- Skip tooltip scanning if it belongs to the player
+				owner = { id = UnitGUID("player"), name = UnitName("player") }
+				pets[action.playerid] = owner
+			else
+				local ownerName = GetPetOwner(action.playerid)
+				if ownerName then
+					local ownerGUID = UnitGUID(ownerName)
+					if players[ownerGUID] then
+						owner = { id = ownerGUID, name = ownerName }
+						pets[action.playerid] = owner
+					end
+				end
+			end
+			if not owner then
+				-- Couldn't resolve the owner. Modify guid so that there will only be 1 similar entry at least.
+				action.playerid = action.playername
+			end
+		end
+
+		if owner then
+			if self.db.profile.mergepets then
 				if action.spellname then
 					action.spellname = action.playername..": "..action.spellname
 				end
-				action.playername = pet.name
-				action.playerid = pet.id
+				action.playername = owner.name
+				action.playerid = owner.id
 			else
-				action.playername = pet.name..": "..action.playername
+				action.playername = owner.name..": "..action.playername
 				-- create a unique ID for each player for each type of pet
-				local petMobID=action.playerid:sub(6,10); -- Get Pet creature ID
-				action.playerid = pet.id .. petMobID; -- just append it to the pets owner id
+				local _, _, _, _, _, id, spawnId = ("-"):split(action.playerid)
+				action.playerid = owner.id .. id -- just append it to the pets owner id
 			end
-
-		else
-
-			-- Fix for guardians; requires "playerflags" to be set from CL.
-			-- This only works for one self. Other player's guardians are all lumped into one.
-			if action.playerflags and bit.band(action.playerflags, COMBATLOG_OBJECT_TYPE_GUARDIAN) ~= 0 then
-				if bit.band(action.playerflags, COMBATLOG_OBJECT_AFFILIATION_MINE) ~=0 then
-					if action.spellname then
-						action.spellname = action.playername..": "..action.spellname
-					end
-					action.playername = UnitName("player")
-					action.playerid = UnitGUID("player")
-				else
-					-- Nothing decent in place here yet. Modify guid so that there will only be 1 similar entry at least.
-					action.playerid = action.playername
-				end
-			end
-
 		end
 	end
 end
