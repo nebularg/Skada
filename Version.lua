@@ -1,6 +1,11 @@
 local _, Skada = ...
 Skada.versions = {
 	{
+		id = "1.8.0",
+		title = "Skada 1.8.0",
+		message = "<br/>Updated for 9.0!<br/><br/>Pets without a unit will be properly associated with their owner."
+	},
+	{
 		id = "1.6.7",
 		title = "Skada 1.6.7",
 		message = "Added new Buffs and Debuffs overview modes, showing spells used. Clicking a spell shows the corresponding players.<br/>"
