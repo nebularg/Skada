@@ -9,15 +9,15 @@ customizable windows. It aims to be highly efficient with memory and CPU.
 
 When you first start using Skada, there will be a window created by default.
 This window can be extensively customized in Skada's configuration panel; click
-the little cog icon to access a menu, and then click Configure. Depending on
+the little cog icon to access a menu, and then click _Configure_. Depending on
 your user interface, there may also be a minimap button allowing quick access to
 this menu.
 
-Skada supports multiple windows. To create a new window, click Windows in the
+Skada supports multiple windows. To create a new window, click _Windows_ in the
 addon's configuration panel. There are three built-in types of windows - Bar,
-Inline, and Data text. Bar is the classic damage meter window, and is very
-customizable. Inline shows the meter in a horizontal line, which can be useful
-for integration in custom user interfaces. Data text shows just one item at a
+Inline, and Data text. _Bar_ is the classic damage meter window, and is very
+customizable. _Inline_ shows the meter in a horizontal line, which can be useful
+for integration in custom user interfaces. _Data text_ shows just one item at a
 time, and can also be displayed by any LDB display addon, such as Titan Panel,
 ChocolateBar, or ElvUI.
 
@@ -47,3 +47,5 @@ that add functionality, such as:
 - [Guild Skada High Score](https://www.curseforge.com/wow/addons/guild-skada-high-score): Let's you compare a guild's performance.
 - [Skada_FriendlyFire](https://www.curseforge.com/wow/addons/skada_friendlyfire): Display friendly fire damage done by players
 - [Skada Player Score](https://www.curseforge.com/wow/addons/skada-player-score): Generate combined performance scores for players.
+
+There is a page with [API information here](https://www.wowace.com/projects/skada/pages/API).
