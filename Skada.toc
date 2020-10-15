@@ -21,6 +21,7 @@ embeds.xml
 locale\enUS.lua
 locale\deDE.lua
 locale\esES.lua
+locale\esMX.lua
 locale\frFR.lua
 locale\itIT.lua
 locale\koKR.lua
