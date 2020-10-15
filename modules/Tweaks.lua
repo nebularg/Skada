@@ -7,8 +7,8 @@ Skada:AddLoadableModule("Tweaks", "Various tweaks to get around deficiences and 
 	local orig = Skada.cleuHandler
 	local function cleuHandler(timestamp, eventtype, hideCaster, srcGUID, srcName, srcFlags, srcRaidFlags, dstGUID, dstName, dstFlags, dstRaidFlags, spellId, ...)
 		-- Only perform these modifications if we are already in combat
-		if Skada.current then
-		end
+		-- if Skada.current then
+		-- end
 
 		orig(timestamp, eventtype, hideCaster, srcGUID, srcName, srcFlags, srcRaidFlags, dstGUID, dstName, dstFlags, dstRaidFlags, spellId, ...)
 	end
