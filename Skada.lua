@@ -2373,10 +2373,12 @@ do
 				pets[action.playerid] = owner
 			else
 				local ownerName = GetPetOwner(action.playerid)
-				local id = UnitGUID(ownerName) or GetRussianOwnerID(ownerName)
-				if players[id] then
-					owner = { id = id, name = ownerName }
-					pets[action.playerid] = owner
+				if ownerName then
+					local id = UnitGUID(ownerName) or GetRussianOwnerID(ownerName)
+					if players[id] then
+						owner = { id = id, name = ownerName }
+						pets[action.playerid] = owner
+					end
 				end
 			end
 			if not owner then
