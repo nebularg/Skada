@@ -15,7 +15,7 @@ Skada:AddLoadableModule("Enemies", nil, function(Skada, L)
 	local function find_player(mob, name)
 		local player = mob.players[name]
 		if player then return player end
-		local _, playerClass = UnitClass(name)
+		local _, playerClass, _ = UnitClass(name)
 		local playerRole = UnitGroupRolesAssigned(name)
 		player = {done = 0, taken = 0, class = playerClass, role = playerRole}
 		mob.players[name] = player
