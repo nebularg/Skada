@@ -40,6 +40,7 @@ globals = {
 	-- Functions
 	"BNet_GetBNetIDAccount",
 	"BNSendWhisper",
+	"C_TooltipInfo",
 	"ChatEdit_GetActiveWindow",
 	"ChatEdit_InsertLink",
 	"ChatFrame_OpenChat",
@@ -59,6 +60,7 @@ globals = {
 	"GetFunctionCPUUsage",
 	"GetNumDeclensionSets",
 	"GetNumGroupMembers",
+	"GetPlayerInfoByGUID",
 	"GetRaidRosterInfo",
 	"GetSchoolString",
 	"GetScreenHeight",
@@ -80,6 +82,7 @@ globals = {
 	"SecondsToTime",
 	"SendChatMessage",
 	"ToggleDropDownMenu",
+	"TooltipUtil",
 	"UIDropDownMenu_AddButton",
 	"UIDropDownMenu_CreateInfo",
 	"UnitAffectingCombat",
