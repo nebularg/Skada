@@ -1689,7 +1689,7 @@ function Skada:get_player(set, playerid, playername)
 		end
 
 		local _, playerClass = UnitClass(playername)
-		local playerRole = DAMAGER
+		local playerRole = UnitGroupRolesAssigned(playername)
 		player = {id = playerid, class = playerClass, role = playerRole, name = playername, first = time(), ["time"] = 0}
 
 		-- Tell each mode to apply its needed attributes.
@@ -1711,7 +1711,7 @@ function Skada:get_player(set, playerid, playername)
 		local player_name, realm = string.split("-", playername, 2)
 		player.name = player_name or playername
 		local _, playerClass = UnitClass(playername)
-		local playerRole = DAMAGER
+		local playerRole = UnitGroupRolesAssigned(playername)
 		player.class = playerClass
 		player.role = playerRole
 	end
