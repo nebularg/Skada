@@ -40,7 +40,7 @@ Skada:AddLoadableModule("Healing", nil, function(Skada, L)
 					-- Create recipient if it does not exist.
 					if not healed then
 						local _, className = UnitClass(heal.dstName)
-						local playerRole = UnitGroupRolesAssigned(heal.dstName)
+						local playerRole = DAMAGER
 						healed = {name = heal.dstName, class = className, role = playerRole, amount = 0, shielding = 0}
 						player.healed[heal.dstGUID] = healed
 					end
