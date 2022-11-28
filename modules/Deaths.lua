@@ -141,7 +141,7 @@ Skada:AddLoadableModule("Deaths", nil, function(Skada, L)
 	local function Missed(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
 		local spellId, misstype, _, samount
 		if eventtype == "SWING_MISSED" then
-			spellId = 88163
+			spellId = 6603 -- Attack
 			misstype, _, samount = ...
 		else
 			spellId = ...
@@ -173,7 +173,7 @@ Skada:AddLoadableModule("Deaths", nil, function(Skada, L)
 	local function SwingDamage(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
 		-- White melee.
 		local samount, soverkill, sschool, sresisted, sblocked, sabsorbed, scritical, sglancing, scrushing = ...
-		local spellid = 88163
+		local spellid = 6603 -- Attack
 
 		log_deathlog(Skada.total, dstGUID, dstName, srcName, spellid, nil, samount and -samount, sabsorbed and -sabsorbed, timestamp)
 	end
@@ -188,7 +188,7 @@ Skada:AddLoadableModule("Deaths", nil, function(Skada, L)
 	local function Instakill(timestamp, eventtype, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
 		-- Instakill events
 		local spellId, spellName, spellSchool = ...
-		spellId = spellId or 80468
+		spellId = spellId or 40450 -- Melee Instakill
 
 		log_deathlog(Skada.total, dstGUID, dstName, srcName, spellId, spellName, -1e9, nil, timestamp)
 	end
@@ -260,6 +260,9 @@ Skada:AddLoadableModule("Deaths", nil, function(Skada, L)
 				d.id = player.id
 				d.value = #player.deaths
 				if spellid then
+					if spellid == 88163 then
+						spellid = 6603
+					end
 					d.label = player.name .. ": " .. (spellname or GetSpellInfo(spellid))
 				else
 					d.label = player.name
@@ -316,7 +319,10 @@ Skada:AddLoadableModule("Deaths", nil, function(Skada, L)
 						win.dataset[nr] = d
 
 						d.id = nr
-						local spellid = log.spellid or 88163 -- "Attack" spell
+						local spellid = log.spellid or 6603 -- "Attack" spell
+						if spellid == 88163 then
+							spellid = 6603
+						end
 						local spellname = log.spellname or GetSpellInfo(spellid)
 						local rspellname
 						if spellid == death_spell then
